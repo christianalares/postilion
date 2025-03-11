@@ -1,5 +1,5 @@
 {
-  "name": "my-turborepo",
+  "name": "postilion",
   "private": true,
   "scripts": {
     "build": "turbo run build",
