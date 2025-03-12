@@ -1,0 +1,16 @@
+{
+	"name": "@postilion/api",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"types": "wrangler types"
+	},
+	"dependencies": {
+		"hono": "^4.7.4",
+		"postal-mime": "^2.4.3"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20250214.0",
+		"wrangler": "^3.109.2"
+	}
+}
