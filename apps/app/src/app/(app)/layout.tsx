@@ -1,3 +1,4 @@
+import { Header } from '@/components/header'
 import { HydrateClient, trpc } from '@/trpc/server'
 
 type Props = {
@@ -9,6 +10,7 @@ const AuthorizedLayout = ({ children }: Props) => {
 
 	return (
 		<HydrateClient>
+			<Header />
 			<div className="border-2 border-red-400">{children}</div>
 		</HydrateClient>
 	)
