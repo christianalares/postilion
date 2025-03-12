@@ -4,11 +4,11 @@
 		"*.css": "tailwindcss"
 	},
 	"editor.defaultFormatter": "biomejs.biome",
-	// "editor.codeActionsOnSave": {
-	//   "source.organizeImports.biome": "explicit"
-	// },
-	// "[prisma]": {
-	//   "editor.defaultFormatter": "Prisma.prisma"
-	// },
+	"editor.codeActionsOnSave": {
+		"source.organizeImports.biome": "explicit"
+	},
+	"[prisma]": {
+		"editor.defaultFormatter": "Prisma.prisma"
+	},
 	"editor.formatOnSave": true
 }
