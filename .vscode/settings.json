@@ -10,5 +10,11 @@
 	"[prisma]": {
 		"editor.defaultFormatter": "Prisma.prisma"
 	},
-	"editor.formatOnSave": true
+	"editor.formatOnSave": true,
+	"search.exclude": {
+		"**/db/generated/**": true
+	},
+	"files.exclude": {
+		"**/db/generated/**": true
+	}
 }

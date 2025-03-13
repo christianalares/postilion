@@ -1,5 +1,5 @@
 // import { analyticsClient } from '@/lib/analytics'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth/auth'
 import { prisma } from '@postilion/db'
 import { TRPCError, initTRPC } from '@trpc/server'
 import { headers } from 'next/headers'

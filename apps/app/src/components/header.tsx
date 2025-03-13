@@ -1,6 +1,6 @@
 'use client'
 
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth/auth-client'
 import { trpc } from '@/trpc/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -10,7 +10,7 @@ export const Header = () => {
 	const [me] = trpc.users.me.useSuspenseQuery()
 
 	return (
-		<header className="flex justify-between">
+		<header className="flex justify-between h-16 items-center border-b px-8">
 			<nav>
 				<ul className="flex gap-4 items-center">
 					<li>

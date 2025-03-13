@@ -2,6 +2,8 @@ import { prisma } from '@postilion/db'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
+import { organization } from 'better-auth/plugins'
+import { createDefaultOrganization } from './utils'
 
 export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
@@ -13,5 +15,14 @@ export const auth = betterAuth({
 			clientSecret: process.env.GITHUB_CLIENT_SECRET!,
 		},
 	},
-	plugins: [nextCookies()],
+	plugins: [organization(), nextCookies()],
+	databaseHooks: {
+		user: {
+			create: {
+				after: async (user) => {
+					await createDefaultOrganization(user)
+				},
+			},
+		},
+	},
 })

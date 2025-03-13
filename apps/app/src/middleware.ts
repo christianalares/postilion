@@ -1,4 +1,4 @@
-import { getSessionCookie } from 'better-auth/cookies'
+import { getSession } from '@/lib/auth/get-session'
 import { type NextRequest, NextResponse } from 'next/server'
 
 const OPEN_PATHS = ['/login']
@@ -6,12 +6,16 @@ const OPEN_PATHS = ['/login']
 export async function middleware(req: NextRequest) {
 	const nextUrl = req.nextUrl
 
-	const sessionCookie = getSessionCookie(req)
+	const session = await getSession()
+	console.log(1, req.nextUrl.pathname)
 
-	if (!sessionCookie && !OPEN_PATHS.includes(nextUrl.pathname)) {
-		return NextResponse.redirect(
-			new URL(`/login?return_to=${req.nextUrl.pathname}`, req.url),
-		)
+	if (!session && !OPEN_PATHS.includes(nextUrl.pathname)) {
+		const returnTo =
+			req.nextUrl.pathname === '/'
+				? new URL('/login', req.url)
+				: new URL(`/login?return_to=${req.nextUrl.pathname}`, req.url)
+
+		return NextResponse.redirect(returnTo)
 	}
 
 	return NextResponse.next()

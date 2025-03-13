@@ -10,8 +10,29 @@ const AuthorizedLayout = ({ children }: Props) => {
 
 	return (
 		<HydrateClient>
-			<Header />
-			<div className="border-2 border-red-400">{children}</div>
+			<div className="flex h-full">
+				<div className="flex flex-col border-r">
+					<div className="size-16 flex items-center justify-center border-b">
+						<p className="text-2xl font-bold border-3 border-black size-10 flex items-center justify-center rounded-full">
+							P
+						</p>
+					</div>
+
+					<aside>
+						<ul>
+							<li>One</li>
+							<li>Two</li>
+							<li>Three</li>
+						</ul>
+					</aside>
+				</div>
+
+				<div className="flex-1">
+					<Header />
+
+					<main>{children}</main>
+				</div>
+			</div>
 		</HydrateClient>
 	)
 }

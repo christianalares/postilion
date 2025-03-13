@@ -1,9 +1,9 @@
 import { trpc } from '@/trpc/server'
 
 const AuthorizedPage = async () => {
-	const data = await trpc.users.me()
+	const user = await trpc.users.me()
 
-	return <div>AuthorizedPage: {data.name}</div>
+	return <div>AuthorizedPage: {user.name}</div>
 }
 
 export default AuthorizedPage

@@ -1,12 +1,13 @@
 'use client'
 
-import { authClient } from '@/lib/auth-client'
+import { authClient } from '@/lib/auth/auth-client'
 
 type Props = {
 	redirectTo?: string
 }
 
 export const LoginButtons = ({ redirectTo }: Props) => {
+	console.log({ redirectTo })
 	const loginWithGitHub = async () => {
 		authClient.signIn.social({
 			provider: 'github',
