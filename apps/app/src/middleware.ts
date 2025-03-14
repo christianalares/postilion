@@ -26,10 +26,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL(redirectTo, req.url))
   }
 
-  // session?.session.activeOrganizationId
-
-  // console.dir(session, { depth: Infinity })
-
   return NextResponse.next()
 }
 

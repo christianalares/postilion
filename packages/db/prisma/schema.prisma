@@ -31,6 +31,7 @@ model User {
   accounts      Account[]
   teams         UserOnTeam[]
   team_invites  TeamInvite[]
+  projects      Project[]
 
   @@unique([email])
   @@map("user")
@@ -46,8 +47,6 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  activeOrganizationId String?
 
   @@unique([token])
   @@map("session")
@@ -92,6 +91,7 @@ model Team {
   image_url  String?
   members    UserOnTeam[]
   invites    TeamInvite[]
+  projects   Project[]
 
   @@index([slug])
   @@map("teams")
@@ -125,4 +125,20 @@ model TeamInvite {
   @@unique([email, team_id])
   @@index([team_id, created_by_user_id])
   @@map("team_invites")
+}
+
+model Project {
+  id                 String    @id @default(ulid())
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime? @updatedAt @db.Timestamptz(6)
+  name               String
+  slug               String
+  team_id            String
+  team               Team      @relation(fields: [team_id], references: [id])
+  created_by_user_id String
+  created_by         User      @relation(fields: [created_by_user_id], references: [id])
+
+  @@unique([team_id, slug])
+  @@index([team_id, slug])
+  @@map("projects")
 }

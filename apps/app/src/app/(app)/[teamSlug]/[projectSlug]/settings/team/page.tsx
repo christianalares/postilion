@@ -1,4 +1,4 @@
-// import { DeleteTeamForm } from '@/components/settings/delete-team-form'
+// import { DeleteTeamForm, DeleteTeamFormSkeleton } from '@/components/settings/delete-team-form'
 import { TeamNameForm, TeamNameFormSkeleton } from '@/components/settings/team-name-form'
 import { TeamSlugForm, TeamSlugFormSkeleton } from '@/components/settings/team-slug-form'
 import { Suspense } from 'react'
@@ -14,7 +14,8 @@ const TeamPage = () => {
         <TeamSlugForm />
       </Suspense>
 
-      {/* <Suspense fallback={'<TeamSlugFormSkeleton />'}>
+      {/* TODO: Add delete team form */}
+      {/* <Suspense fallback={<DeleteTeamFormSkeleton />}>
         <DeleteTeamForm />
       </Suspense> */}
     </div>

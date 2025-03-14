@@ -33,6 +33,9 @@
 			"suspicious": {
 				"noConsoleLog": "warn",
 				"noExplicitAny": "off"
+			},
+			"a11y": {
+				"noLabelWithoutControl": "off"
 			}
 		}
 	},

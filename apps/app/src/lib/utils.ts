@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from 'clsx'
+import { customAlphabet } from 'nanoid'
 import slugify from 'slugify'
 import { twMerge } from 'tailwind-merge'
 
@@ -12,4 +13,10 @@ export const createSlug = (str: string) => {
     strict: true,
     locale: 'en',
   })
+}
+
+export const createShortId = () => {
+  const createId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
+
+  return createId()
 }

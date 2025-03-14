@@ -1,10 +1,10 @@
 import { Header } from '@/components/header'
 import { MainMenu } from '@/components/main-menu'
 import { HydrateClient, trpc } from '@/trpc/server'
-import { notFound } from 'next/navigation'
 
 type Params = Promise<{
   teamSlug: string
+  projectSlug: string
 }>
 
 type Props = {
@@ -13,11 +13,13 @@ type Props = {
 }
 
 const AuthorizedLayout = async ({ children, params }: Props) => {
-  const { teamSlug } = await params
+  const { teamSlug, projectSlug } = await params
 
   trpc.users.me.prefetch()
   trpc.teams.getBySlug.prefetch({ slug: teamSlug })
   trpc.teams.getForUser.prefetch()
+  trpc.projects.getForTeam.prefetch({ slug: teamSlug })
+  trpc.projects.getBySlug.prefetch({ projectSlug, teamSlug })
 
   // Can we do this a better way?
   // await trpc.teams.getBySlug({ slug: teamSlug }).catch((e) => {

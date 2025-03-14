@@ -28,19 +28,19 @@ export default function RootLayout({
         <TRPCProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             {children}
+
+            <ModalProvider />
+
+            <Toaster
+              position="bottom-left"
+              toastOptions={{
+                classNames: {
+                  error: '!border-red-400 dark:!border-red-700',
+                },
+              }}
+            />
           </ThemeProvider>
         </TRPCProvider>
-
-        <ModalProvider />
-
-        <Toaster
-          position="bottom-left"
-          toastOptions={{
-            classNames: {
-              error: '!border-red-400 dark:!border-red-700',
-            },
-          }}
-        />
       </body>
     </html>
   )
