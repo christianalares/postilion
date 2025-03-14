@@ -32,9 +32,6 @@ model User {
   teams         UserOnTeam[]
   team_invites  TeamInvite[]
 
-  members     Member[]
-  invitations Invitation[]
-
   @@unique([email])
   @@map("user")
 }
