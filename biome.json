@@ -7,7 +7,13 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": [".next", ".open-next", "generated", "cloudflare-env.d.ts"]
+		"ignore": [
+			".next",
+			".open-next",
+			"generated",
+			"cloudflare-env.d.ts",
+			"globals.css"
+		]
 	},
 	"formatter": {
 		"enabled": true,

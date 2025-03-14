@@ -1,5 +1,6 @@
 'use client'
 
+import { useTeamSlug } from '@/hooks/use-team-slug'
 import { authClient } from '@/lib/auth/auth-client'
 import { trpc } from '@/trpc/client'
 import dynamic from 'next/dynamic'
@@ -18,12 +19,13 @@ const ThemeSwitcher = dynamic(
 
 export const Header = () => {
 	const router = useRouter()
-	const [me] = trpc.users.me.useSuspenseQuery()
+	const teamSlug = useTeamSlug()
+	const [team] = trpc.teams.getBySlug.useSuspenseQuery({ slug: teamSlug })
 
 	return (
 		<header className="flex justify-between h-16 items-center border-b px-6">
 			<div>
-				<p>{me.name}</p>
+				<p>{team.name}</p>
 			</div>
 
 			<div className="flex gap-4 items-center">

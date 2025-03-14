@@ -1,10 +1,10 @@
 import type { inferRouterOutputs } from '@trpc/server'
 import { createTRPCRouter } from '../init'
-import { organizationsRouter } from './organizations-router'
+import { teamsRouter } from './teams-router'
 import { usersRouter } from './users-router'
 
 export const appRouter = createTRPCRouter({
-	organizations: organizationsRouter,
+	teams: teamsRouter,
 	users: usersRouter,
 })
 

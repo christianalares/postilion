@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useZodForm } from '@/hooks/use-zod-form'
 import { trpc } from '@/trpc/client'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 const formSchema = z.object({
@@ -13,8 +14,9 @@ const formSchema = z.object({
 export const EmailForm = () => {
 	const trpcUtils = trpc.useUtils()
 	const [me] = trpc.users.me.useSuspenseQuery()
-	const updateEmailMutation = trpc.users.updateEmail.useMutation({
+	const updateUserMutation = trpc.users.update.useMutation({
 		onSuccess: () => {
+			toast.success('Email updated')
 			trpcUtils.users.me.invalidate()
 		},
 	})
@@ -26,7 +28,7 @@ export const EmailForm = () => {
 	})
 
 	const handleSubmit = form.handleSubmit(async (data) => {
-		updateEmailMutation.mutate({
+		updateUserMutation.mutate({
 			email: data.email,
 		})
 	})
@@ -39,9 +41,14 @@ export const EmailForm = () => {
 			</p>
 
 			<div className="flex items-center gap-4 mt-4">
-				<Input {...form.register('email')} placeholder="John Doe" />
-				<Button type="submit" disabled={updateEmailMutation.isPending}>
-					{updateEmailMutation.isPending ? 'Saving...' : 'Save'}
+				<Input
+					id="email"
+					type="email"
+					{...form.register('email')}
+					placeholder="John Doe"
+				/>
+				<Button type="submit" disabled={updateUserMutation.isPending}>
+					{updateUserMutation.isPending ? 'Saving...' : 'Save'}
 				</Button>
 			</div>
 		</form>

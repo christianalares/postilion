@@ -14,8 +14,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TEAM_ROLE_ENUM {
+  OWNER
+  MEMBER
+}
+
 model User {
-  id            String    @id
+  id            String       @id
   name          String
   email         String
   emailVerified Boolean
@@ -24,9 +29,8 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
-
-  members     Member[]
-  invitations Invitation[]
+  teams         UserOnTeam[]
+  team_invites  TeamInvite[]
 
   @@unique([email])
   @@map("user")
@@ -42,8 +46,6 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  activeOrganizationId String?
 
   @@unique([token])
   @@map("session")
@@ -79,42 +81,46 @@ model Verification {
   @@map("verification")
 }
 
-model Organization {
-  id          String       @id
-  name        String
-  slug        String?
-  logo        String?
-  createdAt   DateTime
-  metadata    String?
-  members     Member[]
-  invitations Invitation[]
+model Team {
+  id         String       @id @default(ulid())
+  slug       String       @unique
+  created_at DateTime     @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?    @db.Timestamptz(6)
+  name       String
+  image_url  String?
+  members    UserOnTeam[]
+  invites    TeamInvite[]
 
-  @@unique([slug])
-  @@map("organization")
+  @@index([slug])
+  @@map("teams")
 }
 
-model Member {
-  id             String       @id
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role           String
-  createdAt      DateTime
+model UserOnTeam {
+  user_id    String
+  team_id    String
+  created_at DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at DateTime?      @db.Timestamptz(6)
+  role       TEAM_ROLE_ENUM
+  team       Team           @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  user       User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@map("member")
+  @@id([user_id, team_id])
+  @@unique([user_id, team_id])
+  @@index([team_id, user_id])
+  @@map("users_on_teams")
 }
 
-model Invitation {
-  id             String       @id
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  email          String
-  role           String?
-  status         String
-  expiresAt      DateTime
-  inviterId      String
-  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+model TeamInvite {
+  id                 String   @id @default(ulid())
+  created_at         DateTime @default(now()) @db.Timestamptz(6)
+  email              String
+  team_id            String
+  team               Team     @relation(fields: [team_id], references: [id])
+  created_by_user_id String
+  created_by         User     @relation(fields: [created_by_user_id], references: [id])
+  code               String   @unique
 
-  @@map("invitation")
+  @@unique([email, team_id])
+  @@index([team_id, created_by_user_id])
+  @@map("team_invites")
 }

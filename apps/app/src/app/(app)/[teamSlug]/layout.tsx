@@ -2,12 +2,20 @@ import { Header } from '@/components/header'
 import { MainMenu } from '@/components/main-menu'
 import { HydrateClient, trpc } from '@/trpc/server'
 
+type Params = Promise<{
+	teamSlug: string
+}>
+
 type Props = {
 	children: React.ReactNode
+	params: Params
 }
 
-const AuthorizedLayout = ({ children }: Props) => {
+const AuthorizedLayout = async ({ children, params }: Props) => {
+	const { teamSlug } = await params
+
 	trpc.users.me.prefetch()
+	trpc.teams.getBySlug.prefetch({ slug: teamSlug })
 
 	return (
 		<HydrateClient>

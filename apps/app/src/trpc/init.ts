@@ -20,7 +20,7 @@ export const createTRPCContext = cache(async () => {
 	}
 })
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
+export const t = initTRPC.context<typeof createTRPCContext>().create({
 	transformer: superjson,
 })
 

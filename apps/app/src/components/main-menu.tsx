@@ -1,25 +1,27 @@
 'use client'
 
+import { useTeamSlug } from '@/hooks/use-team-slug'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useSelectedLayoutSegment } from 'next/navigation'
 import { Icon, type IconName } from './ui/icon'
 
 export const MainMenu = () => {
-	const pathname = usePathname()
+	const teamSlug = useTeamSlug()
+	const segment = useSelectedLayoutSegment()
 
 	return (
 		<nav>
 			<ul>
 				<MenuItem
-					isActive={pathname === '/'}
-					href="/"
+					isActive={segment === null}
+					href={`/${teamSlug}`}
 					icon="home"
 					label="Home"
 				/>
 				<MenuItem
-					isActive={pathname === '/settings'}
-					href="/settings"
+					isActive={segment === 'settings'}
+					href={`/${teamSlug}/settings`}
 					icon="settings"
 					label="Settings"
 				/>

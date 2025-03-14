@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useZodForm } from '@/hooks/use-zod-form'
 import { trpc } from '@/trpc/client'
+import { toast } from 'sonner'
 import { z } from 'zod'
 
 const formSchema = z.object({
@@ -13,8 +14,9 @@ const formSchema = z.object({
 export const FullNameForm = () => {
 	const trpcUtils = trpc.useUtils()
 	const [me] = trpc.users.me.useSuspenseQuery()
-	const updateNameMutation = trpc.users.updateName.useMutation({
+	const updateUserMutation = trpc.users.update.useMutation({
 		onSuccess: () => {
+			toast.success('Full name updated')
 			trpcUtils.users.me.invalidate()
 		},
 	})
@@ -26,22 +28,26 @@ export const FullNameForm = () => {
 	})
 
 	const handleSubmit = form.handleSubmit(async (data) => {
-		updateNameMutation.mutate({
+		updateUserMutation.mutate({
 			name: data.fullName,
 		})
 	})
 
 	return (
 		<form className="border p-6" onSubmit={handleSubmit}>
-			<label htmlFor="fullName">Full name</label>
+			<label htmlFor="full-name">Full name</label>
 			<p className="text-muted-foreground mt-2">
 				Your full name as it will appear across the platform.
 			</p>
 
 			<div className="flex items-center gap-4 mt-4">
-				<Input {...form.register('fullName')} placeholder="John Doe" />
-				<Button type="submit" disabled={updateNameMutation.isPending}>
-					{updateNameMutation.isPending ? 'Saving...' : 'Save'}
+				<Input
+					id="full-name"
+					{...form.register('fullName')}
+					placeholder="John Doe"
+				/>
+				<Button type="submit" disabled={updateUserMutation.isPending}>
+					{updateUserMutation.isPending ? 'Saving...' : 'Save'}
 				</Button>
 			</div>
 		</form>
