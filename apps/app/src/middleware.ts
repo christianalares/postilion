@@ -1,13 +1,14 @@
 import { getSession } from '@/lib/auth/get-session'
+import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
 
 const OPEN_PATHS = ['/login']
 
 export async function middleware(req: NextRequest) {
 	const nextUrl = req.nextUrl
+	const redirectTo = req.cookies.get('redirectTo')?.value
 
 	const session = await getSession()
-	console.log(1, req.nextUrl.pathname)
 
 	if (!session && !OPEN_PATHS.includes(nextUrl.pathname)) {
 		const returnTo =
@@ -17,6 +18,17 @@ export async function middleware(req: NextRequest) {
 
 		return NextResponse.redirect(returnTo)
 	}
+
+	if (redirectTo) {
+		const cookieStore = await cookies()
+		cookieStore.delete('redirectTo')
+
+		return NextResponse.redirect(new URL(redirectTo, req.url))
+	}
+
+	// session?.session.activeOrganizationId
+
+	// console.dir(session, { depth: Infinity })
 
 	return NextResponse.next()
 }

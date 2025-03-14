@@ -1,6 +1,7 @@
+import { ThemeProvider } from '@/components/theme-provider'
+import { TRPCProvider } from '@/trpc/client'
 import type { Metadata } from 'next'
 import './globals.css'
-import { TRPCProvider } from '@/trpc/client'
 
 export const metadata: Metadata = {
 	title: 'Postilion',
@@ -13,9 +14,18 @@ export default function RootLayout({
 	children: React.ReactNode
 }>) {
 	return (
-		<html lang="en" className="h-full">
+		<html lang="en" className="h-full" suppressHydrationWarning>
 			<body className="h-full">
-				<TRPCProvider>{children}</TRPCProvider>
+				<TRPCProvider>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+					>
+						{children}
+					</ThemeProvider>
+				</TRPCProvider>
 			</body>
 		</html>
 	)

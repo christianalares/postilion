@@ -7,7 +7,7 @@ type Props = {
 }
 
 export const LoginButtons = ({ redirectTo }: Props) => {
-	console.log({ redirectTo })
+	// console.log({ redirectTo })
 	const loginWithGitHub = async () => {
 		authClient.signIn.social({
 			provider: 'github',

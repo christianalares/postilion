@@ -22,6 +22,10 @@
 			"recommended": true,
 			"style": {
 				"noNonNullAssertion": "off"
+			},
+			"suspicious": {
+				"noConsoleLog": "warn",
+				"noExplicitAny": "off"
 			}
 		}
 	},
