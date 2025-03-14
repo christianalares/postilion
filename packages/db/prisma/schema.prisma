@@ -86,46 +86,6 @@ model Verification {
   @@map("verification")
 }
 
-<<<<<<< HEAD
-model Organization {
-  id          String       @id
-  name        String
-  slug        String?
-  logo        String?
-  createdAt   DateTime
-  metadata    String?
-  members     Member[]
-  invitations Invitation[]
-
-  @@unique([slug])
-  @@map("organization")
-}
-
-model Member {
-  id             String       @id
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role           String
-  createdAt      DateTime
-
-  @@map("member")
-}
-
-model Invitation {
-  id             String       @id
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  email          String
-  role           String?
-  status         String
-  expiresAt      DateTime
-  inviterId      String
-  user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
-
-  @@map("invitation")
-=======
 model Team {
   id         String       @id @default(ulid())
   slug       String       @unique
@@ -168,5 +128,4 @@ model TeamInvite {
   @@unique([email, team_id])
   @@index([team_id, created_by_user_id])
   @@map("team_invites")
->>>>>>> deb17643677b910fbac85a31d9938aec82fbe017
 }
