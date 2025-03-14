@@ -1,32 +1,48 @@
-import { getSessionCookie } from 'better-auth/cookies'
+import { getSession } from '@/lib/auth/get-session'
+import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
 
 const OPEN_PATHS = ['/login']
 
 export async function middleware(req: NextRequest) {
-	const nextUrl = req.nextUrl
+  const nextUrl = req.nextUrl
+  const redirectTo = req.cookies.get('redirectTo')?.value
 
-	const sessionCookie = getSessionCookie(req)
+  const session = await getSession()
 
-	if (!sessionCookie && !OPEN_PATHS.includes(nextUrl.pathname)) {
-		return NextResponse.redirect(
-			new URL(`/login?return_to=${req.nextUrl.pathname}`, req.url),
-		)
-	}
+  if (!session && !OPEN_PATHS.includes(nextUrl.pathname)) {
+    const returnTo =
+      req.nextUrl.pathname === '/'
+        ? new URL('/login', req.url)
+        : new URL(`/login?return_to=${req.nextUrl.pathname}`, req.url)
 
-	return NextResponse.next()
+    return NextResponse.redirect(returnTo)
+  }
+
+  if (redirectTo) {
+    const cookieStore = await cookies()
+    cookieStore.delete('redirectTo')
+
+    return NextResponse.redirect(new URL(redirectTo, req.url))
+  }
+
+  // session?.session.activeOrganizationId
+
+  // console.dir(session, { depth: Infinity })
+
+  return NextResponse.next()
 }
 
 export const config = {
-	matcher: [
-		/*
-		 * Match all request paths except for the ones starting with:
-		 * - _next/static (static files)
-		 * - _next/image (image optimization files)
-		 * - favicon.ico (favicon file)
-		 * - opengraph-image.jpg (opengraph image file)
-		 * - .(?:svg|png|jpg|jpeg|gif|webp) (image files)
-		 */
-		'/((?!api|_next/static|_next/image|favicon.ico|opengraph-image.jpg|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-	],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - opengraph-image.jpg (opengraph image file)
+     * - .(?:svg|png|jpg|jpeg|gif|webp) (image files)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|opengraph-image.jpg|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }
