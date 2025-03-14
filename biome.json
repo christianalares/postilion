@@ -7,7 +7,14 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": [".next", ".open-next", "generated", "cloudflare-env.d.ts"]
+		"ignore": [
+			".wrangler",
+			".next",
+			".open-next",
+			"generated",
+			"cloudflare-env.d.ts",
+			"globals.css"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -32,7 +39,10 @@
 	"javascript": {
 		"formatter": {
 			"quoteStyle": "single",
-			"semicolons": "asNeeded"
+			"semicolons": "asNeeded",
+			"indentStyle": "space",
+			"indentWidth": 2,
+			"lineWidth": 120
 		}
 	}
 }

@@ -7,21 +7,21 @@ import { cache } from 'react'
 import superjson from 'superjson'
 
 export const createTRPCContext = cache(async () => {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	})
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
 
-	const user = session?.user
+  const user = session?.user
 
-	return {
-		prisma,
-		user,
-		// analyticsClient,
-	}
+  return {
+    prisma,
+    user,
+    // analyticsClient,
+  }
 })
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
-	transformer: superjson,
+export const t = initTRPC.context<typeof createTRPCContext>().create({
+  transformer: superjson,
 })
 
 export const createCallerFactory = t.createCallerFactory
@@ -31,16 +31,16 @@ export const createTRPCRouter = t.router
 export const baseProcedure = t.procedure
 
 export const authProcedure = t.procedure.use(async (opts) => {
-	const { user } = opts.ctx
+  const { user } = opts.ctx
 
-	if (!user) {
-		throw new TRPCError({ code: 'UNAUTHORIZED' })
-	}
+  if (!user) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' })
+  }
 
-	return opts.next({
-		ctx: {
-			...opts.ctx,
-			user,
-		},
-	})
+  return opts.next({
+    ctx: {
+      ...opts.ctx,
+      user,
+    },
+  })
 })

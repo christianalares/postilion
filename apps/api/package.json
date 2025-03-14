@@ -3,7 +3,9 @@
 	"scripts": {
 		"dev": "wrangler dev",
 		"deploy": "wrangler deploy --minify",
-		"types": "wrangler types"
+		"types": "wrangler types",
+		"lint": "biome check .",
+		"format": "biome format ."
 	},
 	"dependencies": {
 		"hono": "^4.7.4",

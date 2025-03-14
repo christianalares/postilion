@@ -2,58 +2,33 @@ import { prisma } from '@postilion/db'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
-import { organization } from 'better-auth/plugins'
 import { cookies } from 'next/headers'
-import { createDefaultOrganization, setActiveOrganization } from './utils'
+import { createDefaultTeam } from './utils'
 
 export const auth = betterAuth({
-	database: prismaAdapter(prisma, {
-		provider: 'postgresql',
-	}),
-	socialProviders: {
-		github: {
-			clientId: process.env.GITHUB_CLIENT_ID!,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-		},
-	},
-	plugins: [
-		organization({
-			organizationCreation: {
-				afterCreate: async (data, request) => {
-					// const activeOrganization = await auth.api.setActiveOrganization({
-					// 	body: {
-					// 		organizationId: data.organization.id,
-					// 	},
-					// })
-					// console.log('activeOrganization', activeOrganization)
-					// await setActiveOrganization(data.)
-				},
-			},
-		}),
-		nextCookies(),
-	],
-	databaseHooks: {
-		user: {
-			create: {
-				after: async (user, ctx) => {
-					const cookieStore = await cookies()
-					const createdOrg = await createDefaultOrganization(user)
+  database: prismaAdapter(prisma, {
+    provider: 'postgresql',
+  }),
+  socialProviders: {
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
+  },
+  plugins: [nextCookies()],
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user, ctx) => {
+          const cookieStore = await cookies()
+          const createdTeam = await createDefaultTeam(user)
 
-					if (createdOrg && ctx) {
-						cookieStore.set('redirectTo', `/${createdOrg.slug}`)
-					}
-				},
-			},
-		},
-		session: {
-			create: {
-				after: async (session) => {
-					// setActiveOrganization({
-					// 	sessionId: session.id,
-					// 	userId: session.userId,
-					// })
-				},
-			},
-		},
-	},
+          if (createdTeam && ctx) {
+            // The middleware will remove this cookie and redirect the user to the team
+            cookieStore.set('redirectTo', `/${createdTeam.slug}`)
+          }
+        },
+      },
+    },
+  },
 })
