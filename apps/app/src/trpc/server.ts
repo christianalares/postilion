@@ -10,7 +10,4 @@ export const getQueryClient = cache(makeQueryClient)
 
 const caller = createCallerFactory(appRouter)(createTRPCContext)
 
-export const { trpc, HydrateClient } = createHydrationHelpers<typeof appRouter>(
-	caller,
-	getQueryClient,
-)
+export const { trpc, HydrateClient } = createHydrationHelpers<typeof appRouter>(caller, getQueryClient)

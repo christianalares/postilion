@@ -1,45 +1,52 @@
 import { Header } from '@/components/header'
 import { MainMenu } from '@/components/main-menu'
 import { HydrateClient, trpc } from '@/trpc/server'
+import { notFound } from 'next/navigation'
 
 type Params = Promise<{
-	teamSlug: string
+  teamSlug: string
 }>
 
 type Props = {
-	children: React.ReactNode
-	params: Params
+  children: React.ReactNode
+  params: Params
 }
 
 const AuthorizedLayout = async ({ children, params }: Props) => {
-	const { teamSlug } = await params
+  const { teamSlug } = await params
 
-	trpc.users.me.prefetch()
-	trpc.teams.getBySlug.prefetch({ slug: teamSlug })
+  trpc.users.me.prefetch()
+  trpc.teams.getBySlug.prefetch({ slug: teamSlug })
+  trpc.teams.getForUser.prefetch()
 
-	return (
-		<HydrateClient>
-			<div className="flex h-full">
-				<div className="flex flex-col border-r">
-					<div className="size-16 flex items-center justify-center border-b">
-						<p className="text-2xl font-bold border-2 border-foreground size-10 flex items-center justify-center rounded-full">
-							P
-						</p>
-					</div>
+  // Can we do this a better way?
+  // await trpc.teams.getBySlug({ slug: teamSlug }).catch((e) => {
+  // 	notFound()
+  // })
 
-					<aside>
-						<MainMenu />
-					</aside>
-				</div>
+  return (
+    <HydrateClient>
+      <div className="flex h-full">
+        <div className="flex flex-col border-r">
+          <div className="size-16 flex items-center justify-center border-b">
+            <p className="text-2xl font-bold border-2 border-foreground size-10 flex items-center justify-center rounded-full">
+              P
+            </p>
+          </div>
 
-				<div className="flex-1">
-					<Header />
+          <aside>
+            <MainMenu />
+          </aside>
+        </div>
 
-					<main className="p-8">{children}</main>
-				</div>
-			</div>
-		</HydrateClient>
-	)
+        <div className="flex-1">
+          <Header />
+
+          <main className="p-8">{children}</main>
+        </div>
+      </div>
+    </HydrateClient>
+  )
 }
 
 export default AuthorizedLayout

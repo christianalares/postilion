@@ -1,56 +1,52 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useZodForm } from '@/hooks/use-zod-form'
 import { trpc } from '@/trpc/client'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { FormCard, FormCardSkeleton } from '../form-card'
 
 const formSchema = z.object({
-	email: z.string().email(),
+  email: z.string().email(),
 })
 
 export const EmailForm = () => {
-	const trpcUtils = trpc.useUtils()
-	const [me] = trpc.users.me.useSuspenseQuery()
-	const updateUserMutation = trpc.users.update.useMutation({
-		onSuccess: () => {
-			toast.success('Email updated')
-			trpcUtils.users.me.invalidate()
-		},
-	})
+  const trpcUtils = trpc.useUtils()
+  const [me] = trpc.users.me.useSuspenseQuery()
+  const updateUserMutation = trpc.users.update.useMutation({
+    onSuccess: () => {
+      toast.success('Email updated')
+      trpcUtils.users.me.invalidate()
+    },
+  })
 
-	const form = useZodForm(formSchema, {
-		defaultValues: {
-			email: me.email,
-		},
-	})
+  const form = useZodForm(formSchema, {
+    defaultValues: {
+      email: me.email,
+    },
+  })
 
-	const handleSubmit = form.handleSubmit(async (data) => {
-		updateUserMutation.mutate({
-			email: data.email,
-		})
-	})
+  const handleSubmit = form.handleSubmit(async (data) => {
+    updateUserMutation.mutate({
+      email: data.email,
+    })
+  })
 
-	return (
-		<form className="border p-6" onSubmit={handleSubmit}>
-			<label htmlFor="email">Email</label>
-			<p className="text-muted-foreground mt-2">
-				The email address associated with your account.
-			</p>
+  return (
+    <FormCard
+      handleSubmit={handleSubmit}
+      label="Email"
+      labelId="email"
+      description="The email address associated with your account."
+    >
+      <Input id="email" type="email" {...form.register('email')} placeholder="John Doe" />
+    </FormCard>
+  )
+}
 
-			<div className="flex items-center gap-4 mt-4">
-				<Input
-					id="email"
-					type="email"
-					{...form.register('email')}
-					placeholder="John Doe"
-				/>
-				<Button type="submit" disabled={updateUserMutation.isPending}>
-					{updateUserMutation.isPending ? 'Saving...' : 'Save'}
-				</Button>
-			</div>
-		</form>
-	)
+export const EmailFormSkeleton = () => {
+  return (
+    <FormCardSkeleton label="Email" labelId="email" description="The email address associated with your account." />
+  )
 }

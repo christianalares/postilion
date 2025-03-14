@@ -4,8 +4,8 @@ import { teamsRouter } from './teams-router'
 import { usersRouter } from './users-router'
 
 export const appRouter = createTRPCRouter({
-	teams: teamsRouter,
-	users: usersRouter,
+  teams: teamsRouter,
+  users: usersRouter,
 })
 
 // export type definition of API
