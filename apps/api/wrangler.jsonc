@@ -10,7 +10,17 @@
 		{
 			"name": "SEND_EMAIL"
 		}
-	]
+	],
+	"workflows": [
+		{
+			"name": "inbound-email",
+			"binding": "INBOUND_EMAIL_WORKFLOW",
+			"class_name": "InboundEmailWorkflow"
+		}
+	],
+	"ai": {
+		"binding": "AI"
+	}
 	// "queues": {
 	//   "producers": [{
 	//     "queue": "EMAIL_QUEUE",

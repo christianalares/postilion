@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"db:generate": "prisma generate",
+		"db:generate": "prisma generate --no-engine",
 		"db:migrate": "prisma migrate dev --skip-generate",
 		"db:deploy": "prisma migrate deploy",
 		"lint": "biome check .",
@@ -17,9 +17,11 @@
 	},
 	"dependencies": {
 		"@postilion/typescript-config": "workspace:*",
-		"@prisma/client": "^6.5.0"
+		"@prisma/client": "^6.5.0",
+		"@prisma/extension-accelerate": "^1.2.2"
 	},
 	"exports": {
-		".": "./src/index.ts"
+		".": "./src/index.ts",
+		"./edge": "./src/client-edge.ts"
 	}
 }
