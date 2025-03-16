@@ -15,6 +15,17 @@ import { Spinner } from './ui/spinner'
 export const MessagesList = () => {
   const messages = useRealtimeMessages()
 
+  if (messages.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full">
+        <div className="border border-dashed p-4">
+          <h1 className="text-lg font-bold">There are no received messages yet</h1>
+          <p className="text-muted-foreground">When new messages are received, they will appear here in real-time.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <motion.ul className="space-y-4">
       {messages.map((message) => (

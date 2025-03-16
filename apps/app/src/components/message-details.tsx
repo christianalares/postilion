@@ -23,17 +23,17 @@ export const MessageDetails = () => {
       <div className="space-y-4">
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className="text-muted-foreground font-mono text-xs">AI summary:</p>
-          <p className="text-sm">{message.body_ai_summary}</p>
+          <p className="text-xs font-mono">{message.body_ai_summary}</p>
         </div>
 
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className="text-muted-foreground font-mono text-xs">Stripped body:</p>
-          <p className="text-sm">{message.body_stripped}</p>
+          <p className="text-xs font-mono">{message.body_stripped}</p>
         </div>
 
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className="text-muted-foreground font-mono text-xs">Raw body:</p>
-          <p className="text-sm font-mono">{message.body_raw}</p>
+          <p className="text-xs font-mono">{message.body_raw}</p>
         </div>
       </div>
     </article>
@@ -44,9 +44,6 @@ export const MessageDetailsSkeleton = () => {
   return (
     <article>
       <div className="flex items-center gap-2">
-        {/* <Skeleton className="w-28 h-[26px] border py-1 px-2 bg-muted/50 text-xs inline-flex items-center gap-1" />
-        <Skeleton className="w-40 h-[26px] border py-1 px-2 bg-muted/50 text-xs inline-flex items-center gap-1" />
-        <Skeleton className="w-28 h-[26px] border py-1 px-2 bg-muted/50 text-xs inline-flex items-center gap-1" /> */}
         <Badge label="From:">
           <Skeleton className="w-28 h-3" />
         </Badge>

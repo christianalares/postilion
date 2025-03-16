@@ -34,7 +34,10 @@
 			"tag": "v1",
 			"new_classes": ["MessageStatus"]
 		}
-	]
+	],
+	"vars": {
+		"APP_URL": "https://app.postilion.ai"
+	}
 	// "queues": {
 	//   "producers": [{
 	//     "queue": "EMAIL_QUEUE",

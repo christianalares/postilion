@@ -12,10 +12,10 @@ const app = new Hono<{ Bindings: Env }>()
 app.use(
   '*',
   cors({
-    origin: (origin, c) => c.env.APP_URL,
-    credentials: false, // Change to false since we're not using credentials
+    origin: ['http://localhost:3000', 'https://app.postilion.ai'],
+    credentials: false,
     exposeHeaders: ['Content-Type'],
-    allowHeaders: ['Content-Type', 'Accept'], // Add Accept header for SSE
+    allowHeaders: ['Content-Type', 'Accept'],
   }),
 )
 
