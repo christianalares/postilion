@@ -1,3 +1,5 @@
+import { isPrismaError } from '@postilion/db'
+import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
 
@@ -32,6 +34,41 @@ const getForProject = authProcedure
     return messages
   })
 
+const getById = authProcedure.input(z.object({ messageId: z.string() })).query(async ({ ctx, input }) => {
+  const message = await ctx.prisma.message
+    .findUnique({
+      where: {
+        id: input.messageId,
+        project: {
+          team: {
+            // Make sure the user is a member of the team that the project belongs to
+            members: {
+              some: {
+                user_id: ctx.user.id,
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch(() => {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Could not fetch message',
+      })
+    })
+
+  if (!message) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Message not found',
+    })
+  }
+
+  return message
+})
+
 export const messagesRouter = createTRPCRouter({
   getForProject,
+  getById,
 })

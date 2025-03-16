@@ -1,8 +1,13 @@
 'use client'
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useRealtimeMessages } from '@/hooks/use-realtime-messages'
+import { useTeamSlug } from '@/hooks/use-team-slug'
 import type { MESSAGE_STATUS_ENUM } from '@postilion/db'
 import { AnimatePresence, motion } from 'motion/react'
+import Link from 'next/link'
+import { Badge } from './ui/badge'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 import { Spinner } from './ui/spinner'
@@ -26,32 +31,37 @@ type MessageProps = {
 }
 
 const Message = ({ message }: MessageProps) => {
+  const projectSlug = useProjectSlug()
+  const teamSlug = useTeamSlug()
+
   return (
     <motion.li layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-      <button
-        type="button"
-        className="border p-4 bg-background relative text-left hover:border-accent-foreground/30 w-full"
+      <Link
+        href={`/${teamSlug}/${projectSlug}/messages/${message.id}`}
+        className="block border p-4 bg-background relative text-left hover:border-accent-foreground/30 w-full"
       >
         <div className="flex gap-2 grow-0 items-center">
-          <div className="border py-1 px-2 bg-muted/50 text-xs">
-            <span className="text-muted-foreground font-mono">From:</span>
-            <span className="ml-1">{message.from}</span>
-          </div>
+          <Badge label="From:">{message.from}</Badge>
+          <Badge label="Subject:">{message.subject}</Badge>
 
-          <div className="border py-1 px-2 bg-muted/50 text-xs">
-            <span className="text-muted-foreground font-mono">Subject:</span>
-            <span className="ml-1">{message.subject}</span>
-          </div>
-
-          <div className="ml-auto">
-            <StatusIcon status={message.status} />
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="ml-auto">
+                  <StatusIcon status={message.status} />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="left" sideOffset={8}>
+                <p>{message.status}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         <div className="border p-2 bg-muted/50 text-xs mt-4 font-mono">
           {message.body_ai_summary ? <p>{message.body_ai_summary}</p> : <SummarySkeleton />}
         </div>
-      </button>
+      </Link>
     </motion.li>
   )
 }
