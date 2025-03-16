@@ -1,6 +1,7 @@
 import { trpc } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { useProjectSlug } from './use-project-slug'
 import { useTeamSlug } from './use-team-slug'
 
@@ -18,15 +19,11 @@ export const useRealtimeMessages = () => {
     })
 
     eventSource.onmessage = (event) => {
-      console.log(event)
-
       if (event.data === 'connected') {
         return
       }
 
       const incomingMessage = JSON.parse(event.data) as RouterOutputs['messages']['getForProject'][number]
-
-      console.log('incomingMessage', incomingMessage)
 
       trpcUtils.messages.getForProject.setData({ teamSlug, projectSlug }, (prev) => {
         if (!prev) {
@@ -43,12 +40,8 @@ export const useRealtimeMessages = () => {
       })
     }
 
-    eventSource.addEventListener('open', (event) => {
-      console.log('open', event)
-    })
-
     eventSource.addEventListener('error', (event) => {
-      console.log('error', event)
+      toast.error('Failed to connect to the message stream')
     })
 
     return () => {
