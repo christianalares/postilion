@@ -8,7 +8,8 @@
 		"build": "next build",
 		"start": "next start",
 		"lint": "biome check .",
-		"format": "biome format ."
+		"format": "biome format .",
+		"check:types": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^4.1.3",

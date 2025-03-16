@@ -1,8 +1,6 @@
-import { auth } from '@/lib/auth/auth'
-import { authClient } from '@/lib/auth/auth-client'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import { authProcedure, baseProcedure, createTRPCRouter } from '../init'
+import { authProcedure, createTRPCRouter } from '../init'
 
 const update = authProcedure
   .input(

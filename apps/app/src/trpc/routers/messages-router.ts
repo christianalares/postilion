@@ -1,4 +1,3 @@
-import { isPrismaError } from '@postilion/db'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'

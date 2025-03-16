@@ -130,7 +130,7 @@ const create = authProcedure
   })
 
 export const projectsRouter = createTRPCRouter({
-  getForTeam,
   getBySlug,
+  getForTeam,
   create,
 })
