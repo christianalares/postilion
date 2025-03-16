@@ -28,6 +28,9 @@ export const createDefaultTeam = async (user: User) => {
           },
         },
       },
+      select: {
+        slug: true,
+      },
     })
 
     return createdTeam
