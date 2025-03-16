@@ -117,10 +117,13 @@ const create = authProcedure
       })
     }
 
+    const shortId = createShortId()
+
     const createdProject = await ctx.prisma.project.create({
       data: {
         name: input.name,
-        slug: `${createSlug(input.name)}-${createShortId()}`,
+        slug: `${createSlug(input.name)}-${shortId}`,
+        short_id: shortId,
         created_by_user_id: ctx.user.id,
         team_id: team.id,
       },

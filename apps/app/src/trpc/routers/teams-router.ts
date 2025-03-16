@@ -118,6 +118,7 @@ const create = authProcedure
               name: 'Default',
               slug: 'default',
               created_by_user_id: ctx.user.id,
+              short_id: createShortId(),
             },
           },
         },

@@ -1,5 +1,4 @@
 import { zValidator } from '@hono/zod-validator'
-// import { createPrismaClient } from '@postilion/db/edge'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import PostalMime from 'postal-mime'
@@ -25,13 +24,13 @@ app.post(
     'json',
     z.object({
       from: z.string(),
-      id: z.string(),
+      shortId: z.string(),
       subject: z.string(),
       content: z.string(),
     }),
   ),
   async (c) => {
-    const { from, id, subject, content } = c.req.valid('json')
+    const { from, shortId, subject, content } = c.req.valid('json')
 
     const newId = crypto.randomUUID()
 
@@ -39,7 +38,7 @@ app.post(
       id: newId,
       params: {
         from,
-        id,
+        shortId,
         subject,
         content,
       },
@@ -103,17 +102,45 @@ app.get(
 export default {
   fetch: app.fetch,
   email: async (message, env, ctx) => {
-    // env.EMAIL_QUEUE_BINDING.send({
-    //   hello: 'world',
-    // })
-
     const email = await PostalMime.parse(message.raw, {
       attachmentEncoding: 'base64',
     })
 
-    // biome-ignore lint/suspicious/noConsoleLog: <explanation>
-    console.log('Email', email)
+    if (!email.from.address) {
+      throw new Error('No from address')
+    }
 
-    ctx.waitUntil(message.forward('christian@hiddenvillage.se'))
+    const [shortId] = email.from.address.split('@')
+
+    const newId = crypto.randomUUID()
+
+    await env.INBOUND_EMAIL_WORKFLOW.create({
+      id: newId,
+      params: {
+        from: email.from.address,
+        shortId,
+        subject: email.subject ?? '',
+        content: email.html || email.text || '<empty message>',
+      },
+    })
+
+    // const instanceStatus = await instance.status()
+
+    // return new Response(
+    //   JSON.stringify({
+    //     instanceId: instance.id,
+    //     status: instanceStatus,
+    //   }),
+    //   {
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //     },
+    //   },
+    // )
+
+    // // biome-ignore lint/suspicious/noConsoleLog: <explanation>
+    // console.log('Email', email)
+
+    // ctx.waitUntil(message.forward('christian@hiddenvillage.se'))
   },
 } satisfies ExportedHandler<Env>

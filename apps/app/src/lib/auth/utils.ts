@@ -5,15 +5,13 @@ import type { auth } from './auth'
 type User = (typeof auth.$Infer.Session)['user']
 
 export const createDefaultTeam = async (user: User) => {
-  const shortId = createShortId()
-
   const slug = createSlug(user.name)
 
   try {
     const createdTeam = await prisma.team.create({
       data: {
         name: user.name,
-        slug: `${slug}-${shortId}`,
+        slug: `${slug}-${createShortId()}`,
         members: {
           create: {
             user_id: user.id,
@@ -25,6 +23,7 @@ export const createDefaultTeam = async (user: User) => {
             name: 'Default',
             slug: 'default',
             created_by_user_id: user.id,
+            short_id: createShortId(),
           },
         },
       },

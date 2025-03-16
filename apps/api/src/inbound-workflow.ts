@@ -8,7 +8,7 @@ import { z } from 'zod'
 // User-defined params passed to your workflow
 type Params = {
   from: string
-  id: string
+  shortId: string
   subject: string
   content: string
 }
@@ -20,7 +20,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
 
       const project = await prisma.project.findUnique({
         where: {
-          id: event.payload.id,
+          short_id: event.payload.shortId,
         },
         include: {
           team: {

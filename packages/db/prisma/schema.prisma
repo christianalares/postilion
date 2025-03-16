@@ -137,6 +137,7 @@ model TeamInvite {
 
 model Project {
   id                 String    @id @default(ulid())
+  short_id           String    @unique
   created_at         DateTime  @default(now())
   updated_at         DateTime? @updatedAt
   name               String
