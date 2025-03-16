@@ -12,7 +12,7 @@ const app = new Hono<{ Bindings: Env }>()
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:3000'], // Add your Next.js app origin
+    origin: (origin, c) => c.env.APP_URL,
     credentials: false, // Change to false since we're not using credentials
     exposeHeaders: ['Content-Type'],
     allowHeaders: ['Content-Type', 'Accept'], // Add Accept header for SSE

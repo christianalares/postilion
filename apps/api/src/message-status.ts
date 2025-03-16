@@ -37,7 +37,7 @@ export class MessageStatus {
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           Connection: 'keep-alive',
-          'Access-Control-Allow-Origin': 'http://localhost:3000',
+          'Access-Control-Allow-Origin': c.env.APP_URL,
           'Access-Control-Allow-Credentials': 'true',
         },
       })
