@@ -1,5 +1,7 @@
 import { LoginButtons } from '@/components/login-buttons'
+import { Logo } from '@/components/logo'
 import z from 'zod'
+import { ThemeSwitcherWrapper } from './theme-switcher-wrapper'
 
 const searchParamsSchema = z
   .object({
@@ -17,8 +19,16 @@ const LoginPage = async ({ searchParams }: Props) => {
   const parsedSearchParams = searchParamsSchema.safeParse(await searchParams)
 
   return (
-    <div>
-      <LoginButtons redirectTo={parsedSearchParams.data?.return_to} />
+    <div className="h-full grid grid-rows-[auto_1fr]">
+      <header className="flex items-center justify-between p-8">
+        <Logo />
+
+        <ThemeSwitcherWrapper />
+      </header>
+
+      <main className="flex items-center justify-center">
+        <LoginButtons redirectTo={parsedSearchParams.data?.return_to} />
+      </main>
     </div>
   )
 }

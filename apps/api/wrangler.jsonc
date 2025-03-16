@@ -10,6 +10,30 @@
 		{
 			"name": "SEND_EMAIL"
 		}
+	],
+	"workflows": [
+		{
+			"name": "inbound-email",
+			"binding": "INBOUND_EMAIL_WORKFLOW",
+			"class_name": "InboundEmailWorkflow"
+		}
+	],
+	"ai": {
+		"binding": "AI"
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "MESSAGE_STATUS",
+				"class_name": "MessageStatus"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_classes": ["MessageStatus"]
+		}
 	]
 	// "queues": {
 	//   "producers": [{

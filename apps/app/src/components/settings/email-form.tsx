@@ -39,6 +39,7 @@ export const EmailForm = () => {
       label="Email"
       labelId="email"
       description="The email address associated with your account."
+      loading={updateUserMutation.isPending}
     >
       <Input id="email" type="email" {...form.register('email')} placeholder="John Doe" />
     </FormCard>

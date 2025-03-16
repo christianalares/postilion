@@ -1,4 +1,4 @@
-import { createSlug } from '@/lib/utils'
+import { createShortId, createSlug } from '@/lib/utils'
 import { isPrismaError } from '@postilion/db'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
@@ -13,8 +13,6 @@ const getBySlug = authProcedure
   )
   .use(isMemberOfTeam)
   .query(async ({ ctx, input }) => {
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-
     return ctx.team
     // try {
     // 	const team = await ctx.prisma.team.findUnique({
@@ -97,8 +95,46 @@ const getForUser = authProcedure.query(async ({ ctx }) => {
   return teamsForUser
 })
 
+const create = authProcedure
+  .input(
+    z.object({
+      name: z.string(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const createdTeam = await ctx.prisma.team
+      .create({
+        data: {
+          name: input.name,
+          slug: `${createSlug(input.name)}-${createShortId()}`,
+          members: {
+            create: {
+              user_id: ctx.user.id,
+              role: 'OWNER',
+            },
+          },
+          projects: {
+            create: {
+              name: 'Default',
+              slug: 'default',
+              created_by_user_id: ctx.user.id,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to create team',
+        })
+      })
+
+    return createdTeam
+  })
+
 export const teamsRouter = createTRPCRouter({
   update,
   getBySlug,
   getForUser,
+  create,
 })

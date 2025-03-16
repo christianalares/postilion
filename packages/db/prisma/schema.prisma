@@ -5,8 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "./../generated/client"
+  provider        = "prisma-client-js"
+  output          = "./../generated/client"
+  previewFeatures = ["relationJoins"]
 }
 
 datasource db {
@@ -17,6 +18,13 @@ datasource db {
 enum TEAM_ROLE_ENUM {
   OWNER
   MEMBER
+}
+
+enum MESSAGE_STATUS_ENUM {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 model User {
@@ -31,6 +39,7 @@ model User {
   accounts      Account[]
   teams         UserOnTeam[]
   team_invites  TeamInvite[]
+  projects      Project[]
 
   @@unique([email])
   @@map("user")
@@ -46,8 +55,6 @@ model Session {
   userAgent String?
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  activeOrganizationId String?
 
   @@unique([token])
   @@map("session")
@@ -86,12 +93,13 @@ model Verification {
 model Team {
   id         String       @id @default(ulid())
   slug       String       @unique
-  created_at DateTime     @default(now()) @db.Timestamptz(6)
-  updated_at DateTime?    @db.Timestamptz(6)
+  created_at DateTime     @default(now())
+  updated_at DateTime?
   name       String
   image_url  String?
   members    UserOnTeam[]
   invites    TeamInvite[]
+  projects   Project[]
 
   @@index([slug])
   @@map("teams")
@@ -100,8 +108,8 @@ model Team {
 model UserOnTeam {
   user_id    String
   team_id    String
-  created_at DateTime       @default(now()) @db.Timestamptz(6)
-  updated_at DateTime?      @db.Timestamptz(6)
+  created_at DateTime       @default(now())
+  updated_at DateTime?
   role       TEAM_ROLE_ENUM
   team       Team           @relation(fields: [team_id], references: [id], onDelete: Cascade)
   user       User           @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -114,7 +122,7 @@ model UserOnTeam {
 
 model TeamInvite {
   id                 String   @id @default(ulid())
-  created_at         DateTime @default(now()) @db.Timestamptz(6)
+  created_at         DateTime @default(now())
   email              String
   team_id            String
   team               Team     @relation(fields: [team_id], references: [id])
@@ -126,3 +134,55 @@ model TeamInvite {
   @@index([team_id, created_by_user_id])
   @@map("team_invites")
 }
+
+model Project {
+  id                 String    @id @default(ulid())
+  created_at         DateTime  @default(now())
+  updated_at         DateTime? @updatedAt
+  name               String
+  slug               String
+  team_id            String
+  team               Team      @relation(fields: [team_id], references: [id])
+  created_by_user_id String
+  created_by         User      @relation(fields: [created_by_user_id], references: [id])
+  messages           Message[]
+
+  @@unique([team_id, slug])
+  @@index([team_id, slug])
+  @@map("projects")
+}
+
+model Message {
+  id              String              @id @default(ulid())
+  slug            String              @unique
+  created_at      DateTime            @default(now())
+  updated_at      DateTime?           @updatedAt
+  subject         String
+  from            String
+  body_raw        String
+  body_stripped   String?
+  body_ai_summary String?
+  metadata        Json?
+  status          MESSAGE_STATUS_ENUM
+  project_id      String
+  project         Project             @relation(fields: [project_id], references: [id])
+  // attachments     Attachment[]
+
+  @@index([project_id, slug])
+  @@map("messages")
+}
+
+// model Attachment {
+//   id           String   @id @default(ulid())
+//   message_id   String
+//   message      Message  @relation(fields: [message_id], references: [id], onDelete: Cascade)
+//   filename     String
+//   content_type String
+//   size_bytes   Int
+//   storage_key  String
+//   ai_summary   String?
+//   created_at   DateTime @default(now())
+
+//   @@index([message_id])
+//   @@map("attachments")
+// }

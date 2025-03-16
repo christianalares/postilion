@@ -1,14 +1,11 @@
 import { prisma } from '@postilion/db'
-import { customAlphabet } from 'nanoid'
-import { createSlug } from '../utils'
+import { createShortId, createSlug } from '../utils'
 import type { auth } from './auth'
-
-const createId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
 
 type User = (typeof auth.$Infer.Session)['user']
 
 export const createDefaultTeam = async (user: User) => {
-  const nanoId = createId()
+  const shortId = createShortId()
 
   const slug = createSlug(user.name)
 
@@ -16,11 +13,18 @@ export const createDefaultTeam = async (user: User) => {
     const createdTeam = await prisma.team.create({
       data: {
         name: user.name,
-        slug: `${slug}-${nanoId}`,
+        slug: `${slug}-${shortId}`,
         members: {
           create: {
             user_id: user.id,
             role: 'OWNER',
+          },
+        },
+        projects: {
+          create: {
+            name: 'Default',
+            slug: 'default',
+            created_by_user_id: user.id,
           },
         },
       },

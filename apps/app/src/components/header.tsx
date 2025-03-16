@@ -3,10 +3,7 @@
 import { authClient } from '@/lib/auth/auth-client'
 import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { Suspense } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
-// import { ErrorBoundary } from './error-boundary'
-import { TeamsDropdown, TeamsDropdownSkeleton } from './teams-dropdown'
+import { HeaderDropdowns } from './header-dropdowns'
 
 const ThemeSwitcher = dynamic(() => import('@/components/theme-switcher').then(({ ThemeSwitcher }) => ThemeSwitcher), {
   ssr: false,
@@ -18,9 +15,7 @@ export const Header = () => {
 
   return (
     <header className="flex justify-between h-16 items-center border-b px-6">
-      <Suspense fallback={<TeamsDropdownSkeleton />}>
-        <TeamsDropdown />
-      </Suspense>
+      <HeaderDropdowns />
 
       <div className="flex gap-4 items-center">
         <button

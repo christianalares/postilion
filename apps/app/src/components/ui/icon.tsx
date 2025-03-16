@@ -1,9 +1,23 @@
 import { cn } from '@/lib/utils'
-import { Check, ChevronDown, Home, type LucideProps, Monitor, Moon, Plus, Settings, Sun } from 'lucide-react'
+import {
+  Check,
+  ChevronDown,
+  CircleAlert,
+  CircleCheck,
+  Home,
+  Loader2,
+  type LucideProps,
+  MessageCircle,
+  Monitor,
+  Moon,
+  Plus,
+  Settings,
+  Sun,
+} from 'lucide-react'
 
 const Github = (props: React.ComponentProps<'svg'>) => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={22} height={22} fill="none" {...props}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" fill="none" {...props}>
       <title>Github</title>
       <path
         fill="currentColor"
@@ -29,6 +43,10 @@ const icons = {
   plus: Plus,
   chevronDown: ChevronDown,
   check: Check,
+  loader: Loader2,
+  circleAlert: CircleAlert,
+  message: MessageCircle,
+  checkCircle: CircleCheck,
 }
 
 export type IconName = keyof typeof icons

@@ -34,10 +34,9 @@ export const FormCard = ({
       <p className="text-muted-foreground mt-2">{description}</p>
 
       <div className="flex items-center gap-4 mt-4">
-        {/* <Input id="team-name" {...form.register('teamName')} placeholder="John Doe" /> */}
         {children}
-        <Button type="submit" disabled={loading} variant={variant}>
-          {loading ? 'Saving...' : ctaText}
+        <Button type="submit" loading={loading} variant={variant}>
+          {ctaText}
         </Button>
       </div>
     </form>

@@ -8,6 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { trpc } from '@/trpc/client'
 import Link from 'next/link'
@@ -20,6 +21,7 @@ import { Skeleton } from './ui/skeleton'
 export const TeamsDropdown = () => {
   const teamSlug = useTeamSlug()
   const pathname = usePathname()
+  const projectSlug = useProjectSlug()
 
   const trpcUtils = trpc.useUtils()
 
@@ -42,7 +44,18 @@ export const TeamsDropdown = () => {
 
           const href = pathname
             .split('/')
-            .map((segment) => (segment === teamSlug ? team.slug : segment))
+            .map((segment) => {
+              // (segment === teamSlug ? team.slug : segment)
+              if (segment === teamSlug) {
+                return team.slug
+              }
+
+              if (segment === projectSlug) {
+                return 'default'
+              }
+
+              return segment
+            })
             .join('/')
 
           return (

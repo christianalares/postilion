@@ -1,8 +1,6 @@
-import { auth } from '@/lib/auth/auth'
-import { authClient } from '@/lib/auth/auth-client'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
-import { authProcedure, baseProcedure, createTRPCRouter } from '../init'
+import { authProcedure, createTRPCRouter } from '../init'
 
 const update = authProcedure
   .input(
@@ -33,8 +31,6 @@ const update = authProcedure
   })
 
 const me = authProcedure.query(async ({ ctx }) => {
-  await new Promise((resolve) => setTimeout(resolve, 2000))
-
   const me = await ctx.prisma.user.findUnique({
     where: {
       id: ctx.user.id,
