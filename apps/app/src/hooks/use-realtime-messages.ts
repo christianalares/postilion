@@ -13,8 +13,7 @@ export const useRealtimeMessages = () => {
   const [messages] = trpc.messages.getForProject.useSuspenseQuery({ teamSlug, projectSlug })
 
   useEffect(() => {
-    const eventSource = new EventSource(`http://localhost:8787/sse/${teamSlug}/${projectSlug}`, {
-      // const eventSource = new EventSource('http://127.0.0.1:8787/message/01JPCPC9DM1XVRQ9X0RA0M0RJW/status', {
+    const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sse/${teamSlug}/${projectSlug}`, {
       withCredentials: true,
     })
 
