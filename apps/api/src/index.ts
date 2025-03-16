@@ -1,12 +1,23 @@
 import { zValidator } from '@hono/zod-validator'
 // import { createPrismaClient } from '@postilion/db/edge'
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import PostalMime from 'postal-mime'
 import { z } from 'zod'
-
 export { InboundEmailWorkflow } from './inbound-workflow'
+export { MessageStatus } from './message-status'
 
 const app = new Hono<{ Bindings: Env }>()
+
+app.use(
+  '*',
+  cors({
+    origin: ['http://localhost:3000'], // Add your Next.js app origin
+    credentials: false, // Change to false since we're not using credentials
+    exposeHeaders: ['Content-Type'],
+    allowHeaders: ['Content-Type', 'Accept'], // Add Accept header for SSE
+  }),
+)
 
 app.post(
   '/inbound',
@@ -20,21 +31,6 @@ app.post(
     }),
   ),
   async (c) => {
-    // const prisma = createPrismaClient(c.env.DATABASE_URL)
-
-    // const updatedUser = await prisma.user.update({
-    //   where: {
-    //     email: 'christian.alares@gmail.com',
-    //   },
-    //   data: {
-    //     name: 'Christian Alares New',
-    //   },
-    // })
-
-    // return c.json({
-    //   updatedUser,
-    // })
-
     const { from, id, subject, content } = c.req.valid('json')
 
     const newId = crypto.randomUUID()
@@ -89,6 +85,20 @@ app.get(
   },
 )
 
+app.get(
+  '/sse/:teamSlug/:projectSlug',
+  zValidator('param', z.object({ teamSlug: z.string(), projectSlug: z.string() })),
+  async (c) => {
+    const { teamSlug, projectSlug } = c.req.valid('param')
+
+    const id = c.env.MESSAGE_STATUS.idFromName(`${teamSlug}-${projectSlug}`)
+    const stub = c.env.MESSAGE_STATUS.get(id)
+
+    // Forward to the SSE endpoint in the Durable Object
+    return stub.fetch(new Request('http://internal/sse'))
+  },
+)
+
 // Define the worker with proper types
 export default {
   fetch: app.fetch,
@@ -106,15 +116,4 @@ export default {
 
     ctx.waitUntil(message.forward('christian@hiddenvillage.se'))
   },
-  // queue: (message, env, ctx) => {
-  //   console.log('Received queue message', message)
-  // },
 } satisfies ExportedHandler<Env>
-
-// // Define the environment variables interface
-// interface Env {
-//   // Add any environment variables you're using
-//   // For example:
-//   // MY_SECRET: string;
-//   // EMAIL_QUEUE_BINDING: Queue<{ hello: string }>
-// }

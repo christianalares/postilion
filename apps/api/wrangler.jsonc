@@ -20,7 +20,21 @@
 	],
 	"ai": {
 		"binding": "AI"
-	}
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "MESSAGE_STATUS",
+				"class_name": "MessageStatus"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_classes": ["MessageStatus"]
+		}
+	]
 	// "queues": {
 	//   "producers": [{
 	//     "queue": "EMAIL_QUEUE",

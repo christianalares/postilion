@@ -15,14 +15,19 @@ type Params = {
 
 export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
   async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
-    const workersai = createWorkersAI({ binding: this.env.AI })
-
-    const prisma = createPrismaClient(this.env.DATABASE_URL)
-
     const createdMessage = await step.do('Create a new message in the database', async () => {
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
+
       const project = await prisma.project.findUnique({
         where: {
           id: event.payload.id,
+        },
+        include: {
+          team: {
+            select: {
+              slug: true,
+            },
+          },
         },
       })
 
@@ -41,12 +46,25 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         },
       })
 
+      const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
+      const statusObj = this.env.MESSAGE_STATUS.get(id)
+
+      try {
+        await statusObj.fetch('http://internal/broadcast', {
+          method: 'POST',
+          body: JSON.stringify(createdMessage),
+        })
+      } catch (error) {
+        console.error('Failed to broadcast message:', error)
+      }
+
       return createdMessage
     })
 
-    await step.sleep('sleep', '10 seconds')
-
     const strippedBody = await step.do('Get a stripped body of the email', async () => {
+      const workersai = createWorkersAI({ binding: this.env.AI })
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
+
       const { object } = await generateObject({
         model: workersai('@cf/meta/llama-3.1-8b-instruct'),
         system: `You are a helpful assistant that analyzes email HTML and returns a stripped clean text version of the email body.
@@ -75,36 +93,12 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
       })
 
       return object.strippedBody
-
-      //     const result = await this.env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-      //       response_format: {
-      //         type: 'json_schema',
-      //         json_schema: {
-      //           schema: schema.shape,
-      //         },
-      //       },
-      //       messages: [
-      //         {
-      //           role: 'system',
-      //           content: `You are a helpful assistant that analyzes email HTML and returns a stripped clean text version of the email body.
-      // * Analyze this and give me a version where all the HTML is removed.
-      // * Remove any irrelevant information such as copyrights, footers, unsubscribe links/texts etc.
-      // * Send the response as a string without any format (no markup, no markdown etc, only pure text).
-      // * ONLY respond with the parsed text without any prefixes about "Here is your desired results" or similar.`,
-      //         },
-      //         {
-      //           role: 'user',
-      //           content: event.payload.content,
-      //         },
-      //       ],
-      //     })
-
-      //     console.log('here')
     })
 
-    await step.sleep('sleep', '10 seconds')
-
     await step.do('Generate a summary of the stripped email body', async () => {
+      const workersai = createWorkersAI({ binding: this.env.AI })
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
+
       const { object } = await generateObject({
         model: workersai('@cf/meta/llama-3.1-8b-instruct'),
         system:
@@ -132,9 +126,9 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
       return object.summary
     })
 
-    await step.sleep('sleep', '10 seconds')
-
     await step.do('Finalize the message in the database', async () => {
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
+
       const updatedMessage = await prisma.message.update({
         where: {
           id: createdMessage.id,
@@ -142,7 +136,33 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         data: {
           status: 'COMPLETED',
         },
+        include: {
+          project: {
+            select: {
+              slug: true,
+              team: {
+                select: {
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
       })
+
+      const id = this.env.MESSAGE_STATUS.idFromName(
+        `${updatedMessage.project.team.slug}-${updatedMessage.project.slug}`,
+      )
+      const statusObj = this.env.MESSAGE_STATUS.get(id)
+
+      try {
+        await statusObj.fetch('http://internal/broadcast', {
+          method: 'POST',
+          body: JSON.stringify(updatedMessage),
+        })
+      } catch (error) {
+        console.error('Failed to broadcast message:', error)
+      }
 
       return updatedMessage
     })

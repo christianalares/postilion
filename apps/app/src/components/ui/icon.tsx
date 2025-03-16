@@ -3,9 +3,11 @@ import {
   Check,
   ChevronDown,
   CircleAlert,
+  CircleCheck,
   Home,
   Loader2,
   type LucideProps,
+  MessageCircle,
   Monitor,
   Moon,
   Plus,
@@ -43,6 +45,8 @@ const icons = {
   check: Check,
   loader: Loader2,
   circleAlert: CircleAlert,
+  message: MessageCircle,
+  checkCircle: CircleCheck,
 }
 
 export type IconName = keyof typeof icons

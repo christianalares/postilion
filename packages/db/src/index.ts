@@ -1,4 +1,4 @@
-export { prisma, createPrismaClient } from './client'
+export { prisma } from './client'
 export * from '../generated/client'
 
 import { PrismaClientKnownRequestError, PrismaClientValidationError } from '@prisma/client/runtime/library'

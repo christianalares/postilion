@@ -8734,10 +8734,10 @@ var require_src = __commonJS({
   }
 });
 
-// .wrangler/tmp/bundle-4AraUF/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-XzPL1P/middleware-loader.entry.ts
 init_modules_watch_stub();
 
-// .wrangler/tmp/bundle-4AraUF/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-XzPL1P/middleware-insertion-facade.js
 init_modules_watch_stub();
 
 // src/index.ts
@@ -14803,6 +14803,85 @@ var Hono2 = class extends Hono {
     });
   }
 };
+
+// ../../node_modules/.pnpm/hono@4.7.4/node_modules/hono/dist/middleware/cors/index.js
+init_modules_watch_stub();
+var cors = /* @__PURE__ */ __name((options) => {
+  const defaults = {
+    origin: "*",
+    allowMethods: ["GET", "HEAD", "PUT", "POST", "DELETE", "PATCH"],
+    allowHeaders: [],
+    exposeHeaders: []
+  };
+  const opts = {
+    ...defaults,
+    ...options
+  };
+  const findAllowOrigin = ((optsOrigin) => {
+    if (typeof optsOrigin === "string") {
+      if (optsOrigin === "*") {
+        return () => optsOrigin;
+      } else {
+        return (origin) => optsOrigin === origin ? origin : null;
+      }
+    } else if (typeof optsOrigin === "function") {
+      return optsOrigin;
+    } else {
+      return (origin) => optsOrigin.includes(origin) ? origin : null;
+    }
+  })(opts.origin);
+  return /* @__PURE__ */ __name(async function cors2(c, next) {
+    function set(key, value) {
+      c.res.headers.set(key, value);
+    }
+    __name(set, "set");
+    const allowOrigin = findAllowOrigin(c.req.header("origin") || "", c);
+    if (allowOrigin) {
+      set("Access-Control-Allow-Origin", allowOrigin);
+    }
+    if (opts.origin !== "*") {
+      const existingVary = c.req.header("Vary");
+      if (existingVary) {
+        set("Vary", existingVary);
+      } else {
+        set("Vary", "Origin");
+      }
+    }
+    if (opts.credentials) {
+      set("Access-Control-Allow-Credentials", "true");
+    }
+    if (opts.exposeHeaders?.length) {
+      set("Access-Control-Expose-Headers", opts.exposeHeaders.join(","));
+    }
+    if (c.req.method === "OPTIONS") {
+      if (opts.maxAge != null) {
+        set("Access-Control-Max-Age", opts.maxAge.toString());
+      }
+      if (opts.allowMethods?.length) {
+        set("Access-Control-Allow-Methods", opts.allowMethods.join(","));
+      }
+      let headers = opts.allowHeaders;
+      if (!headers?.length) {
+        const requestHeaders = c.req.header("Access-Control-Request-Headers");
+        if (requestHeaders) {
+          headers = requestHeaders.split(/\s*,\s*/);
+        }
+      }
+      if (headers?.length) {
+        set("Access-Control-Allow-Headers", headers.join(","));
+        c.res.headers.append("Vary", "Access-Control-Request-Headers");
+      }
+      c.res.headers.delete("Content-Length");
+      c.res.headers.delete("Content-Type");
+      return new Response(null, {
+        headers: c.res.headers,
+        status: 204,
+        statusText: "No Content"
+      });
+    }
+    await next();
+  }, "cors2");
+}, "cors");
 
 // ../../node_modules/.pnpm/postal-mime@2.4.3/node_modules/postal-mime/src/postal-mime.js
 init_modules_watch_stub();
@@ -24517,12 +24596,18 @@ var InboundEmailWorkflow = class extends WorkflowEntrypoint {
     __name(this, "InboundEmailWorkflow");
   }
   async run(event, step) {
-    const workersai = createWorkersAI({ binding: this.env.AI });
-    const prisma = createPrismaClient(this.env.DATABASE_URL);
     const createdMessage = await step.do("Create a new message in the database", async () => {
+      const prisma = createPrismaClient(this.env.DATABASE_URL);
       const project = await prisma.project.findUnique({
         where: {
           id: event.payload.id
+        },
+        include: {
+          team: {
+            select: {
+              slug: true
+            }
+          }
         }
       });
       if (!project) {
@@ -24538,10 +24623,21 @@ var InboundEmailWorkflow = class extends WorkflowEntrypoint {
           status: "PROCESSING"
         }
       });
+      const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`);
+      const statusObj = this.env.MESSAGE_STATUS.get(id);
+      try {
+        await statusObj.fetch("http://internal/broadcast", {
+          method: "POST",
+          body: JSON.stringify(createdMessage2)
+        });
+      } catch (error) {
+        console.error("Failed to broadcast message:", error);
+      }
       return createdMessage2;
     });
-    await step.sleep("sleep", "10 seconds");
     const strippedBody = await step.do("Get a stripped body of the email", async () => {
+      const workersai = createWorkersAI({ binding: this.env.AI });
+      const prisma = createPrismaClient(this.env.DATABASE_URL);
       const { object: object2 } = await generateObject({
         model: workersai("@cf/meta/llama-3.1-8b-instruct"),
         system: `You are a helpful assistant that analyzes email HTML and returns a stripped clean text version of the email body.
@@ -24569,8 +24665,9 @@ var InboundEmailWorkflow = class extends WorkflowEntrypoint {
       });
       return object2.strippedBody;
     });
-    await step.sleep("sleep", "10 seconds");
     await step.do("Generate a summary of the stripped email body", async () => {
+      const workersai = createWorkersAI({ binding: this.env.AI });
+      const prisma = createPrismaClient(this.env.DATABASE_URL);
       const { object: object2 } = await generateObject({
         model: workersai("@cf/meta/llama-3.1-8b-instruct"),
         system: 'You are a helpful assistant that summarizes an email. You will be given a body of an email and you will need to summarize it in a few sentences. ONLY respond with the parsed text without any prefixes about "Here is your desired results" or similar.',
@@ -24594,23 +24691,124 @@ var InboundEmailWorkflow = class extends WorkflowEntrypoint {
       });
       return object2.summary;
     });
-    await step.sleep("sleep", "10 seconds");
     await step.do("Finalize the message in the database", async () => {
+      const prisma = createPrismaClient(this.env.DATABASE_URL);
       const updatedMessage = await prisma.message.update({
         where: {
           id: createdMessage.id
         },
         data: {
           status: "COMPLETED"
+        },
+        include: {
+          project: {
+            select: {
+              slug: true,
+              team: {
+                select: {
+                  slug: true
+                }
+              }
+            }
+          }
         }
       });
+      const id = this.env.MESSAGE_STATUS.idFromName(
+        `${updatedMessage.project.team.slug}-${updatedMessage.project.slug}`
+      );
+      const statusObj = this.env.MESSAGE_STATUS.get(id);
+      try {
+        await statusObj.fetch("http://internal/broadcast", {
+          method: "POST",
+          body: JSON.stringify(updatedMessage)
+        });
+      } catch (error) {
+        console.error("Failed to broadcast message:", error);
+      }
       return updatedMessage;
     });
   }
 };
 
+// src/message-status.ts
+init_modules_watch_stub();
+var MessageStatus = class {
+  static {
+    __name(this, "MessageStatus");
+  }
+  connections;
+  state;
+  env;
+  app;
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+    this.connections = /* @__PURE__ */ new Set();
+    this.app = new Hono2();
+    this.app.get("/sse", async (c) => {
+      const encoder = new TextEncoder();
+      const body = new ReadableStream({
+        start: /* @__PURE__ */ __name((controller) => {
+          this.connections.add(controller);
+          controller.enqueue(encoder.encode("data: connected\n\n"));
+          c.req.raw.signal.addEventListener("abort", () => {
+            this.connections.delete(controller);
+            controller.close();
+          });
+        }, "start")
+      });
+      return new Response(body, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+          "Access-Control-Allow-Origin": "http://localhost:3000",
+          "Access-Control-Allow-Credentials": "true"
+        }
+      });
+    });
+    this.app.post("/broadcast", async (c) => {
+      const update = await c.req.json();
+      const encoder = new TextEncoder();
+      const deadConnections = /* @__PURE__ */ new Set();
+      for (const controller of this.connections) {
+        try {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(update)}
+
+`));
+        } catch (error) {
+          deadConnections.add(controller);
+        }
+      }
+      for (const deadController of deadConnections) {
+        this.connections.delete(deadController);
+      }
+      return c.json({
+        success: true,
+        connectionsCount: this.connections.size,
+        cleanedConnections: deadConnections.size
+      });
+    });
+  }
+  async fetch(request) {
+    return this.app.fetch(request);
+  }
+};
+
 // src/index.ts
 var app = new Hono2();
+app.use(
+  "*",
+  cors({
+    origin: ["http://localhost:3000"],
+    // Add your Next.js app origin
+    credentials: false,
+    // Change to false since we're not using credentials
+    exposeHeaders: ["Content-Type"],
+    allowHeaders: ["Content-Type", "Accept"]
+    // Add Accept header for SSE
+  })
+);
 app.post(
   "/inbound",
   zValidator(
@@ -24668,6 +24866,16 @@ app.get(
     }
   }
 );
+app.get(
+  "/sse/:teamSlug/:projectSlug",
+  zValidator("param", z.object({ teamSlug: z.string(), projectSlug: z.string() })),
+  async (c) => {
+    const { teamSlug, projectSlug } = c.req.valid("param");
+    const id = c.env.MESSAGE_STATUS.idFromName(`${teamSlug}-${projectSlug}`);
+    const stub = c.env.MESSAGE_STATUS.get(id);
+    return stub.fetch(new Request("http://internal/sse"));
+  }
+);
 var src_default = {
   fetch: app.fetch,
   email: /* @__PURE__ */ __name(async (message, env, ctx) => {
@@ -24677,9 +24885,6 @@ var src_default = {
     console.log("Email", email);
     ctx.waitUntil(message.forward("christian@hiddenvillage.se"));
   }, "email")
-  // queue: (message, env, ctx) => {
-  //   console.log('Received queue message', message)
-  // },
 };
 
 // ../../node_modules/.pnpm/wrangler@4.0.0/node_modules/wrangler/templates/middleware/middleware-ensure-req-body-drained.ts
@@ -24725,7 +24930,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-4AraUF/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-XzPL1P/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -24758,7 +24963,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-4AraUF/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-XzPL1P/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;
@@ -24856,6 +25061,7 @@ if (typeof middleware_insertion_facade_default === "object") {
 var middleware_loader_entry_default = WRAPPED_ENTRY;
 export {
   InboundEmailWorkflow,
+  MessageStatus,
   __INTERNAL_WRANGLER_MIDDLEWARE__,
   middleware_loader_entry_default as default
 };

@@ -17,6 +17,12 @@ export const MainMenu = () => {
       <ul>
         <MenuItem isActive={segment === null} href={`/${teamSlug}/${projectSlug}`} icon="home" label="Home" />
         <MenuItem
+          isActive={segment === 'messages'}
+          href={`/${teamSlug}/${projectSlug}/messages`}
+          icon="message"
+          label="Messages"
+        />
+        <MenuItem
           isActive={segment === 'settings'}
           href={`/${teamSlug}/${projectSlug}/settings`}
           icon="settings"

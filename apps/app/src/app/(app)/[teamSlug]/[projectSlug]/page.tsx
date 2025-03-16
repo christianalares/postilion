@@ -1,3 +1,4 @@
+import { Events } from '@/components/events'
 import { trpc } from '@/trpc/server'
 import { z } from 'zod'
 
@@ -15,6 +16,7 @@ const TeamPage = async ({ params }: Props) => {
   return (
     <div>
       <h1>Welcome, {me.name}</h1>
+      <Events />
     </div>
   )
 }
