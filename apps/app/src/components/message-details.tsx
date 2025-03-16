@@ -1,16 +1,10 @@
 'use client'
 
 import { useMessageId } from '@/hooks/use-message-id'
-import { useProjectSlug } from '@/hooks/use-project-slug'
-import { useTeamSlug } from '@/hooks/use-team-slug'
 import { trpc } from '@/trpc/client'
 import { Badge } from './ui/badge'
 
 export const MessageDetails = () => {
-  const trpcUtils = trpc.useUtils()
-  const teamSlug = useTeamSlug()
-  const projectSlug = useProjectSlug()
-
   const messageId = useMessageId()
 
   const [message] = trpc.messages.getById.useSuspenseQuery({ messageId })
