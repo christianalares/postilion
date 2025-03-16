@@ -43,6 +43,7 @@ const Message = ({ message }: MessageProps) => {
         <div className="flex gap-2 grow-0 items-center">
           <Badge label="From:">{message.from}</Badge>
           <Badge label="Subject:">{message.subject}</Badge>
+          <Badge label="Created at:">{new Date(message.created_at).toLocaleString()}</Badge>
 
           <TooltipProvider>
             <Tooltip>

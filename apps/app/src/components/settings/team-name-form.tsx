@@ -44,7 +44,13 @@ export const TeamNameForm = () => {
   })
 
   return (
-    <FormCard handleSubmit={handleSubmit} label="Team name" labelId="team-name" description="The name of your team.">
+    <FormCard
+      handleSubmit={handleSubmit}
+      label="Team name"
+      labelId="team-name"
+      description="The name of your team."
+      loading={updateTeamMutation.isPending}
+    >
       <Input id="team-name" {...form.register('teamName')} placeholder="John Doe" />
     </FormCard>
   )

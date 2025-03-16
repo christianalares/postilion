@@ -46,7 +46,13 @@ export const TeamSlugForm = () => {
   })
 
   return (
-    <FormCard handleSubmit={handleSubmit} label="Team slug" labelId="team-slug" description="The slug of your team.">
+    <FormCard
+      handleSubmit={handleSubmit}
+      label="Team slug"
+      labelId="team-slug"
+      description="The slug of your team."
+      loading={updateTeamMutation.isPending}
+    >
       <Input id="team-slug" placeholder="John Doe" {...form.register('teamSlug')} />
     </FormCard>
   )

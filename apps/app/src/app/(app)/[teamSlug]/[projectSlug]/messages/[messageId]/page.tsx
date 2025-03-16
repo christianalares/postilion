@@ -1,4 +1,4 @@
-import { MessageDetails } from '@/components/message-details'
+import { MessageDetails, MessageDetailsSkeleton } from '@/components/message-details'
 import { trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
@@ -12,7 +12,7 @@ const MessagePage = async ({ params }: { params: Params }) => {
   trpc.messages.getById.prefetch({ messageId })
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<MessageDetailsSkeleton />}>
       <MessageDetails />
     </Suspense>
   )

@@ -41,6 +41,7 @@ export const FullNameForm = () => {
       label="Full name"
       labelId="full-name"
       description="Your full name as it will appear across the platform."
+      loading={updateUserMutation.isPending}
     >
       <Input id="full-name" {...form.register('fullName')} placeholder="John Doe" />
     </FormCard>

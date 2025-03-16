@@ -17,6 +17,7 @@ export const DeleteTeamForm = () => {
       description="Permanently delete your team and all associated data."
       variant="destructive"
       ctaText="Delete team"
+      // loading={deleteTeamMutation.isPending}
     >
       <Input id="full-name" /* {...form.register('fullName')} */ placeholder={`Enter "${team.name}" to confirm`} />
     </FormCard>
