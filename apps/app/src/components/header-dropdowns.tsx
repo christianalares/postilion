@@ -11,7 +11,7 @@ export const HeaderDropdowns = () => {
         <TeamsDropdown />
       </Suspense>
 
-      <span className="w-px bg-border self-stretch scale-y-70 -skew-[15deg] mx-1" />
+      <span className="w-px bg-foreground/50 self-stretch scale-y-50 -skew-[15deg] mx-1" />
 
       <Suspense fallback={<TeamsDropdownSkeleton />}>
         <ProjectsDropdown />

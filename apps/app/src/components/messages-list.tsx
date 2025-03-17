@@ -4,6 +4,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useRealtimeMessages } from '@/hooks/use-realtime-messages'
 import { useTeamSlug } from '@/hooks/use-team-slug'
+import { trpc } from '@/trpc/client'
 import type { MESSAGE_STATUS_ENUM } from '@postilion/db'
 import { AnimatePresence, motion } from 'motion/react'
 import Link from 'next/link'
