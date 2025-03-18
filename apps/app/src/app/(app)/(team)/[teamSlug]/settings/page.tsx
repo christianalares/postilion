@@ -13,7 +13,7 @@ const TeamSettingsPage = async ({ params }: { params: Params }) => {
 
   return (
     <HydrateClient>
-      <div>
+      <div className="max-w-4xl">
         <Suspense fallback={<TeamNameFormSkeleton />}>
           <TeamNameForm />
         </Suspense>
