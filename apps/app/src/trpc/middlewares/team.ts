@@ -41,7 +41,7 @@ export const isMemberOfTeam = t.middleware(async ({ ctx, input, next }) => {
     })
   }
 
-  if (team.members.some((member) => member.user_id !== ctx.user?.id)) {
+  if (!team.members.some((member) => member.user_id === ctx.user?.id)) {
     throw new TRPCError({
       code: 'FORBIDDEN',
       message: 'You are not a member of this team',

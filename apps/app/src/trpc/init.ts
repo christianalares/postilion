@@ -1,4 +1,3 @@
-// import { analyticsClient } from '@/lib/analytics'
 import { auth } from '@/lib/auth/auth'
 import { prisma } from '@postilion/db'
 import { TRPCError, initTRPC } from '@trpc/server'
@@ -13,10 +12,10 @@ export const createTRPCContext = cache(async () => {
 
   const user = session?.user
 
+  // TODO: Add analytics client
   return {
     prisma,
     user,
-    // analyticsClient,
   }
 })
 

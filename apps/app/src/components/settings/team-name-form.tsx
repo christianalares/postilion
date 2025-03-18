@@ -22,6 +22,7 @@ export const TeamNameForm = () => {
     onSuccess: () => {
       toast.success('Team name updated')
       trpcUtils.teams.getBySlug.invalidate()
+      trpcUtils.teams.getForUser.invalidate()
     },
     onError: (error) => {
       toast.error(error.message)
