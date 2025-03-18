@@ -3,6 +3,8 @@ import { FullNameForm, FullNameFormSkeleton } from '@/components/settings/full-n
 import { trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
+export const dynamic = 'force-dynamic'
+
 const AccountPage = () => {
   trpc.users.me.prefetch()
 
