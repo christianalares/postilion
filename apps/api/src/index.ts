@@ -1,5 +1,6 @@
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
+import { getCookie } from 'hono/cookie'
 import { cors } from 'hono/cors'
 import PostalMime from 'postal-mime'
 import { z } from 'zod'
@@ -87,6 +88,30 @@ app.get(
 app.get(
   '/sse/:teamSlug/:projectSlug',
   zValidator('param', z.object({ teamSlug: z.string(), projectSlug: z.string() })),
+  // Go back to the app to get the session since this request comes from the apps client
+  async (c, next) => {
+    try {
+      const res = await fetch(`${c.env.APP_URL}/api/auth/get-session`, {
+        headers: {
+          cookie: c.req.header('cookie') ?? '',
+        },
+      })
+
+      if (!res.ok) {
+        return c.json({ error: 'Unauthorized' }, 401)
+      }
+
+      const session = (await res.json()) as { session: { id: string } } | null
+
+      if (!session) {
+        return c.json({ error: 'Unauthorized' }, 401)
+      }
+
+      await next()
+    } catch (error) {
+      return c.json({ error: 'Unauthorized' }, 401)
+    }
+  },
   async (c) => {
     const { teamSlug, projectSlug } = c.req.valid('param')
 
