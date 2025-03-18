@@ -2,7 +2,6 @@ import { createShortId, createSlug } from '@/lib/utils'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
-import { isMemberOfTeam } from '../middlewares/team'
 
 const getForTeam = authProcedure
   .input(
@@ -10,15 +9,49 @@ const getForTeam = authProcedure
       slug: z.string(),
     }),
   )
-  .use(isMemberOfTeam)
   .query(async ({ ctx, input }) => {
-    const projects = await ctx.prisma.project.findMany({
+    const team = await ctx.prisma.team.findUnique({
       where: {
-        team: {
-          slug: input.slug,
+        slug: input.slug,
+      },
+      select: {
+        id: true,
+        members: {
+          select: {
+            user_id: true,
+          },
         },
       },
     })
+
+    if (!team?.members.some((member) => member.user_id === ctx.user.id)) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
+      })
+    }
+
+    const projects = await ctx.prisma.project
+      .findMany({
+        where: {
+          team: {
+            slug: input.slug,
+          },
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error fetching projects',
+        })
+      })
+
+    if (!projects) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'No projects found',
+      })
+    }
 
     return projects
   })
@@ -30,7 +63,6 @@ const getBySlug = authProcedure
       projectSlug: z.string(),
     }),
   )
-  // .use(isMemberOfTeam)
   .query(async ({ ctx, input }) => {
     const team = await ctx.prisma.team.findUnique({
       where: {

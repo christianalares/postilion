@@ -1,5 +1,5 @@
 import { MessageDetails, MessageDetailsSkeleton } from '@/components/message-details'
-import { trpc } from '@/trpc/server'
+import { HydrateClient, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
 type Params = Promise<{
@@ -12,9 +12,11 @@ const MessagePage = async ({ params }: { params: Params }) => {
   trpc.messages.getById.prefetch({ messageId })
 
   return (
-    <Suspense fallback={<MessageDetailsSkeleton />}>
-      <MessageDetails />
-    </Suspense>
+    <HydrateClient>
+      <Suspense fallback={<MessageDetailsSkeleton />}>
+        <MessageDetails />
+      </Suspense>
+    </HydrateClient>
   )
 }
 

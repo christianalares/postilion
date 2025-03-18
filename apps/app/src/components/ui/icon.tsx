@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import {
+  Calendar,
   Check,
   ChevronDown,
   CircleAlert,
@@ -13,6 +14,8 @@ import {
   Plus,
   Settings,
   Sun,
+  User,
+  Webhook,
 } from 'lucide-react'
 
 const Github = (props: React.ComponentProps<'svg'>) => {
@@ -47,6 +50,9 @@ const icons = {
   circleAlert: CircleAlert,
   message: MessageCircle,
   checkCircle: CircleCheck,
+  user: User,
+  calendar: Calendar,
+  webhook: Webhook,
 }
 
 export type IconName = keyof typeof icons

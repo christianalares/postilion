@@ -1,40 +1,21 @@
 'use client'
 
-import { authClient } from '@/lib/auth/auth-client'
-import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
-import { HeaderDropdowns } from './header-dropdowns'
+import { Logo } from './logo'
+import { UserDropdown } from './user-dropdown'
 
-const ThemeSwitcher = dynamic(() => import('@/components/theme-switcher').then(({ ThemeSwitcher }) => ThemeSwitcher), {
-  ssr: false,
-  // loading: () => <Skeleton className="w-36 h-8" />,
-})
-
-export const Header = () => {
-  const router = useRouter()
-
+type Props = {
+  children: React.ReactNode
+}
+export const Header = ({ children }: Props) => {
   return (
     <header className="flex justify-between h-16 items-center border-b px-6">
-      <HeaderDropdowns />
-
-      <div className="flex gap-4 items-center">
-        <button
-          type="button"
-          onClick={() =>
-            authClient.signOut({
-              fetchOptions: {
-                onSuccess: () => {
-                  router.push('/login')
-                },
-              },
-            })
-          }
-        >
-          Logout
-        </button>
-
-        <ThemeSwitcher />
+      <div className="flex items-center gap-4">
+        <Logo />
+        {children}
       </div>
+
+      <UserDropdown />
     </header>
   )
 }

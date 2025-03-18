@@ -1,10 +1,15 @@
 import { EmailForm, EmailFormSkeleton } from '@/components/settings/email-form'
 import { FullNameForm, FullNameFormSkeleton } from '@/components/settings/full-name-form'
+import { trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
-const SettingsPage = () => {
+export const dynamic = 'force-dynamic'
+
+const AccountPage = () => {
+  trpc.users.me.prefetch()
+
   return (
-    <div className="space-y-8">
+    <div className="max-w-4xl space-y-4">
       <Suspense fallback={<FullNameFormSkeleton />}>
         <FullNameForm />
       </Suspense>
@@ -16,4 +21,4 @@ const SettingsPage = () => {
   )
 }
 
-export default SettingsPage
+export default AccountPage

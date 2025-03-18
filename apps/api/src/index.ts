@@ -106,15 +106,17 @@ export default {
       attachmentEncoding: 'base64',
     })
 
-    if (!email.from.address) {
-      throw new Error('No from address')
+    const to = email.to?.at(0)?.address
+
+    if (!to) {
+      throw new Error('No to address')
     }
 
-    const [shortId] = email.from.address.split('@')
+    const [shortId] = to.split('@')
 
     const newId = crypto.randomUUID()
 
-    await env.INBOUND_EMAIL_WORKFLOW.create({
+    const instance = await env.INBOUND_EMAIL_WORKFLOW.create({
       id: newId,
       params: {
         from: email.from.address,

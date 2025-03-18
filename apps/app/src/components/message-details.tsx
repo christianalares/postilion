@@ -12,7 +12,7 @@ export const MessageDetails = () => {
 
   return (
     <article>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Badge label="From:">{message.from}</Badge>
         <Badge label="Subject:">{message.subject}</Badge>
         <Badge label="Created at:">{new Date(message.created_at).toLocaleString()}</Badge>
@@ -33,7 +33,7 @@ export const MessageDetails = () => {
 
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className="text-muted-foreground font-mono text-xs">Raw body:</p>
-          <p className="text-xs font-mono">{message.body_raw}</p>
+          <p className="text-xs font-mono break-all">{message.body_raw}</p>
         </div>
       </div>
     </article>

@@ -8,7 +8,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useTeamSlug } from '@/hooks/use-team-slug'
 import { trpc } from '@/trpc/client'
 import Link from 'next/link'
 import { pushModal } from './modals'
@@ -16,18 +15,21 @@ import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
-export const TeamsDropdown = () => {
-  const teamSlug = useTeamSlug()
-
+export const AccountTeamsDropdown = () => {
   const trpcUtils = trpc.useUtils()
 
-  const [team] = trpc.teams.getBySlug.useSuspenseQuery({ slug: teamSlug })
   const [teams] = trpc.teams.getForUser.useSuspenseQuery()
+
+  const firstTeam = teams[0]
+
+  if (!firstTeam) {
+    return null
+  }
 
   return (
     <div className="flex items-center gap-1">
-      <Link href={`/${team.slug}`} className="text-sm font-medium hover:underline">
-        {team.name}
+      <Link href={`/${firstTeam.slug}`} className="text-sm font-medium hover:underline">
+        {firstTeam.name}
       </Link>
 
       <DropdownMenu>
@@ -40,8 +42,6 @@ export const TeamsDropdown = () => {
           <DropdownMenuLabel>Your teams</DropdownMenuLabel>
           <DropdownMenuSeparator />
           {teams.map((team) => {
-            const isActive = team.slug === teamSlug
-
             return (
               <DropdownMenuItem key={team.id} asChild>
                 <Link
@@ -52,7 +52,6 @@ export const TeamsDropdown = () => {
                   }}
                 >
                   {team.name}
-                  {isActive && <Icon name="check" className="size-4" />}
                 </Link>
               </DropdownMenuItem>
             )

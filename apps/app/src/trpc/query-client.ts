@@ -7,11 +7,11 @@ export function makeQueryClient() {
       queries: {
         staleTime: 30 * 1000,
         refetchOnWindowFocus: false,
+        retry: false,
       },
       dehydrate: {
         serializeData: superjson.serialize,
         shouldDehydrateQuery: (query) => defaultShouldDehydrateQuery(query) || query.state.status === 'pending',
-        // shouldRedactErrors: () => false,
       },
       hydrate: {
         deserializeData: superjson.deserialize,

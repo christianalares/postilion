@@ -84,6 +84,9 @@ const getForUser = authProcedure.query(async ({ ctx }) => {
           },
         },
       },
+      orderBy: {
+        created_at: 'asc',
+      },
     })
     .catch(() => {
       throw new TRPCError({

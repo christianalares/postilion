@@ -6,8 +6,6 @@ import { createCallerFactory, createTRPCContext } from './init'
 import { makeQueryClient } from './query-client'
 import { appRouter } from './routers/_app'
 
-type AppRouter = typeof appRouter
-
 export const getQueryClient = cache(makeQueryClient)
 
 const caller = createCallerFactory(appRouter)(createTRPCContext)
