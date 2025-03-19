@@ -94,6 +94,7 @@ model Team {
   members    UserOnTeam[]
   invites    TeamInvite[]
   projects   Project[]
+  domains    Domain[]
 
   @@index([slug])
   @@map("teams")
@@ -141,6 +142,7 @@ model Project {
   created_by_user_id String
   created_by         User      @relation(fields: [created_by_user_id], references: [id])
   messages           Message[]
+  domain             Domain?
 
   @@unique([team_id, slug])
   @@index([team_id, slug])
@@ -181,3 +183,18 @@ model Message {
 //   @@index([message_id])
 //   @@map("attachments")
 // }
+
+model Domain {
+  id              String    @id @default(ulid())
+  forwardemail_id String
+  created_at      DateTime  @default(now())
+  updated_at      DateTime? @updatedAt
+  domain          String    @unique
+  team_id         String
+  team            Team      @relation(fields: [team_id], references: [id])
+  project_id      String?   @unique
+  project         Project?  @relation(fields: [project_id], references: [id])
+
+  @@index([team_id, domain])
+  @@map("domains")
+}

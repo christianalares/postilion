@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth/auth'
+import { ForwardEmailClient } from '@/lib/forward-email-client'
 import { prisma } from '@postilion/db'
 import { TRPCError, initTRPC } from '@trpc/server'
 import { headers } from 'next/headers'
@@ -36,10 +37,13 @@ export const authProcedure = t.procedure.use(async (opts) => {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
 
+  const forwardEmailClient = new ForwardEmailClient(process.env.FORWARDEMAIL_API_TOKEN!)
+
   return opts.next({
     ctx: {
       ...opts.ctx,
       user,
+      forwardEmailClient,
     },
   })
 })

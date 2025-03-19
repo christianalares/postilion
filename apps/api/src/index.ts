@@ -133,6 +133,8 @@ export default {
 
     const to = email.to?.at(0)?.address
 
+    console.log('to', to)
+
     if (!to) {
       throw new Error('No to address')
     }

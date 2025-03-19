@@ -1,6 +1,5 @@
 'use client'
 
-import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { motion } from 'motion/react'
 import Link from 'next/link'
@@ -8,14 +7,13 @@ import { useSelectedLayoutSegment } from 'next/navigation'
 
 export const TeamSettingsSubMenu = () => {
   const teamSlug = useTeamSlug()
-  const projectSlug = useProjectSlug()
   const segment = useSelectedLayoutSegment()
 
   return (
     <nav>
       <ul className="flex items-center gap-4">
         <MenuItem isActive={segment === null} href={`/${teamSlug}/settings`} label="General" />
-        <MenuItem isActive={segment === 'team'} href={`/${teamSlug}/${projectSlug}/settings/team`} label="Team" />
+        <MenuItem isActive={segment === 'domains'} href={`/${teamSlug}/settings/domains`} label="Domains" />
       </ul>
     </nav>
   )
