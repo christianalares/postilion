@@ -228,13 +228,13 @@ const create = authProcedure
       })
     }
 
-    const createdDomain = await ctx.prisma.$transaction(async (tx) => {
-      const data = await ctx.forwardEmailClient.createDomain({ domain: input.domain })
+    const createdDomainOnForwardEmail = await ctx.forwardEmailClient.createDomain({ domain: input.domain })
 
-      const createdDomain = await ctx.prisma.domain.create({
+    const createdDomain = await ctx.prisma.domain
+      .create({
         data: {
           domain: input.domain,
-          forwardemail_id: data.id,
+          forwardemail_id: createdDomainOnForwardEmail.id,
           team: {
             connect: {
               id: userOnTeam.team_id,
@@ -245,9 +245,14 @@ const create = authProcedure
           forwardemail_id: true,
         },
       })
+      .catch(() => {
+        // TODO: Rollback the domain on forward email
 
-      return createdDomain
-    })
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Could not create domain',
+        })
+      })
 
     return createdDomain
   })

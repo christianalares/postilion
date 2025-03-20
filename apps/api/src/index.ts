@@ -9,15 +9,15 @@ export { MessageStatus } from './message-status'
 
 const app = new Hono<{ Bindings: Env }>()
 
-app.use(
-  '*',
-  cors({
-    origin: ['http://localhost:3000', 'https://app.postilion.ai'],
-    credentials: false,
-    exposeHeaders: ['Content-Type'],
-    allowHeaders: ['Content-Type', 'Accept'],
-  }),
-)
+// app.use(
+//   '*',
+//   cors({
+//     origin: ['http://localhost:3000', 'https://app.postilion.ai'],
+//     credentials: false,
+//     exposeHeaders: ['Content-Type'],
+//     allowHeaders: ['Content-Type', 'Accept'],
+//   }),
+// )
 
 app.post(
   '/inbound',
@@ -88,7 +88,12 @@ app.get(
 app.get(
   '/sse/:teamSlug/:projectSlug',
   zValidator('param', z.object({ teamSlug: z.string(), projectSlug: z.string() })),
-  // Go back to the app to get the session since this request comes from the apps client
+  cors({
+    origin: ['http://localhost:3000', 'https://app.postilion.ai'],
+    credentials: true,
+    allowHeaders: ['Content-Type', 'Accept', 'Cookie'],
+  }),
+  // Go back to the apps API to get the session since this request comes from the client
   async (c, next) => {
     try {
       const res = await fetch(`${c.env.APP_URL}/api/auth/get-session`, {
