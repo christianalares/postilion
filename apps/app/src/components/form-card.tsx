@@ -8,6 +8,7 @@ type Props = {
   labelId: string
   description: string
   loading?: boolean
+  disabled?: boolean
   children: React.ReactNode
   variant?: 'default' | 'destructive'
   ctaText?: string
@@ -19,6 +20,7 @@ export const FormCard = ({
   labelId,
   description,
   loading,
+  disabled,
   children,
   variant = 'default',
   ctaText = 'Save',
@@ -35,7 +37,7 @@ export const FormCard = ({
 
       <div className="flex items-center gap-4 mt-4">
         {children}
-        <Button type="submit" loading={loading} variant={variant}>
+        <Button type="submit" loading={loading} variant={variant} disabled={disabled}>
           {ctaText}
         </Button>
       </div>

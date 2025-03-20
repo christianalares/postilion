@@ -5,21 +5,27 @@ import { useTeamSlug } from '@/hooks/use-team-slug'
 import { cn } from '@/lib/utils'
 import { motion } from 'motion/react'
 import Link from 'next/link'
-import { useSelectedLayoutSegment } from 'next/navigation'
+import { useSelectedLayoutSegments } from 'next/navigation'
 
 export const TeamMenu = () => {
   const teamSlug = useTeamSlug()
-  const segment = useSelectedLayoutSegment()
+  const segments = useSelectedLayoutSegments()
 
   return (
     <nav>
       <ul>
-        <MenuItem isActive={segment === null} href={`/${teamSlug}`} icon="home" label="Projects" />
+        <MenuItem isActive={segments.length === 0} href={`/${teamSlug}`} icon="home" label="Projects" />
         <MenuItem
-          isActive={segment === 'settings'}
+          isActive={segments[0] === 'settings' && segments[1] === 'domains'}
+          href={`/${teamSlug}/settings/domains`}
+          icon="globe"
+          label="Domains"
+        />
+        <MenuItem
+          isActive={segments.length === 1 && segments[0] === 'settings'}
           href={`/${teamSlug}/settings`}
           icon="settings"
-          label="Team Settings"
+          label="Settings"
         />
       </ul>
     </nav>

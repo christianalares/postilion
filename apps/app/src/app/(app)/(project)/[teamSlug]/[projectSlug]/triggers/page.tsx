@@ -1,5 +1,12 @@
+import { TriggersHeader } from './_header'
+
 const TriggersPage = () => {
-  return <div>Triggers</div>
+  return (
+    <div>
+      <TriggersHeader />
+      WIP: Triggers
+    </div>
+  )
 }
 
 export default TriggersPage

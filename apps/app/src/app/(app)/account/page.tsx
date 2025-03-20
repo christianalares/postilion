@@ -1,5 +1,5 @@
-import { EmailForm, EmailFormSkeleton } from '@/components/settings/email-form'
-import { FullNameForm, FullNameFormSkeleton } from '@/components/settings/full-name-form'
+import { EmailForm, EmailFormSkeleton } from '@/components/forms/email-form'
+import { FullNameForm, FullNameFormSkeleton } from '@/components/forms/full-name-form'
 import { trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 

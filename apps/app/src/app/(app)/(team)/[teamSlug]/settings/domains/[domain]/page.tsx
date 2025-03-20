@@ -1,4 +1,4 @@
-import { DomainDetails } from '@/components/domain-details'
+import { DomainDetails, DomainDetailsSkeleton } from '@/components/domain-details'
 import { HydrateClient, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
@@ -13,7 +13,7 @@ const DomainPage = async ({ params }: { params: Params }) => {
 
   return (
     <HydrateClient>
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<DomainDetailsSkeleton />}>
         <DomainDetails />
       </Suspense>
     </HydrateClient>

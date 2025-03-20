@@ -1,19 +1,26 @@
 import { cn } from '@/lib/utils'
 import {
+  ArrowLeft,
   Calendar,
   Check,
   ChevronDown,
+  ChevronsUpDown,
   CircleAlert,
   CircleCheck,
+  Clipboard,
+  ClipboardList,
+  Globe,
   Home,
   Loader2,
   type LucideProps,
   MessageCircle,
   Monitor,
   Moon,
+  MoreVertical,
   Plus,
   Settings,
   Sun,
+  Trash2,
   User,
   Webhook,
 } from 'lucide-react'
@@ -45,6 +52,8 @@ const icons = {
   monitor: Monitor,
   plus: Plus,
   chevronDown: ChevronDown,
+  chevronsUpDown: ChevronsUpDown,
+  arrowLeft: ArrowLeft,
   check: Check,
   loader: Loader2,
   circleAlert: CircleAlert,
@@ -53,6 +62,10 @@ const icons = {
   user: User,
   calendar: Calendar,
   webhook: Webhook,
+  globe: Globe,
+  clipboard: Clipboard,
+  dotsVertical: MoreVertical,
+  trash: Trash2,
 }
 
 export type IconName = keyof typeof icons

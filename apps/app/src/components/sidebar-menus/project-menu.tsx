@@ -28,6 +28,12 @@ export const ProjectMenu = () => {
           icon="webhook"
           label="Triggers"
         />
+        <MenuItem
+          isActive={segment === 'settings'}
+          href={`/${teamSlug}/${projectSlug}/settings`}
+          icon="settings"
+          label="Settings"
+        />
       </ul>
     </nav>
   )

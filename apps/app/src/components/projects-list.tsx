@@ -3,8 +3,6 @@
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { trpc } from '@/trpc/client'
 import Link from 'next/link'
-import { pushModal } from './modals'
-import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
@@ -31,18 +29,6 @@ export const ProjectsList = () => {
           </Link>
         </li>
       ))}
-
-      <li>
-        <Button
-          variant="outline"
-          size="icon"
-          className="size-28 flex flex-col"
-          onClick={() => pushModal('createTeamModal')}
-        >
-          <Icon name="plus" className="size-10" strokeWidth={1} />
-          <span>Create new</span>
-        </Button>
-      </li>
     </ul>
   )
 }

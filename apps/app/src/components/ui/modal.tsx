@@ -10,7 +10,7 @@ export const ModalWrapper = Dialog
 
 export const Modal = ({ children, className, ...restProps }: Props) => {
   return (
-    <DialogContent className={cn('w-[95vw] max-w-lg rounded-md', className)} {...restProps}>
+    <DialogContent className={cn('w-[95vw] max-w-lg', className)} {...restProps}>
       {children}
     </DialogContent>
   )

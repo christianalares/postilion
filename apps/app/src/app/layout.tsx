@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { TRPCProvider } from '@/trpc/client'
 import type { Metadata } from 'next'
 import './globals.css'
+import { AlertProvider } from '@/components/alerts'
 
 // Allow custom CSS properties in React
 declare module 'react' {
@@ -30,6 +31,7 @@ export default function RootLayout({
             {children}
 
             <ModalProvider />
+            <AlertProvider />
 
             <Toaster
               position="bottom-left"

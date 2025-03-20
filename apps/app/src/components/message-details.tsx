@@ -2,7 +2,7 @@
 
 import { useMessageId } from '@/hooks/use-message-id'
 import { trpc } from '@/trpc/client'
-import { Badge } from './ui/badge'
+import { Badge, badgeLabelVariants } from './ui/badge'
 import { Skeleton } from './ui/skeleton'
 
 export const MessageDetails = () => {
@@ -22,17 +22,17 @@ export const MessageDetails = () => {
 
       <div className="space-y-4">
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
-          <p className="text-muted-foreground font-mono text-xs">AI summary:</p>
+          <p className={badgeLabelVariants()}>AI summary:</p>
           <p className="text-xs font-mono">{message.body_ai_summary}</p>
         </div>
 
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
-          <p className="text-muted-foreground font-mono text-xs">Stripped body:</p>
+          <p className={badgeLabelVariants()}>Stripped body:</p>
           <p className="text-xs font-mono">{message.body_stripped}</p>
         </div>
 
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
-          <p className="text-muted-foreground font-mono text-xs">Raw body:</p>
+          <p className={badgeLabelVariants()}>Raw body:</p>
           <p className="text-xs font-mono break-all">{message.body_raw}</p>
         </div>
       </div>

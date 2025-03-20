@@ -96,6 +96,14 @@ const getBySlug = authProcedure
           },
         },
       },
+      include: {
+        domain: {
+          select: {
+            id: true,
+            domain: true,
+          },
+        },
+      },
     })
 
     if (!project) {
@@ -106,6 +114,81 @@ const getBySlug = authProcedure
     }
 
     return project
+  })
+
+const update = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+      projectSlug: z.string(),
+      data: z
+        .object({
+          name: z.string(),
+          domainId: z.string(),
+        })
+        .partial(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const team = await ctx.prisma.team
+      .findUnique({
+        where: {
+          slug: input.teamSlug,
+        },
+        select: {
+          id: true,
+          members: {
+            select: {
+              user_id: true,
+              role: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error fetching team',
+        })
+      })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const userInTeam = team.members.find((member) => member.user_id === ctx.user.id)
+
+    if (!userInTeam) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
+      })
+    }
+
+    if (userInTeam.role !== 'OWNER') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not an owner of this team',
+      })
+    }
+
+    const updatedProject = await ctx.prisma.project.update({
+      where: {
+        team_id_slug: {
+          slug: input.projectSlug,
+          team_id: team.id,
+        },
+      },
+      data: {
+        name: input.data.name,
+        domain: input.data.domainId ? { connect: { id: input.data.domainId } } : undefined,
+      },
+    })
+
+    return updatedProject
   })
 
 const create = authProcedure
@@ -164,8 +247,70 @@ const create = authProcedure
     return createdProject
   })
 
+const connectDomain = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+      projectSlug: z.string(),
+      domainId: z.string(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const team = await ctx.prisma.team.findUnique({
+      where: {
+        slug: input.teamSlug,
+      },
+      select: {
+        id: true,
+        members: true,
+      },
+    })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const userInTeam = team.members.find((member) => member.user_id === ctx.user.id)
+
+    if (!userInTeam) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
+      })
+    }
+
+    if (userInTeam.role !== 'OWNER') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: "You don't have permission to create projects in this team",
+      })
+    }
+
+    const updatedProject = await ctx.prisma.project.update({
+      where: {
+        team_id_slug: {
+          slug: input.projectSlug,
+          team_id: team.id,
+        },
+      },
+      data: {
+        domain: {
+          connect: {
+            id: input.domainId,
+          },
+        },
+      },
+    })
+
+    return updatedProject
+  })
+
 export const projectsRouter = createTRPCRouter({
   getBySlug,
   getForTeam,
   create,
+  update,
 })

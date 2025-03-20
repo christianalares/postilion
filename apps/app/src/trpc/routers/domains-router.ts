@@ -45,6 +45,15 @@ const getForTeam = authProcedure
             id: team.id,
           },
         },
+        include: {
+          project: {
+            select: {
+              id: true,
+              slug: true,
+              name: true,
+            },
+          },
+        },
       })
       .catch(() => {
         throw new TRPCError({
