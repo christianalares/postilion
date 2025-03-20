@@ -1,7 +1,7 @@
 import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
-import { getCookie } from 'hono/cookie'
 import { cors } from 'hono/cors'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 import PostalMime from 'postal-mime'
 import { z } from 'zod'
 export { InboundEmailWorkflow } from './inbound-workflow'
@@ -87,33 +87,65 @@ app.get(
 
 app.get(
   '/sse/:teamSlug/:projectSlug',
-  zValidator('param', z.object({ teamSlug: z.string(), projectSlug: z.string() })),
+  zValidator(
+    'param',
+    z.object({
+      teamSlug: z.string(),
+      projectSlug: z.string(),
+    }),
+  ),
+  zValidator(
+    'query',
+    z.object({
+      token: z.string(),
+    }),
+  ),
   cors({
     origin: ['http://localhost:3000', 'https://app.postilion.ai'],
     credentials: true,
-    allowHeaders: ['Content-Type', 'Accept', 'Cookie'],
+    // allowHeaders: ['Content-Type', 'Accept', 'Cookie'],
   }),
   // Go back to the apps API to get the session since this request comes from the client
   async (c, next) => {
+    // try {
+    //   const res = await fetch(`${c.env.APP_URL}/api/auth/get-session`, {
+    //     headers: {
+    //       cookie: c.req.header('cookie') ?? '',
+    //     },
+    //   })
+
+    //   if (!res.ok) {
+    //     return c.json({ error: 'Unauthorized' }, 401)
+    //   }
+
+    //   const session = (await res.json()) as { session: { id: string } } | null
+
+    //   if (!session) {
+    //     return c.json({ error: 'Unauthorized' }, 401)
+    //   }
+
+    //   await next()
+    // } catch (error) {
+    //   return c.json({ error: 'Unauthorized' }, 401)
+    // }
+
     try {
-      const res = await fetch(`${c.env.APP_URL}/api/auth/get-session`, {
-        headers: {
-          cookie: c.req.header('cookie') ?? '',
-        },
-      })
+      const { token } = c.req.valid('query')
 
-      if (!res.ok) {
-        return c.json({ error: 'Unauthorized' }, 401)
-      }
+      // Create JWKS client (you can cache this)
+      const JWKS = createRemoteJWKSet(new URL(`${c.env.APP_URL}/api/auth/jwks`))
 
-      const session = (await res.json()) as { session: { id: string } } | null
+      // Verify the token
+      const { payload } = await jwtVerify(token, JWKS)
 
-      if (!session) {
-        return c.json({ error: 'Unauthorized' }, 401)
+      // We configured the JWT payload to only include user.id
+      if (!payload.id) {
+        return c.json({ error: 'Invalid token' }, 401)
       }
 
       await next()
     } catch (error) {
+      console.error(error)
       return c.json({ error: 'Unauthorized' }, 401)
     }
   },

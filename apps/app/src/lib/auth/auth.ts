@@ -2,6 +2,7 @@ import { prisma } from '@postilion/db'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
+import { jwt } from 'better-auth/plugins'
 import { cookies } from 'next/headers'
 import { createDefaultTeam } from './utils'
 
@@ -15,7 +16,18 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     },
   },
-  plugins: [nextCookies()],
+  plugins: [
+    jwt({
+      jwt: {
+        expirationTime: '1h',
+        definePayload: ({ user }) => ({
+          id: user.id,
+        }),
+      },
+    }),
+    // bearer(),
+    nextCookies(),
+  ],
   databaseHooks: {
     user: {
       create: {
