@@ -25,7 +25,7 @@ export const auth = betterAuth({
 
           if (createdTeam && ctx) {
             // The middleware will remove this cookie and redirect the user to the team
-            cookieStore.set('redirectTo', `/${createdTeam.slug}/default`)
+            cookieStore.set('redirectTo', `/${createdTeam.slug}`)
           }
         },
       },

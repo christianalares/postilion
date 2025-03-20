@@ -5,9 +5,7 @@ import { trpc } from '@/trpc/client'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { DomainDropdown } from './domain-dropdown'
-import { pushModal } from './modals'
 import { Badge } from './ui/badge'
-import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 
 export const DomainsList = () => {
@@ -24,22 +22,7 @@ export const DomainsList = () => {
   })
 
   if (domains.length === 0) {
-    return (
-      <div className="space-y-4">
-        <p>You don't have any domains yet.</p>
-        <Button
-          onClick={() => {
-            createDomainMutation.mutate({
-              domain: 'seventy-seven.app',
-              teamSlug,
-            })
-          }}
-          loading={createDomainMutation.isPending}
-        >
-          Add Domain
-        </Button>
-      </div>
-    )
+    return <p>You don't have any domains yet.</p>
   }
 
   return (
