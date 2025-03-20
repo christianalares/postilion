@@ -19,6 +19,7 @@ const app = new Hono<{ Bindings: Env }>()
 //   }),
 // )
 
+// Test inbound route to trigger the workflow
 app.post(
   '/inbound',
   zValidator(
@@ -54,6 +55,42 @@ app.post(
   },
 )
 
+// Test route to verify the JWT token
+app.get(
+  '/test',
+  zValidator(
+    'query',
+    z.object({
+      token: z.string(),
+    }),
+  ),
+  async (c, next) => {
+    try {
+      const { token } = c.req.valid('query')
+      const jwksUrl = `${c.env.APP_URL}/api/auth/jwks`
+
+      const jwksResponse = await fetch(jwksUrl)
+
+      if (!jwksResponse.ok) {
+        return c.json({ error: 'Failed to fetch JWKS' }, 500)
+      }
+
+      const JWKS = createRemoteJWKSet(new URL(jwksUrl))
+      const { payload } = await jwtVerify(token, JWKS)
+
+      if (!payload.id) {
+        return c.json({ error: 'Invalid token' }, 401)
+      }
+
+      await next()
+    } catch (error) {
+      console.error('Auth error:', error)
+      return c.json({ error: 'Unauthorized' }, 401)
+    }
+  },
+)
+
+// Route to get the status of the inbound email workflow
 app.get(
   '/inbound/:instanceId',
   zValidator(
@@ -85,6 +122,7 @@ app.get(
   },
 )
 
+// Route for the SSE endpoint for the message stream
 app.get(
   '/sse/:teamSlug/:projectSlug',
   zValidator(
@@ -100,55 +138,33 @@ app.get(
       token: z.string(),
     }),
   ),
-  cors({
-    origin: ['http://localhost:3000', 'https://app.postilion.ai'],
-    credentials: true,
-    // allowHeaders: ['Content-Type', 'Accept', 'Cookie'],
-  }),
-  // Go back to the apps API to get the session since this request comes from the client
+  cors({ origin: ['http://localhost:3000', 'https://app.postilion.ai'] }),
+  // Verify the JWT token
   async (c, next) => {
-    // try {
-    //   const res = await fetch(`${c.env.APP_URL}/api/auth/get-session`, {
-    //     headers: {
-    //       cookie: c.req.header('cookie') ?? '',
-    //     },
-    //   })
-
-    //   if (!res.ok) {
-    //     return c.json({ error: 'Unauthorized' }, 401)
-    //   }
-
-    //   const session = (await res.json()) as { session: { id: string } } | null
-
-    //   if (!session) {
-    //     return c.json({ error: 'Unauthorized' }, 401)
-    //   }
-
-    //   await next()
-    // } catch (error) {
-    //   return c.json({ error: 'Unauthorized' }, 401)
-    // }
-
     try {
       const { token } = c.req.valid('query')
+      const jwksUrl = `${c.env.APP_URL}/api/auth/jwks`
 
-      // Create JWKS client (you can cache this)
-      const JWKS = createRemoteJWKSet(new URL(`${c.env.APP_URL}/api/auth/jwks`))
+      const jwksResponse = await fetch(jwksUrl)
 
-      // Verify the token
+      if (!jwksResponse.ok) {
+        return c.json({ error: 'Failed to fetch JWKS' }, 500)
+      }
+
+      const JWKS = createRemoteJWKSet(new URL(jwksUrl))
       const { payload } = await jwtVerify(token, JWKS)
 
-      // We configured the JWT payload to only include user.id
       if (!payload.id) {
         return c.json({ error: 'Invalid token' }, 401)
       }
 
       await next()
     } catch (error) {
-      console.error(error)
+      console.error('Auth error:', error)
       return c.json({ error: 'Unauthorized' }, 401)
     }
   },
+  // Forward to the SSE endpoint in the Durable Object -> Persists the connection via streamed SSE:s
   async (c) => {
     const { teamSlug, projectSlug } = c.req.valid('param')
 
@@ -160,7 +176,7 @@ app.get(
   },
 )
 
-// Define the worker with proper types
+// Export the worker
 export default {
   fetch: app.fetch,
   email: async (message, env, ctx) => {
@@ -189,24 +205,5 @@ export default {
         content: email.html || email.text || '<empty message>',
       },
     })
-
-    // const instanceStatus = await instance.status()
-
-    // return new Response(
-    //   JSON.stringify({
-    //     instanceId: instance.id,
-    //     status: instanceStatus,
-    //   }),
-    //   {
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //     },
-    //   },
-    // )
-
-    // // biome-ignore lint/suspicious/noConsoleLog: <explanation>
-    // console.log('Email', email)
-
-    // ctx.waitUntil(message.forward('christian@hiddenvillage.se'))
   },
 } satisfies ExportedHandler<Env>
