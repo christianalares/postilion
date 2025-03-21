@@ -70,17 +70,20 @@ export const DomainDetails = () => {
             <TableHead>Status</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
           <TableRow>
             <TableCell className="font-mono">{dnsValue}</TableCell>
             <TableCell className="font-medium">MX</TableCell>
             <TableCell>10</TableCell>
+
             <TableCell className="font-mono">
               <div className="flex items-center gap-2">
                 mx1.forwardemail.net
                 <CopyToClipboardButton text="mx1.forwardemail.net" />
               </div>
             </TableCell>
+
             <TableCell>
               {domain.has_mx_record ? (
                 <Badge variant="success">Verified</Badge>
@@ -89,16 +92,19 @@ export const DomainDetails = () => {
               )}
             </TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell className="font-mono">{dnsValue}</TableCell>
             <TableCell className="font-medium">MX</TableCell>
             <TableCell>10</TableCell>
+
             <TableCell className="font-mono">
               <div className="flex items-center gap-2">
                 mx2.forwardemail.net
                 <CopyToClipboardButton text="mx2.forwardemail.net" />
               </div>
             </TableCell>
+
             <TableCell>
               {domain.has_mx_record ? (
                 <Badge variant="success">Verified</Badge>
@@ -107,16 +113,19 @@ export const DomainDetails = () => {
               )}
             </TableCell>
           </TableRow>
+
           <TableRow>
             <TableCell className="font-mono">{dnsValue}</TableCell>
             <TableCell className="font-medium">TXT</TableCell>
             <TableCell />
+
             <TableCell className="font-mono">
               <div className="flex items-center gap-2">
                 {`forward-email-site-verification=${domain.verification_record}`}
                 <CopyToClipboardButton text={`forward-email-site-verification=${domain.verification_record}`} />
               </div>
             </TableCell>
+
             <TableCell>
               {domain.has_txt_record ? (
                 <Badge variant="success">Verified</Badge>
@@ -124,6 +133,21 @@ export const DomainDetails = () => {
                 <Badge variant="warning">Not started</Badge>
               )}
             </TableCell>
+          </TableRow>
+
+          <TableRow>
+            <TableCell className="font-mono">{dnsValue}</TableCell>
+            <TableCell className="font-medium">TXT</TableCell>
+            <TableCell />
+
+            <TableCell className="font-mono">
+              <div className="flex items-center gap-2">
+                forward-email=postilion.ai
+                <CopyToClipboardButton text="forward-email=postilion.ai" />
+              </div>
+            </TableCell>
+
+            <TableCell />
           </TableRow>
         </TableBody>
       </Table>

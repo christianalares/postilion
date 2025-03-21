@@ -8,32 +8,99 @@ import { z } from 'zod'
 // User-defined params passed to your workflow
 type Params = {
   from: string
-  shortId: string
+  to: string
   subject: string
   content: string
 }
 
 export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
   async run(event: WorkflowEvent<Params>, step: WorkflowStep) {
-    const createdMessage = await step.do('Create a new message in the database', async () => {
-      const prisma = createPrismaClient(this.env.DATABASE_URL)
+    const prisma = createPrismaClient(this.env.DATABASE_URL)
 
-      const project = await prisma.project.findUnique({
-        where: {
-          short_id: event.payload.shortId,
-        },
-        include: {
-          team: {
-            select: {
-              slug: true,
+    const project = await step.do('Get the project from the database', async () => {
+      const toEmail = event.payload.to
+
+      if (toEmail.endsWith('@postilion.ai')) {
+        const [shortId] = toEmail.split('@')[0]
+
+        const prohectFromShortId = await step.do('Get project by short id', async () => {
+          const project = await prisma.project
+            .findUnique({
+              where: {
+                short_id: shortId,
+              },
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                team: {
+                  select: {
+                    id: true,
+                    slug: true,
+                  },
+                },
+              },
+            })
+            .catch((error) => {
+              console.error(error)
+              throw new Error('Error fetching project')
+            })
+
+          if (!project) {
+            throw new NonRetryableError('Project not found')
+          }
+
+          return project
+        })
+
+        return prohectFromShortId
+      }
+
+      const projectFromDomain = await step.do('Get project by domain', async () => {
+        const toDomain = event.payload.to.split('@')[1]
+
+        const domain = await prisma.domain
+          .findUnique({
+            where: {
+              domain: toDomain,
             },
-          },
-        },
+            select: {
+              project: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  team: {
+                    select: {
+                      id: true,
+                      slug: true,
+                    },
+                  },
+                },
+              },
+            },
+          })
+          .catch((error) => {
+            console.error(error)
+            throw new Error('Error fetching domain')
+          })
+
+        if (!domain) {
+          throw new NonRetryableError(`Domain ${toDomain} not found`)
+        }
+
+        if (!domain.project) {
+          throw new NonRetryableError(`Domain ${toDomain} is not associated with any project`)
+        }
+
+        return domain.project
       })
 
-      if (!project) {
-        throw new NonRetryableError('Project not found')
-      }
+      return projectFromDomain
+    })
+
+    const createdMessage = await step.do('Create a new message in the database', async () => {
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
 
       const createdMessage = await prisma.message.create({
         data: {

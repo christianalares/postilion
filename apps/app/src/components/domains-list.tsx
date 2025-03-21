@@ -34,7 +34,7 @@ export const DomainsList = () => {
           return (
             <li
               key={domain.id}
-              className="flex flex-col gap-4 p-4 border has-[.domain-link:hover]:border-accent-foreground/30 group"
+              className="flex flex-col gap-4 p-4 border has-[.domain-link:hover]:border-accent-foreground/30"
             >
               <div className="flex justify-between items-center gap-16">
                 {isVerified ? (
@@ -60,7 +60,7 @@ export const DomainsList = () => {
               {!!domain.project && (
                 <Link
                   href={`/${teamSlug}/${domain.project.slug}`}
-                  className="flex items-center gap-2 font-mono text-xs group"
+                  className="flex items-center gap-2 font-mono text-xs group w-max"
                 >
                   <Icon name="home" className="size-4" strokeWidth={1} />
                   <span className="group-hover:underline underline-offset-4 text-muted-foreground">

@@ -137,13 +137,9 @@ export default {
 
     const to = email.to?.at(0)?.address
 
-    console.log('to', to)
-
     if (!to) {
       throw new Error('No to address')
     }
-
-    const [shortId] = to.split('@')
 
     const newId = crypto.randomUUID()
 
@@ -151,7 +147,7 @@ export default {
       id: newId,
       params: {
         from: email.from.address,
-        shortId,
+        to,
         subject: email.subject ?? '',
         content: email.html || email.text || '<empty message>',
       },
