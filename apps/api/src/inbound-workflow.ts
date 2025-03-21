@@ -178,32 +178,30 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
 
       const prisma = createPrismaClient(this.env.DATABASE_URL)
 
-      await prisma.attachment
-        .createManyAndReturn({
-          data: event.payload.attachments.map((attachment) => ({
-            message_id: createdMessage.id,
-            filename: attachment.filename,
-            mime_type: attachment.mimeType,
-            content: attachment.content,
-          })),
+      const updatedMessage = await prisma.message
+        .update({
+          where: {
+            id: createdMessage.id,
+          },
+          data: {
+            attachments: {
+              createMany: {
+                data: event.payload.attachments.map((attachment) => ({
+                  filename: attachment.filename,
+                  mime_type: attachment.mimeType,
+                  content: attachment.content,
+                })),
+              },
+            },
+          },
+          include: {
+            attachments: true,
+          },
         })
         .catch((error) => {
           console.error(error)
           throw new Error('Error creating attachments')
         })
-
-      const latestMessage = await prisma.message.findUnique({
-        where: {
-          id: createdMessage.id,
-        },
-        include: {
-          attachments: true,
-        },
-      })
-
-      if (!latestMessage) {
-        throw new Error(`Message with id ${createdMessage.id} not found`)
-      }
 
       try {
         const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
@@ -211,7 +209,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
 
         await statusObj.fetch('http://internal/broadcast', {
           method: 'POST',
-          body: JSON.stringify(latestMessage),
+          body: JSON.stringify(updatedMessage),
         })
       } catch (error) {
         console.error('Failed to broadcast message:', error)
