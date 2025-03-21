@@ -42,6 +42,15 @@ export function Combobox({
   const selectedItem = incomingSelectedItem ?? internalSelectedItem
   const filteredItems = items.filter((item) => item.label.toLowerCase().includes(inputValue.toLowerCase()))
 
+  if (items.length === 0) {
+    return (
+      <div className="text-sm h-9 flex items-center justify-between bg-popover text-popover-foreground w-full border px-3 shadow-md outline-hidden">
+        [Empty list]
+        <Icon name="chevronsUpDown" className="ml-2 size-4 shrink-0 opacity-50" />
+      </div>
+    )
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>

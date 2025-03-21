@@ -64,6 +64,7 @@ export const ConnectedDomainForm = () => {
 
   const [selectedDomain, setSelectedDomain] = useState<ComboboxItem | undefined>(selectedDomainInList)
 
+  // TODO: Fix a better abstraction of the FormCard component
   return (
     <FormCard
       handleSubmit={() => {
@@ -85,21 +86,25 @@ export const ConnectedDomainForm = () => {
       disabled={!selectedDomain || selectedDomain.value === project.domain?.id}
       loading={updateProjectMutation.isPending}
     >
-      <div className="flex gap-4 w-full">
-        <div className="flex-1">
-          <Combobox
-            searchPlaceholder="Search domain..."
-            label="Select domain"
-            emptyMessage="No domains found."
-            popover={{ content: { align: 'start', style: { width: 'auto' } } }}
-            items={comboboxItems}
-            selectedItem={selectedDomain}
-            onSelect={(item) => {
-              setSelectedDomain(item)
-            }}
-          />
+      {comboboxItems.length === 0 ? (
+        <p>You have no domains connected to this project.</p>
+      ) : (
+        <div className="flex gap-4 w-full">
+          <div className="flex-1">
+            <Combobox
+              searchPlaceholder="Search domain..."
+              label="Select domain"
+              emptyMessage="No domains found."
+              popover={{ content: { align: 'start', style: { width: 'auto' } } }}
+              items={comboboxItems}
+              selectedItem={selectedDomain}
+              onSelect={(item) => {
+                setSelectedDomain(item)
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </FormCard>
   )
 }
