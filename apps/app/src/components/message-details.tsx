@@ -2,6 +2,7 @@
 
 import { useMessageId } from '@/hooks/use-message-id'
 import { trpc } from '@/trpc/client'
+import { FileViewer } from './file-viewer/file-viewer'
 import { Badge, badgeLabelVariants } from './ui/badge'
 import { Skeleton } from './ui/skeleton'
 
@@ -34,6 +35,19 @@ export const MessageDetails = () => {
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className={badgeLabelVariants()}>Raw body:</p>
           <p className="text-xs font-mono break-all">{message.body_raw}</p>
+        </div>
+
+        <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
+          <p className={badgeLabelVariants()}>Attachments:</p>
+          <ul>
+            {message.attachments.map((attachment) => {
+              return (
+                <li key={attachment.id}>
+                  <FileViewer file={attachment} />
+                </li>
+              )
+            })}
+          </ul>
         </div>
       </div>
     </article>

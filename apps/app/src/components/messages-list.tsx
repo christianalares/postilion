@@ -7,6 +7,7 @@ import { useTeamSlug } from '@/hooks/use-team-slug'
 import type { MESSAGE_STATUS_ENUM } from '@postilion/db'
 import { AnimatePresence, motion } from 'motion/react'
 import Link from 'next/link'
+import { AnimatedStream } from './aniamted-stream'
 import { Badge } from './ui/badge'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
@@ -18,9 +19,11 @@ export const MessagesList = () => {
   if (messages.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
-        <div className="border border-dashed p-4">
+        <div className="border border-dashed p-16">
           <h1 className="text-lg font-bold">There are no received messages yet</h1>
           <p className="text-muted-foreground">When new messages are received, they will appear here in real-time.</p>
+
+          <AnimatedStream className="mt-8" />
         </div>
       </div>
     )
@@ -54,7 +57,9 @@ const Message = ({ message }: MessageProps) => {
         <div className="flex gap-2 grow-0 items-center">
           <Badge label="From:">{message.from}</Badge>
           <Badge label="Subject:">{message.subject}</Badge>
+          {message.handle && <Badge label="Handle:">{message.handle}</Badge>}
           <Badge label="Created at:">{new Date(message.created_at).toLocaleString()}</Badge>
+          {message.attachments.length > 0 && <Badge label="Attachments:">{message.attachments.length}</Badge>}
 
           <TooltipProvider>
             <Tooltip>

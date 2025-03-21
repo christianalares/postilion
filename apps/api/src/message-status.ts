@@ -12,18 +12,6 @@ export class MessageStatus {
     this.connections = new Set()
     this.app = new Hono<{ Bindings: Env }>()
 
-    // Handle CORS preflight
-    // this.app.options('/sse', (c) => {
-    //   return new Response(null, {
-    //     headers: {
-    //       'Access-Control-Allow-Origin': c.env.APP_URL,
-    //       'Access-Control-Allow-Methods': 'GET',
-    //       'Access-Control-Allow-Headers': 'Content-Type',
-    //       'Access-Control-Allow-Credentials': 'true',
-    //     },
-    //   })
-    // })
-
     // SSE endpoint
     this.app.get('/sse', async (c) => {
       const encoder = new TextEncoder()

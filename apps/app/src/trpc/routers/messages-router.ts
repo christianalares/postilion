@@ -25,6 +25,9 @@ const getForProject = authProcedure
           },
         },
       },
+      include: {
+        attachments: true,
+      },
       orderBy: {
         created_at: 'desc',
       },
@@ -48,6 +51,9 @@ const getById = authProcedure.input(z.object({ messageId: z.string() })).query(a
             },
           },
         },
+      },
+      include: {
+        attachments: true,
       },
     })
     .catch(() => {

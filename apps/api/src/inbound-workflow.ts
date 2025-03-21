@@ -11,6 +11,11 @@ type Params = {
   to: string
   subject: string
   content: string
+  attachments: Array<{
+    filename: string
+    mimeType: string
+    content: string
+  }>
 }
 
 export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
@@ -106,10 +111,14 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         data: {
           project_id: project.id,
           slug: Math.random().toString(36).substring(2, 15),
+          handle: event.payload.to.split('@')[0],
           from: event.payload.from.trim(),
           body_raw: event.payload.content.trim(),
           subject: event.payload.subject.trim(),
           status: 'PROCESSING',
+        },
+        include: {
+          attachments: true,
         },
       })
 
@@ -162,6 +171,53 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
       return object.strippedBody
     })
 
+    await step.do('Process attachments', async () => {
+      if (event.payload.attachments.length === 0) {
+        return []
+      }
+
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
+
+      await prisma.attachment
+        .createManyAndReturn({
+          data: event.payload.attachments.map((attachment) => ({
+            message_id: createdMessage.id,
+            filename: attachment.filename,
+            mime_type: attachment.mimeType,
+            content: attachment.content,
+          })),
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error('Error creating attachments')
+        })
+
+      const latestMessage = await prisma.message.findUnique({
+        where: {
+          id: createdMessage.id,
+        },
+        include: {
+          attachments: true,
+        },
+      })
+
+      if (!latestMessage) {
+        throw new Error(`Message with id ${createdMessage.id} not found`)
+      }
+
+      try {
+        const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
+        const statusObj = this.env.MESSAGE_STATUS.get(id)
+
+        await statusObj.fetch('http://internal/broadcast', {
+          method: 'POST',
+          body: JSON.stringify(latestMessage),
+        })
+      } catch (error) {
+        console.error('Failed to broadcast message:', error)
+      }
+    })
+
     await step.do('Generate a summary of the stripped email body', async () => {
       const workersai = createWorkersAI({ binding: this.env.AI })
       const prisma = createPrismaClient(this.env.DATABASE_URL)
@@ -204,22 +260,11 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           status: 'COMPLETED',
         },
         include: {
-          project: {
-            select: {
-              slug: true,
-              team: {
-                select: {
-                  slug: true,
-                },
-              },
-            },
-          },
+          attachments: true,
         },
       })
 
-      const id = this.env.MESSAGE_STATUS.idFromName(
-        `${updatedMessage.project.team.slug}-${updatedMessage.project.slug}`,
-      )
+      const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
       const statusObj = this.env.MESSAGE_STATUS.get(id)
 
       try {
@@ -233,32 +278,5 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
 
       return updatedMessage
     })
-
-    // await step.sleep('sleep', '5 seconds')
-
-    // const my_value2 = await step.do('My Second Step', async () => {
-    //   return 'b'.repeat(100)
-    // })
-
-    // await step.sleep('sleep', '1 minute')
-
-    // await step.do(
-    //   'My Second Step',
-    //   {
-    //     // Retries are enabled by default using the config below on all steps
-    //     retries: {
-    //       limit: 5,
-    //       delay: '1 second',
-    //       backoff: 'constant',
-    //     },
-    //     timeout: '15 minutes',
-    //   },
-    //   async () => {
-    //     // Do stuff here, with access to my_value!
-    //     if (Math.random() > 0.5) {
-    //       throw new Error('Oh no!')
-    //     }
-    //   },
-    // )
   }
 }

@@ -8,8 +8,10 @@ import {
   CircleAlert,
   CircleCheck,
   Clipboard,
+  FileText,
   Globe,
   Home,
+  Image,
   Loader2,
   type LucideProps,
   MessageCircle,
@@ -65,6 +67,8 @@ const icons = {
   clipboard: Clipboard,
   dotsVertical: MoreVertical,
   trash: Trash2,
+  document: FileText,
+  image: Image,
 }
 
 export type IconName = keyof typeof icons

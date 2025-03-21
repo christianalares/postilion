@@ -14,14 +14,26 @@ app.post(
   zValidator(
     'json',
     z.object({
-      from: z.string(),
-      shortId: z.string(),
+      from: z.string().email(),
+      to: z.string().email(),
       subject: z.string(),
       content: z.string(),
+      attachments: z.array(
+        z.object({
+          filename: z.string(),
+          mimeType: z
+            .string()
+            .refine(
+              (mime) => mime.startsWith('application/pdf') || mime.startsWith('image/'),
+              'Only PDF and image files are allowed',
+            ),
+          content: z.string().base64(),
+        }),
+      ),
     }),
   ),
   async (c) => {
-    const { from, shortId, subject, content } = c.req.valid('json')
+    const { from, to, subject, content, attachments } = c.req.valid('json')
 
     const newId = crypto.randomUUID()
 
@@ -29,9 +41,10 @@ app.post(
       id: newId,
       params: {
         from,
-        shortId,
+        to,
         subject,
         content,
+        attachments,
       },
     })
 
@@ -141,6 +154,17 @@ export default {
       throw new Error('No to address')
     }
 
+    const attachments = email.attachments
+      .filter((attachment) => !attachment.mimeType.startsWith('image/') && attachment.mimeType !== 'application/pdf')
+      .map((attachment) => {
+        return {
+          filename: attachment.filename,
+          mimeType: attachment.mimeType,
+          // string because we're using the base64 encoding
+          content: attachment.content as string,
+        }
+      })
+
     const newId = crypto.randomUUID()
 
     const instance = await env.INBOUND_EMAIL_WORKFLOW.create({
@@ -150,6 +174,7 @@ export default {
         to,
         subject: email.subject ?? '',
         content: email.html || email.text || '<empty message>',
+        attachments,
       },
     })
   },

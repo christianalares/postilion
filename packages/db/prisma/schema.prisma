@@ -163,26 +163,26 @@ model Message {
   status          MESSAGE_STATUS_ENUM
   project_id      String
   project         Project             @relation(fields: [project_id], references: [id])
-  // attachments     Attachment[]
+  handle          String?
+  attachments     Attachment[]
 
   @@index([project_id, slug])
   @@map("messages")
 }
 
-// model Attachment {
-//   id           String   @id @default(ulid())
-//   message_id   String
-//   message      Message  @relation(fields: [message_id], references: [id], onDelete: Cascade)
-//   filename     String
-//   content_type String
-//   size_bytes   Int
-//   storage_key  String
-//   ai_summary   String?
-//   created_at   DateTime @default(now())
+model Attachment {
+  id         String   @id @default(ulid())
+  created_at DateTime @default(now())
+  message_id String
+  message    Message  @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  filename   String
+  mime_type  String
+  content    String
+  ai_summary String?
 
-//   @@index([message_id])
-//   @@map("attachments")
-// }
+  @@index([message_id])
+  @@map("attachments")
+}
 
 model Domain {
   id              String    @id @default(ulid())
