@@ -84,15 +84,6 @@ model Verification {
   @@map("verification")
 }
 
-model Jwks {
-  id         String   @id
-  publicKey  String
-  privateKey String
-  createdAt  DateTime
-
-  @@map("jwks")
-}
-
 model Team {
   id         String       @id @default(ulid())
   slug       String       @unique

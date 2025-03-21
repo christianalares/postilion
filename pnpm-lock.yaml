@@ -32,9 +32,6 @@ importers:
       hono:
         specifier: ^4.7.4
         version: 4.7.4
-      jose:
-        specifier: ^6.0.10
-        version: 6.0.10
       postal-mime:
         specifier: ^2.4.3
         version: 2.4.3
@@ -3510,10 +3507,6 @@ packages:
 
   /jose@5.10.0:
     resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
-    dev: false
-
-  /jose@6.0.10:
-    resolution: {integrity: sha512-skIAxZqcMkOrSwjJvplIPYrlXGpxTPnro2/QWTDCxAdWQrSTV5/KqspMWmi5WAx5+ULswASJiZ0a+1B/Lxt9cw==}
     dev: false
 
   /js-yaml@4.1.0:
