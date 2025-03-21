@@ -55,9 +55,10 @@ export const ConnectedDomainForm = () => {
   const [domains] = trpc.domains.getForTeam.useSuspenseQuery({ teamSlug })
   const updateProjectMutation = trpc.projects.update.useMutation()
 
-  const comboboxItems = domains.map((domain) => ({
+  const comboboxItems: ComboboxItem[] = domains.map((domain) => ({
     value: domain.id,
     label: domain.domain,
+    disabled: domain.project?.name ? `Already connected to "${domain.project.name}"` : false,
   }))
 
   const selectedDomainInList = comboboxItems.find((item) => item.value === project.domain?.id)

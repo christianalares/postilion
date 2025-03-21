@@ -107,6 +107,9 @@ const getByDomain = authProcedure
         omit: {
           forwardemail_id: true,
         },
+        include: {
+          project: true,
+        },
       })
       .catch(() => {
         throw new TRPCError({

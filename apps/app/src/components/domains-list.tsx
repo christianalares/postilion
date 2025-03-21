@@ -47,7 +47,7 @@ export const DomainsList = () => {
                   </Badge>
                 )}
 
-                <DomainDropdown domainId={domain.id} />
+                <DomainDropdown domain={{ id: domain.id, projectName: domain.project?.name }} />
               </div>
 
               <Link

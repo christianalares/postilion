@@ -8,7 +8,6 @@ import {
   CircleAlert,
   CircleCheck,
   Clipboard,
-  ClipboardList,
   Globe,
   Home,
   Loader2,

@@ -56,7 +56,7 @@ export const DomainDetails = () => {
               Verify DNS records
             </Button>
           )}
-          <DomainDropdown domainId={domain.id} />
+          <DomainDropdown domain={{ id: domain.id, projectName: domain.project?.name }} />
         </div>
       </div>
 

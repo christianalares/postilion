@@ -6,10 +6,13 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { Icon } from './icon'
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip'
+import { TooltipProvider } from './tooltip'
 
 export type ComboboxItem = {
   value: string
   label: string
+  disabled?: boolean | string
 }
 
 type Props = {
@@ -89,10 +92,17 @@ export function Combobox({
 
                 return (
                   <CommandItem
-                    className="flex items-center justify-between cursor-pointer"
                     key={item.value}
                     value={item.value}
+                    className={cn('flex justify-between', {
+                      'opacity-50 cursor-default': !!item.disabled,
+                    })}
+                    // disabled={!!item.disabled}
                     onSelect={(currentValue) => {
+                      if (item.disabled) {
+                        return
+                      }
+
                       const foundItem = items.find((item) => item.value === currentValue)
 
                       if (!foundItem) {
@@ -104,8 +114,30 @@ export function Combobox({
                       setOpen(false)
                     }}
                   >
-                    {item.label}
-                    <Icon name="check" className={cn('size-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+                    <div
+                      className={cn(
+                        'flex-1 flex items-center justify-between gap-8',
+                        item.disabled ? 'cursor-default' : 'cursor-pointer',
+                      )}
+                    >
+                      {item.label}
+                      <Icon name="check" className={cn('size-5', isSelected ? 'opacity-100' : 'opacity-0')} />
+                    </div>
+
+                    {typeof item.disabled === 'string' && !isSelected && (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="cursor-help">
+                              <Icon name="circleAlert" className="size-5" />
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent showArrow>
+                            <p>{item.disabled}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    )}
                   </CommandItem>
                 )
               })}

@@ -24,6 +24,7 @@ export const ProjectNameForm = () => {
     onSuccess: () => {
       toast.success('Project name updated')
       trpcUtils.projects.getBySlug.invalidate({ teamSlug, projectSlug })
+      trpcUtils.projects.getForTeam.invalidate({ slug: teamSlug })
     },
     onError: (error) => {
       toast.error('Error updating project name', {

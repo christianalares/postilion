@@ -22,13 +22,14 @@ const formSchema = z.object({
 })
 
 export const AddDomainModal = () => {
+  const trpcUtils = trpc.useUtils()
   const form = useZodForm(formSchema)
   const router = useRouter()
   const teamSlug = useTeamSlug()
-  const pathname = usePathname()
 
   const createDomainMutation = trpc.domains.create.useMutation({
     onSuccess: (createdDomain) => {
+      trpcUtils.domains.getForTeam.invalidate({ teamSlug })
       popModal('addDomainModal')
       toast.success('Domain created successfully')
       router.push(`/${teamSlug}/settings/domains/${createdDomain.domain}`)

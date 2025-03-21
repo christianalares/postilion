@@ -2,7 +2,8 @@
 
 import { createPushModal } from 'pushmodal'
 import { AlertDialog } from '../ui/alert-dialog'
-import { ConfirmDeleteDomainAlert } from './confirm-delete-domain'
+import { CannotDeleteDomainAlert } from './cannot-delete-domain-alert'
+import { ConfirmDeleteDomainAlert } from './confirm-delete-domain-alert'
 
 export const {
   pushModal: pushAlert,
@@ -12,6 +13,10 @@ export const {
   modals: {
     confirmDeleteDomain: {
       Component: ConfirmDeleteDomainAlert,
+      Wrapper: (props) => <AlertDialog {...props} />,
+    },
+    cannotDeleteDomain: {
+      Component: CannotDeleteDomainAlert,
       Wrapper: (props) => <AlertDialog {...props} />,
     },
   },
