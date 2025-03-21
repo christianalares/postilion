@@ -122,9 +122,69 @@ app.get(
   },
 )
 
+// // Route for the SSE endpoint for the message stream
+// app.get(
+//   '/sse/:teamSlug/:projectSlug',
+//   zValidator(
+//     'param',
+//     z.object({
+//       teamSlug: z.string(),
+//       projectSlug: z.string(),
+//     }),
+//   ),
+//   zValidator(
+//     'query',
+//     z.object({
+//       token: z.string(),
+//     }),
+//   ),
+//   cors({ origin: ['http://localhost:3000', 'https://app.postilion.ai'] }),
+//   // Verify the JWT token
+//   async (c, next) => {
+//     try {
+//       const { token } = c.req.valid('query')
+//       const jwksUrl = `${c.env.APP_URL}/api/auth/jwks`
+
+//       const jwksResponse = await fetch(jwksUrl)
+
+//       if (!jwksResponse.ok) {
+//         return c.json({ error: 'Failed to fetch JWKS' }, 500)
+//       }
+
+//       const JWKS = createRemoteJWKSet(new URL(jwksUrl))
+//       const { payload } = await jwtVerify(token, JWKS)
+
+//       if (!payload.id) {
+//         return c.json({ error: 'Invalid token' }, 401)
+//       }
+
+//       await next()
+//     } catch (error) {
+//       console.error('Auth error:', error)
+//       return c.json({ error: 'Unauthorized' }, 401)
+//     }
+//   },
+//   // Forward to the SSE endpoint in the Durable Object -> Persists the connection via streamed SSE:s
+//   async (c) => {
+//     const { teamSlug, projectSlug } = c.req.valid('param')
+
+//     const id = c.env.MESSAGE_STATUS.idFromName(`${teamSlug}-${projectSlug}`)
+//     const stub = c.env.MESSAGE_STATUS.get(id)
+
+//     // Forward to the SSE endpoint in the Durable Object
+//     return stub.fetch(new Request('http://internal/sse'))
+//   },
+// )
+
 // Route for the SSE endpoint for the message stream
 app.get(
   '/sse/:teamSlug/:projectSlug',
+  cors({
+    origin: ['http://localhost:3000', 'https://app.postilion.ai'],
+    credentials: false,
+    exposeHeaders: ['Content-Type'],
+    allowHeaders: ['Content-Type', 'Accept'],
+  }),
   zValidator(
     'param',
     z.object({
@@ -132,35 +192,27 @@ app.get(
       projectSlug: z.string(),
     }),
   ),
-  zValidator(
-    'query',
-    z.object({
-      token: z.string(),
-    }),
-  ),
-  cors({ origin: ['http://localhost:3000', 'https://app.postilion.ai'] }),
   // Verify the JWT token
   async (c, next) => {
     try {
-      const { token } = c.req.valid('query')
-      const jwksUrl = `${c.env.APP_URL}/api/auth/jwks`
+      const res = await fetch(`${c.env.APP_URL}/api/auth/get-session`, {
+        headers: {
+          cookie: c.req.header('cookie') ?? '',
+        },
+      })
 
-      const jwksResponse = await fetch(jwksUrl)
-
-      if (!jwksResponse.ok) {
-        return c.json({ error: 'Failed to fetch JWKS' }, 500)
+      if (!res.ok) {
+        return c.json({ error: 'Unauthorized' }, 401)
       }
 
-      const JWKS = createRemoteJWKSet(new URL(jwksUrl))
-      const { payload } = await jwtVerify(token, JWKS)
+      const session = (await res.json()) as { session: { id: string } } | null
 
-      if (!payload.id) {
-        return c.json({ error: 'Invalid token' }, 401)
+      if (!session) {
+        return c.json({ error: 'Unauthorized' }, 401)
       }
 
       await next()
     } catch (error) {
-      console.error('Auth error:', error)
       return c.json({ error: 'Unauthorized' }, 401)
     }
   },

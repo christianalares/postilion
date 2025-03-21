@@ -15,60 +15,96 @@ export const useRealtimeMessages = () => {
   const [messages] = trpc.messages.getForProject.useSuspenseQuery({ teamSlug, projectSlug })
 
   useEffect(() => {
-    authClient.getSession({
-      fetchOptions: {
-        onSuccess: (ctx) => {
-          const jwt = ctx.response.headers.get('set-auth-jwt')
-          if (!jwt) {
-            toast.error('Failed to authenticate message stream')
-            return
-          }
+    const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sse/${teamSlug}/${projectSlug}`, {
+      withCredentials: true,
+    })
 
-          // Close existing connection if any
-          eventSourceRef.current?.close()
+    eventSource.onmessage = (event) => {
+      if (event.data === 'connected') {
+        return
+      }
 
-          // Create new connection with JWT
-          const eventSource = new EventSource(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/sse/${teamSlug}/${projectSlug}?token=${jwt}`,
-          )
-          eventSourceRef.current = eventSource
+      const incomingMessage = JSON.parse(event.data) as RouterOutputs['messages']['getForProject'][number]
 
-          eventSource.onmessage = (event) => {
-            if (event.data === 'connected') {
-              return
-            }
+      trpcUtils.messages.getForProject.setData({ teamSlug, projectSlug }, (prev) => {
+        if (!prev) {
+          return prev
+        }
 
-            const incomingMessage = JSON.parse(event.data) as RouterOutputs['messages']['getForProject'][number]
+        // If message exists, update it
+        if (prev.some((msg) => msg.id === incomingMessage.id)) {
+          return prev.map((msg) => (msg.id === incomingMessage.id ? incomingMessage : msg))
+        }
 
-            trpcUtils.messages.getForProject.setData({ teamSlug, projectSlug }, (prev) => {
-              if (!prev) {
-                return prev
-              }
+        // If new message, prepend it
+        return [incomingMessage, ...prev]
+      })
+    }
 
-              // If message exists, update it
-              if (prev.some((msg) => msg.id === incomingMessage.id)) {
-                return prev.map((msg) => (msg.id === incomingMessage.id ? incomingMessage : msg))
-              }
-
-              // If new message, prepend it
-              return [incomingMessage, ...prev]
-            })
-          }
-
-          eventSource.addEventListener('error', () => {
-            toast.error('Failed to connect to the message stream')
-          })
-        },
-        onError: () => {
-          toast.error('Failed to authenticate message stream')
-        },
-      },
+    eventSource.addEventListener('error', (event) => {
+      toast.error('Failed to connect to the message stream')
     })
 
     return () => {
-      eventSourceRef.current?.close()
+      eventSource.close()
     }
   }, [teamSlug, projectSlug, trpcUtils])
+
+  // useEffect(() => {
+  //   authClient.getSession({
+  //     fetchOptions: {
+  //       onSuccess: (ctx) => {
+  //         const jwt = ctx.response.headers.get('set-auth-jwt')
+  //         if (!jwt) {
+  //           toast.error('Failed to authenticate message stream')
+  //           return
+  //         }
+
+  //         // Close existing connection if any
+  //         eventSourceRef.current?.close()
+
+  //         // Create new connection with JWT
+  //         const eventSource = new EventSource(
+  //           `${process.env.NEXT_PUBLIC_API_BASE_URL}/sse/${teamSlug}/${projectSlug}?token=${jwt}`,
+  //         )
+  //         eventSourceRef.current = eventSource
+
+  //         eventSource.onmessage = (event) => {
+  //           if (event.data === 'connected') {
+  //             return
+  //           }
+
+  //           const incomingMessage = JSON.parse(event.data) as RouterOutputs['messages']['getForProject'][number]
+
+  //           trpcUtils.messages.getForProject.setData({ teamSlug, projectSlug }, (prev) => {
+  //             if (!prev) {
+  //               return prev
+  //             }
+
+  //             // If message exists, update it
+  //             if (prev.some((msg) => msg.id === incomingMessage.id)) {
+  //               return prev.map((msg) => (msg.id === incomingMessage.id ? incomingMessage : msg))
+  //             }
+
+  //             // If new message, prepend it
+  //             return [incomingMessage, ...prev]
+  //           })
+  //         }
+
+  //         eventSource.addEventListener('error', () => {
+  //           toast.error('Failed to connect to the message stream')
+  //         })
+  //       },
+  //       onError: () => {
+  //         toast.error('Failed to authenticate message stream')
+  //       },
+  //     },
+  //   })
+
+  //   return () => {
+  //     eventSourceRef.current?.close()
+  //   }
+  // }, [teamSlug, projectSlug, trpcUtils])
 
   return messages
 }
