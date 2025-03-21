@@ -5,7 +5,8 @@ import { useZodForm } from '@/hooks/use-zod-form'
 import { trpc } from '@/trpc/client'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { FormCard, FormCardSkeleton } from '../form-card'
+import { Button } from '../ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 
 const formSchema = z.object({
   fullName: z.string(),
@@ -36,24 +37,40 @@ export const FullNameForm = () => {
   })
 
   return (
-    <FormCard
-      handleSubmit={handleSubmit}
-      label="Full name"
-      labelId="full-name"
-      description="Your full name as it will appear across the platform."
-      loading={updateUserMutation.isPending}
-    >
-      <Input id="full-name" {...form.register('fullName')} placeholder="John Doe" />
-    </FormCard>
+    <form onSubmit={handleSubmit}>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <label htmlFor="full-name">Full name</label>
+          </CardTitle>
+
+          <CardDescription>Your full name as it will appear across the platform.</CardDescription>
+        </CardHeader>
+
+        <CardContent className="flex gap-4">
+          <Input id="full-name" {...form.register('fullName')} placeholder="John Doe" />
+          <Button type="submit" loading={updateUserMutation.isPending}>
+            Save
+          </Button>
+        </CardContent>
+      </Card>
+    </form>
   )
 }
 
 export const FullNameFormSkeleton = () => {
   return (
-    <FormCardSkeleton
-      label="Full name"
-      labelId="full-name"
-      description="Your full name as it will appear across the platform."
-    />
+    <Card>
+      <CardHeader>
+        <CardTitle>Full name</CardTitle>
+        <CardDescription>Your full name as it will appear across the platform.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex gap-4">
+        <Input id="full-name" placeholder="Loading..." />
+        <Button type="button" disabled>
+          Save
+        </Button>
+      </CardContent>
+    </Card>
   )
 }

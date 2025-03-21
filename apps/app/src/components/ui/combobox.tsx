@@ -62,11 +62,10 @@ export function Combobox({
           role="combobox"
           variant="outline"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between shrink"
           loading={loading}
         >
           {selectedItem?.label ?? label ?? 'Select item'}
-          {/* {value ? items.find((item) => item.value === value)?.label : (label ?? 'Select item')} */}
           <Icon name="chevronsUpDown" className="ml-2 size-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

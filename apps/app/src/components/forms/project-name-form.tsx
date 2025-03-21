@@ -7,7 +7,8 @@ import { useZodForm } from '@/hooks/use-zod-form'
 import { trpc } from '@/trpc/client'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { FormCard, FormCardSkeleton } from '../form-card'
+import { Button } from '../ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 
 const formSchema = z.object({
   projectName: z.string(),
@@ -50,18 +51,40 @@ export const ProjectNameForm = () => {
   })
 
   return (
-    <FormCard
-      handleSubmit={handleSubmit}
-      label="Project name"
-      labelId="project-name"
-      description="The name of your project."
-      loading={updateProjectMutation.isPending}
-    >
-      <Input id="project-name" {...form.register('projectName')} placeholder="John Doe" />
-    </FormCard>
+    <form onSubmit={handleSubmit}>
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <label htmlFor="project-name">Project name</label>
+          </CardTitle>
+          <CardDescription>The name of your project.</CardDescription>
+        </CardHeader>
+
+        <CardContent className="flex gap-4">
+          <Input id="project-name" {...form.register('projectName')} placeholder="John Doe" />
+          <Button type="submit" loading={updateProjectMutation.isPending}>
+            Save
+          </Button>
+        </CardContent>
+      </Card>
+    </form>
   )
 }
 
 export const ProjectNameFormSkeleton = () => {
-  return <FormCardSkeleton label="Project name" labelId="project-name" description="The name of your project." />
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Project name</CardTitle>
+        <CardDescription>The name of your project.</CardDescription>
+      </CardHeader>
+
+      <CardContent className="flex gap-4">
+        <Input id="project-name" placeholder="Loading..." />
+        <Button type="button" disabled>
+          Save
+        </Button>
+      </CardContent>
+    </Card>
+  )
 }

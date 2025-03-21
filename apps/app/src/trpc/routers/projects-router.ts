@@ -186,6 +186,9 @@ const update = authProcedure
         name: input.data.name,
         domain: input.data.domainId ? { connect: { id: input.data.domainId } } : undefined,
       },
+      include: {
+        domain: true,
+      },
     })
 
     return updatedProject

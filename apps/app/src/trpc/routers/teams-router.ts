@@ -39,10 +39,11 @@ const update = authProcedure
   .input(
     z.object({
       slug: z.string(),
-      data: z.object({
-        name: z.union([z.string(), z.undefined()]),
-        slug: z.union([z.string(), z.undefined()]),
-      }),
+      data: z
+        .object({
+          name: z.string(),
+        })
+        .partial(),
     }),
   )
   .use(hasTeamRole('OWNER'))
@@ -54,7 +55,6 @@ const update = authProcedure
         },
         data: {
           name: input.data.name,
-          slug: input.data.slug ? createSlug(input.data.slug) : undefined,
         },
       })
       .catch((error) => {
