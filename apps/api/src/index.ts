@@ -155,7 +155,7 @@ export default {
     }
 
     const attachments = email.attachments
-      .filter((attachment) => !attachment.mimeType.startsWith('image/') && attachment.mimeType !== 'application/pdf')
+      .filter((attachment) => attachment.mimeType.startsWith('image/') || attachment.mimeType === 'application/pdf')
       .map((attachment) => {
         return {
           filename: attachment.filename,

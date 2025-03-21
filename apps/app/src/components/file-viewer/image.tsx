@@ -66,10 +66,10 @@ export const Image = ({ file }: Props) => {
   return (
     <button
       type="button"
-      className="font-mono text-xs flex items-center gap-2 hover:underline underline-offset-4"
+      className="font-mono text-xs flex items-center gap-1 hover:underline underline-offset-4"
       onClick={openImageInNewWindow}
     >
-      <Icon name="image" className="size-4" />
+      <Icon name="image" className="size-4" strokeWidth={1} />
       {file.filename}
     </button>
   )

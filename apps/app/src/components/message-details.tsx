@@ -39,7 +39,7 @@ export const MessageDetails = () => {
 
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className={badgeLabelVariants()}>Attachments:</p>
-          <ul>
+          <ul className="flex items-center gap-4">
             {message.attachments.map((attachment) => {
               return (
                 <li key={attachment.id}>
