@@ -3,6 +3,7 @@
 	"name": "postilion-inbound-email",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-03-07",
+	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
 		"enabled": true
 	},
@@ -36,6 +37,7 @@
 		}
 	],
 	"vars": {
+		"DEV": false,
 		"APP_URL": "https://app.postilion.ai"
 	}
 	// "queues": {

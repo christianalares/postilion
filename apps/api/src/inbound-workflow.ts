@@ -1,3 +1,4 @@
+import crypto from 'node:crypto'
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from 'cloudflare:workers'
 import { NonRetryableError } from 'cloudflare:workflows'
 import { createPrismaClient } from '@postilion/db/edge'
@@ -26,9 +27,9 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
       const toEmail = event.payload.to
 
       if (toEmail.endsWith('@postilion.ai')) {
-        const [shortId] = toEmail.split('@')[0]
+        const [shortId] = toEmail.split('@')
 
-        const prohectFromShortId = await step.do('Get project by short id', async () => {
+        const projectFromShortId = await step.do('Get project by short id', async () => {
           const project = await prisma.project
             .findUnique({
               where: {
@@ -58,7 +59,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           return project
         })
 
-        return prohectFromShortId
+        return projectFromShortId
       }
 
       const projectFromDomain = await step.do('Get project by domain', async () => {
@@ -119,6 +120,12 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         },
         include: {
           attachments: true,
+          webhook_logs: true,
+          project: {
+            select: {
+              webhooks: true,
+            },
+          },
         },
       })
 
@@ -196,6 +203,12 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           },
           include: {
             attachments: true,
+            webhook_logs: true,
+            project: {
+              select: {
+                webhooks: true,
+              },
+            },
           },
         })
         .catch((error) => {
@@ -235,30 +248,21 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         ],
       })
 
-      await prisma.message.update({
+      const updatedMessage = await prisma.message.update({
         where: {
           id: createdMessage.id,
         },
         data: {
           body_ai_summary: object.summary,
         },
-      })
-
-      return object.summary
-    })
-
-    await step.do('Finalize the message in the database', async () => {
-      const prisma = createPrismaClient(this.env.DATABASE_URL)
-
-      const updatedMessage = await prisma.message.update({
-        where: {
-          id: createdMessage.id,
-        },
-        data: {
-          status: 'COMPLETED',
-        },
         include: {
           attachments: true,
+          webhook_logs: true,
+          project: {
+            select: {
+              webhooks: true,
+            },
+          },
         },
       })
 
@@ -272,6 +276,197 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         })
       } catch (error) {
         console.error('Failed to broadcast message:', error)
+      }
+
+      return object.summary
+    })
+
+    const { webhooks, message } = await step.do('Get associated webhooks', async () => {
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
+
+      const message = await prisma.message
+        .findUnique({
+          where: {
+            id: createdMessage.id,
+          },
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error('Error fetching message')
+        })
+
+      if (!message) {
+        throw new NonRetryableError('Message not found')
+      }
+
+      const webhooks = await prisma.webhook
+        .findMany({
+          where: {
+            project_id: project.id,
+          },
+        })
+        .catch((error) => {
+          console.error(error)
+          throw new Error('Error fetching webhooks')
+        })
+
+      if (!webhooks || webhooks.length === 0) {
+        // biome-ignore lint/suspicious/noConsoleLog: <explanation>
+        console.log('No webhooks found for project')
+        return { webhooks: [], message }
+      }
+
+      return { webhooks, message }
+    })
+
+    await step.do('Process webhooks', async () => {
+      for (const webhook of webhooks) {
+        await step
+          .do(
+            `Process webhook ${webhook.method}: ${webhook.url}`,
+            {
+              retries: {
+                limit: 3,
+                delay: this.env.DEV ? '2 seconds' : '30 seconds',
+                backoff: 'exponential',
+              },
+            },
+            async () => {
+              const prisma = createPrismaClient(this.env.DATABASE_URL)
+              const url = webhook.url.replace('{subject}', message.subject).replace('{handle}', message.handle ?? '')
+              webhook.url = encodeURI(url)
+
+              if (webhook.method === 'POST' || webhook.method === 'PUT') {
+                const payload = {
+                  handle: message.handle,
+                  from: message.from,
+                  subject: message.subject,
+                  body: {
+                    raw: message.body_raw,
+                    stripped: message.body_stripped,
+                    summary: message.body_ai_summary,
+                  },
+                }
+
+                const signature = crypto
+                  .createHmac('sha256', webhook.signing_key)
+                  .update(JSON.stringify(payload))
+                  .digest('hex')
+
+                const response = await fetch(webhook.url, {
+                  method: webhook.method,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'X-Postilion-Signature': signature,
+                  },
+                  body: JSON.stringify(payload),
+                }).catch((error) => {
+                  throw new Error(`Webhook request failed: ${error.message}`)
+                })
+
+                if (!response.ok) {
+                  throw new Error(`Webhook failed with status ${response.status}`)
+                }
+
+                await prisma.webhookLog.create({
+                  data: {
+                    status: 'SUCCESS',
+                    message_id: message.id,
+                    url: webhook.url,
+                    method: webhook.method,
+                  },
+                })
+
+                return response
+              }
+
+              if (webhook.method === 'GET' || webhook.method === 'DELETE') {
+                const response = await fetch(webhook.url, {
+                  method: webhook.method,
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                }).catch((error) => {
+                  throw new Error(`Webhook request failed: ${error.message}`)
+                })
+
+                if (!response.ok) {
+                  throw new Error(`Webhook failed with status ${response.status}`)
+                }
+
+                await prisma.webhookLog.create({
+                  data: {
+                    status: 'SUCCESS',
+                    message_id: message.id,
+                    url: webhook.url,
+                    method: webhook.method,
+                  },
+                })
+
+                return response
+              }
+            },
+          )
+          .catch(async (error) => {
+            const prisma = createPrismaClient(this.env.DATABASE_URL)
+
+            await prisma.webhookLog.create({
+              data: {
+                status: 'FAILED',
+                message_id: message.id,
+                url: webhook.url,
+                method: webhook.method,
+              },
+            })
+
+            console.error(`Webhook ${webhook.url} failed after retries:`, error)
+          })
+      }
+    })
+
+    // Final status update
+    await step.do('Finalize message status', async () => {
+      const prisma = createPrismaClient(this.env.DATABASE_URL)
+
+      // Count successful webhooks
+      const successfulWebhooks = await prisma.webhookLog.count({
+        where: {
+          message_id: createdMessage.id,
+          status: 'SUCCESS',
+        },
+      })
+
+      // Compare with total number of webhooks that should have run
+      const allWebhooksSuccessful = successfulWebhooks === webhooks.length
+
+      const updatedMessage = await prisma.message.update({
+        where: {
+          id: message.id,
+        },
+        data: {
+          status: allWebhooksSuccessful ? 'COMPLETED' : 'FAILED',
+        },
+        include: {
+          attachments: true,
+          webhook_logs: true,
+          project: {
+            select: {
+              webhooks: true,
+            },
+          },
+        },
+      })
+
+      const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
+      const statusObj = this.env.MESSAGE_STATUS.get(id)
+
+      try {
+        await statusObj.fetch('http://internal/broadcast', {
+          method: 'POST',
+          body: JSON.stringify(updatedMessage),
+        })
+      } catch (error) {
+        console.error('Failed to broadcast final message status:', error)
       }
 
       return updatedMessage

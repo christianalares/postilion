@@ -48,6 +48,11 @@ const Message = ({ message }: MessageProps) => {
   const projectSlug = useProjectSlug()
   const teamSlug = useTeamSlug()
 
+  const successfulWebhooks = message.webhook_logs.filter((log) => log.status === 'SUCCESS').length
+  const totalWebhooks = message.webhook_logs.length
+
+  const allWebhooksSuccessful = successfulWebhooks === totalWebhooks
+
   return (
     <motion.li layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
       <Link
@@ -60,6 +65,9 @@ const Message = ({ message }: MessageProps) => {
           {message.handle && <Badge label="Handle:">{message.handle}</Badge>}
           <Badge label="Created at:">{new Date(message.created_at).toLocaleString()}</Badge>
           {message.attachments.length > 0 && <Badge label="Attachments:">{message.attachments.length}</Badge>}
+          <Badge variant={allWebhooksSuccessful ? 'default' : 'destructive'} label="Webhooks sent:">
+            {successfulWebhooks} / {totalWebhooks}
+          </Badge>
 
           <TooltipProvider>
             <Tooltip>
@@ -92,7 +100,7 @@ const StatusIcon = ({ status }: StatusIconProps) => {
     COMPLETED: <Icon name="checkCircle" className="text-green-400 size-5" />,
     PROCESSING: <Spinner className="text-orange-400 size-5" />,
     PENDING: null,
-    FAILED: null,
+    FAILED: <Icon name="xCircle" className="text-destructive size-5" />,
   }
 
   const badgeIcon = icons[status]

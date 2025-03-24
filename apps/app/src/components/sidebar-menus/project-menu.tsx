@@ -6,7 +6,7 @@ import { useTeamSlug } from '@/hooks/use-team-slug'
 import { cn } from '@/lib/utils'
 import { motion } from 'motion/react'
 import Link from 'next/link'
-import { usePathname, useSelectedLayoutSegment, useSelectedLayoutSegments } from 'next/navigation'
+import { useSelectedLayoutSegment } from 'next/navigation'
 
 export const ProjectMenu = () => {
   const teamSlug = useTeamSlug()
@@ -23,10 +23,10 @@ export const ProjectMenu = () => {
           label="Messages"
         />
         <MenuItem
-          isActive={segment === 'triggers'}
-          href={`/${teamSlug}/${projectSlug}/triggers`}
+          isActive={segment === 'webhooks'}
+          href={`/${teamSlug}/${projectSlug}/webhooks`}
           icon="webhook"
-          label="Triggers"
+          label="Webhooks"
         />
         <MenuItem
           isActive={segment === 'settings'}
