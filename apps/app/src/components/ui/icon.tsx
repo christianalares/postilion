@@ -12,6 +12,7 @@ import {
   Globe,
   Home,
   Image,
+  LayoutDashboard,
   Loader2,
   type LucideProps,
   MessageCircle,
@@ -73,6 +74,7 @@ const icons = {
   trash: Trash2,
   document: FileText,
   image: Image,
+  dashboard: LayoutDashboard,
 }
 
 export type IconName = keyof typeof icons

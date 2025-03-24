@@ -56,7 +56,7 @@ const Message = ({ message }: MessageProps) => {
   return (
     <motion.li layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
       <Link
-        href={`/${teamSlug}/${projectSlug}/m/${message.id}`}
+        href={`/${teamSlug}/${projectSlug}/messages/${message.id}`}
         className="block border p-4 bg-background relative text-left hover:border-accent-foreground/30 w-full"
       >
         <div className="flex gap-2 grow-0 items-center">

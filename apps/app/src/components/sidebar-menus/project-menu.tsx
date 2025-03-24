@@ -16,9 +16,10 @@ export const ProjectMenu = () => {
   return (
     <nav>
       <ul>
+        <MenuItem isActive={segment === null} href={`/${teamSlug}/${projectSlug}`} icon="dashboard" label="Dashboard" />
         <MenuItem
-          isActive={segment === null || segment === 'm'}
-          href={`/${teamSlug}/${projectSlug}`}
+          isActive={segment === 'messages'}
+          href={`/${teamSlug}/${projectSlug}/messages`}
           icon="message"
           label="Messages"
         />
