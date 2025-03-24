@@ -381,10 +381,13 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
               }
 
               if (webhook.method === 'GET' || webhook.method === 'DELETE') {
+                const signature = crypto.createHmac('sha256', webhook.signing_key).update(webhook.url).digest('hex')
+
                 const response = await fetch(webhook.url, {
                   method: webhook.method,
                   headers: {
                     'Content-Type': 'application/json',
+                    'X-Postilion-Signature': signature,
                   },
                 }).catch((error) => {
                   throw new Error(`Webhook request failed: ${error.message}`)
