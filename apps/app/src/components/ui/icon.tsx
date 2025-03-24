@@ -18,12 +18,14 @@ import {
   Monitor,
   Moon,
   MoreVertical,
+  Pencil,
   Plus,
   Settings,
   Sun,
   Trash2,
   User,
   Webhook,
+  XCircle,
 } from 'lucide-react'
 
 const Github = (props: React.ComponentProps<'svg'>) => {
@@ -57,9 +59,11 @@ const icons = {
   arrowLeft: ArrowLeft,
   check: Check,
   loader: Loader2,
+  pencil: Pencil,
   circleAlert: CircleAlert,
   message: MessageCircle,
   checkCircle: CircleCheck,
+  xCircle: XCircle,
   user: User,
   calendar: Calendar,
   webhook: Webhook,

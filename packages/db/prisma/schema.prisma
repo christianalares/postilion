@@ -21,6 +21,18 @@ enum MESSAGE_STATUS_ENUM {
   FAILED
 }
 
+enum WEBHOOK_REQUEST_METHOD_ENUM {
+  GET
+  POST
+  PUT
+  DELETE
+}
+
+enum WEBHOOK_LOG_STATUS_ENUM {
+  SUCCESS
+  FAILED
+}
+
 model User {
   id            String       @id
   name          String
@@ -143,9 +155,10 @@ model Project {
   created_by         User      @relation(fields: [created_by_user_id], references: [id])
   messages           Message[]
   domain             Domain?
+  webhooks           Webhook[]
 
   @@unique([team_id, slug])
-  @@index([team_id, slug])
+  @@index([short_id, team_id, slug])
   @@map("projects")
 }
 
@@ -165,6 +178,7 @@ model Message {
   project         Project             @relation(fields: [project_id], references: [id])
   handle          String?
   attachments     Attachment[]
+  webhook_logs    WebhookLog[]
 
   @@index([project_id, slug])
   @@map("messages")
@@ -197,4 +211,30 @@ model Domain {
 
   @@index([team_id, domain])
   @@map("domains")
+}
+
+model Webhook {
+  id          String                      @id @default(ulid())
+  created_at  DateTime                    @default(now())
+  updated_at  DateTime?                   @updatedAt
+  url         String
+  method      WEBHOOK_REQUEST_METHOD_ENUM
+  signing_key String
+  project_id  String
+  project     Project                     @relation(fields: [project_id], references: [id], onDelete: Cascade)
+
+  @@map("webhooks")
+}
+
+model WebhookLog {
+  id         String                      @id @default(ulid())
+  created_at DateTime                    @default(now())
+  message_id String
+  message    Message                     @relation(fields: [message_id], references: [id])
+  status     WEBHOOK_LOG_STATUS_ENUM
+  url        String
+  method     WEBHOOK_REQUEST_METHOD_ENUM
+
+  @@index([message_id])
+  @@map("webhook_logs")
 }

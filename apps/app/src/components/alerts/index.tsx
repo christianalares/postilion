@@ -4,6 +4,7 @@ import { createPushModal } from 'pushmodal'
 import { AlertDialog } from '../ui/alert-dialog'
 import { CannotDeleteDomainAlert } from './cannot-delete-domain-alert'
 import { ConfirmDeleteDomainAlert } from './confirm-delete-domain-alert'
+import { ConfirmDeleteWebhookAlert } from './confirm-delete-webhook-alert'
 
 export const {
   pushModal: pushAlert,
@@ -17,6 +18,10 @@ export const {
     },
     cannotDeleteDomain: {
       Component: CannotDeleteDomainAlert,
+      Wrapper: (props) => <AlertDialog {...props} />,
+    },
+    confirmDeleteWebhook: {
+      Component: ConfirmDeleteWebhookAlert,
       Wrapper: (props) => <AlertDialog {...props} />,
     },
   },

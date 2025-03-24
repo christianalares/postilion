@@ -1,9 +1,11 @@
 'use client'
 
 import { useMessageId } from '@/hooks/use-message-id'
+import { cn } from '@/lib/utils'
 import { trpc } from '@/trpc/client'
 import { FileViewer } from './file-viewer/file-viewer'
 import { Badge, badgeLabelVariants } from './ui/badge'
+import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
 export const MessageDetails = () => {
@@ -22,6 +24,31 @@ export const MessageDetails = () => {
       <hr className="my-4" />
 
       <div className="space-y-4">
+        {message.webhook_logs.length > 0 && (
+          <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
+            <p className={badgeLabelVariants()}>Webhook calls:</p>
+            <ul className="space-y-2">
+              {message.webhook_logs.map((log) => {
+                const wasSuccess = log.status === 'SUCCESS'
+                const wasFailed = log.status === 'FAILED'
+
+                return (
+                  <li key={log.id} className="flex items-center gap-2">
+                    <Icon
+                      name={wasSuccess ? 'checkCircle' : wasFailed ? 'xCircle' : 'circleAlert'}
+                      className={cn('size-4', {
+                        'text-green-400': wasSuccess,
+                        'text-destructive': wasFailed,
+                      })}
+                    />
+                    <span className="text-xs font-mono">{log.url}</span>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )}
+
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className={badgeLabelVariants()}>AI summary:</p>
           <p className="text-xs font-mono">{message.body_ai_summary}</p>

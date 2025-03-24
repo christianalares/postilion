@@ -27,6 +27,12 @@ const getForProject = authProcedure
       },
       include: {
         attachments: true,
+        webhook_logs: true,
+        project: {
+          select: {
+            webhooks: true,
+          },
+        },
       },
       orderBy: {
         created_at: 'desc',
@@ -54,6 +60,12 @@ const getById = authProcedure.input(z.object({ messageId: z.string() })).query(a
       },
       include: {
         attachments: true,
+        webhook_logs: true,
+        project: {
+          select: {
+            webhooks: true,
+          },
+        },
       },
     })
     .catch(() => {
