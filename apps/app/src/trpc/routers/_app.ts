@@ -1,5 +1,6 @@
 import type { inferRouterOutputs } from '@trpc/server'
 import { createTRPCRouter } from '../init'
+import { dashboardRouter } from './dashboard-router'
 import { domainsRouter } from './domains-router'
 import { messagesRouter } from './messages-router'
 import { projectsRouter } from './projects-router'
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   projects: projectsRouter,
   users: usersRouter,
   messages: messagesRouter,
+  dashboard: dashboardRouter,
   domains: domainsRouter,
   webhooks: webhooksRouter,
 })
