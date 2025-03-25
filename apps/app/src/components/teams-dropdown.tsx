@@ -26,7 +26,7 @@ export const TeamsDropdown = () => {
 
   return (
     <div className="flex items-center gap-1">
-      <Link href={`/${team.slug}`} className="text-sm font-medium hover:underline">
+      <Link href={`/${team.slug}`} className="text-sm font-medium hover:underline underline-offset-4">
         {team.name}
       </Link>
 
