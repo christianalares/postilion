@@ -3,7 +3,6 @@
 import { useMessageId } from '@/hooks/use-message-id'
 import { cn } from '@/lib/utils'
 import { trpc } from '@/trpc/client'
-import { FileViewer } from './file-viewer/file-viewer'
 import { Badge, badgeLabelVariants } from './ui/badge'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
