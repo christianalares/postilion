@@ -59,7 +59,7 @@ const Message = ({ message }: MessageProps) => {
         href={`/${teamSlug}/${projectSlug}/messages/${message.id}`}
         className="block border p-4 bg-background relative text-left hover:border-accent-foreground/30 w-full"
       >
-        <div className="flex gap-2 grow-0 items-center">
+        <div className="flex gap-2 grow-0 items-center flex-wrap">
           <Badge label="From:">{message.from}</Badge>
           <Badge label="Subject:">{message.subject}</Badge>
           {message.handle && <Badge label="Handle:">{message.handle}</Badge>}

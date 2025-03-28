@@ -50,6 +50,7 @@ const MenuItem = ({ href, icon, label, isActive }: MenuItemProps) => {
   return (
     <li className="border-b">
       <Link
+        prefetch
         href={href}
         className={cn('flex items-center hover:bg-muted/50 transition-colors gap-2 py-3 px-6 relative')}
       >

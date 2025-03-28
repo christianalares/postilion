@@ -138,6 +138,63 @@ const getStats = authProcedure
     return []
   })
 
+const getInfo = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+      projectSlug: z.string(),
+    }),
+  )
+  .query(async ({ ctx, input }) => {
+    const team = await ctx.prisma.team.findUnique({
+      where: {
+        slug: input.teamSlug,
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const project = await ctx.prisma.project.findUnique({
+      where: {
+        team_id_slug: {
+          team_id: team.id,
+          slug: input.projectSlug,
+        },
+      },
+      include: {
+        team: true,
+        domain: true,
+        messages: {
+          select: {
+            _count: true,
+          },
+        },
+      },
+    })
+
+    if (!project) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Project not found',
+      })
+    }
+
+    return {
+      domain: project.domain?.domain,
+      numberOfMessages: project.messages.length,
+      shortId: project.short_id,
+    }
+  })
+
 export const dashboardRouter = createTRPCRouter({
   getStats,
+  getInfo,
 })

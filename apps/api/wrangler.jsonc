@@ -30,6 +30,12 @@
 			}
 		]
 	},
+	"r2_buckets": [
+		{
+			"binding": "ATTACHMENTS",
+			"bucket_name": "postilion-attachments"
+		}
+	],
 	"migrations": [
 		{
 			"tag": "v1",
