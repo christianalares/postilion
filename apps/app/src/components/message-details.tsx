@@ -67,13 +67,29 @@ export const MessageDetails = () => {
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className={badgeLabelVariants()}>Attachments:</p>
           <ul className="flex items-center gap-4">
-            {message.attachments.map((attachment) => {
-              return (
-                <li key={attachment.id}>
-                  <FileViewer file={attachment} />
-                </li>
+            {message.attachments
+              .filter(
+                (attachment) => attachment.mime_type.startsWith('image/') || attachment.mime_type === 'application/pdf',
               )
-            })}
+              .map((attachment) => {
+                return (
+                  <li key={attachment.id}>
+                    <a
+                      href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/attachments/${attachment.r2_key}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="font-mono text-xs flex items-center gap-1 hover:underline underline-offset-4"
+                    >
+                      <Icon
+                        name={attachment.mime_type === 'application/pdf' ? 'document' : 'image'}
+                        className="size-4"
+                        strokeWidth={1}
+                      />
+                      {attachment.filename}
+                    </a>
+                  </li>
+                )
+              })}
           </ul>
         </div>
       </div>

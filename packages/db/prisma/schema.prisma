@@ -191,10 +191,9 @@ model Attachment {
   message    Message  @relation(fields: [message_id], references: [id], onDelete: Cascade)
   filename   String
   mime_type  String
-  content    String
-  ai_summary String?
+  r2_key     String   @unique
 
-  @@index([message_id])
+  @@index([message_id, r2_key])
   @@map("attachments")
 }
 

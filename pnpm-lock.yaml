@@ -32,6 +32,9 @@ importers:
       hono:
         specifier: ^4.7.4
         version: 4.7.4
+      nanoid:
+        specifier: ^5.1.3
+        version: 5.1.3
       postal-mime:
         specifier: ^2.4.3
         version: 2.4.3

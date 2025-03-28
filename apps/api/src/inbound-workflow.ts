@@ -3,8 +3,15 @@ import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from 'cloud
 import { NonRetryableError } from 'cloudflare:workflows'
 import { createPrismaClient } from '@postilion/db/edge'
 import { generateObject } from 'ai'
+import { customAlphabet } from 'nanoid'
 import { createWorkersAI } from 'workers-ai-provider'
 import { z } from 'zod'
+
+export const generateShortId = () => {
+  const createId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
+
+  return createId()
+}
 
 // User-defined params passed to your workflow
 type Params = {
@@ -183,6 +190,29 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         return []
       }
 
+      // Upload attachments to R2
+      const attachmentData = await Promise.all(
+        event.payload.attachments.map(async (attachment) => {
+          const fileKey = `${createdMessage.id}-${generateShortId()}-${attachment.filename}`
+
+          // Convert base64 to buffer
+          const fileBuffer = Buffer.from(attachment.content, 'base64')
+
+          const r2Object = await this.env.ATTACHMENTS.put(fileKey, fileBuffer, {
+            httpMetadata: {
+              contentType: attachment.mimeType,
+            },
+          })
+
+          return {
+            messageId: createdMessage.id,
+            filename: attachment.filename,
+            mimeType: attachment.mimeType,
+            r2Key: r2Object.key,
+          }
+        }),
+      )
+
       const prisma = createPrismaClient(this.env.DATABASE_URL)
 
       const updatedMessage = await prisma.message
@@ -193,10 +223,10 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           data: {
             attachments: {
               createMany: {
-                data: event.payload.attachments.map((attachment) => ({
+                data: attachmentData.map((attachment) => ({
                   filename: attachment.filename,
                   mime_type: attachment.mimeType,
-                  content: attachment.content,
+                  r2_key: attachment.r2Key,
                 })),
               },
             },
@@ -289,6 +319,9 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           where: {
             id: createdMessage.id,
           },
+          include: {
+            attachments: true,
+          },
         })
         .catch((error) => {
           console.error(error)
@@ -337,6 +370,26 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
               webhook.url = encodeURI(url)
 
               if (webhook.method === 'POST' || webhook.method === 'PUT') {
+                const attachments = (
+                  await Promise.all(
+                    message.attachments.map(async (attachment) => {
+                      const r2Object = await this.env.ATTACHMENTS.get(attachment.r2_key)
+
+                      if (!r2Object) {
+                        return
+                      }
+
+                      const buffer = await r2Object.arrayBuffer()
+
+                      return {
+                        filename: attachment.filename,
+                        mimeType: attachment.mime_type,
+                        content: buffer,
+                      }
+                    }),
+                  )
+                ).filter((attachment) => attachment !== undefined)
+
                 const payload = {
                   handle: message.handle,
                   from: message.from,
@@ -346,6 +399,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
                     stripped: message.body_stripped,
                     summary: message.body_ai_summary,
                   },
+                  attachments,
                 }
 
                 const signature = crypto

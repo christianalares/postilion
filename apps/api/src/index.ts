@@ -1,4 +1,5 @@
 import { zValidator } from '@hono/zod-validator'
+import { createPrismaClient } from '@postilion/db/edge'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import PostalMime from 'postal-mime'
@@ -137,6 +138,87 @@ app.get(
 
     // Forward to the SSE endpoint in the Durable Object
     return stub.fetch(new Request('http://internal/sse'))
+  },
+)
+
+// Route to get presigned urls for attachments
+app.get(
+  '/attachments/:key',
+  cors({
+    origin: ['http://localhost:3000', 'https://app.postilion.ai'],
+    credentials: true,
+  }),
+  zValidator('param', z.object({ key: z.string() })),
+  async (c) => {
+    const { key } = c.req.valid('param')
+
+    const r2Object = await c.env.ATTACHMENTS.get(key)
+
+    if (!r2Object) {
+      return c.notFound()
+    }
+
+    const res = await fetch(`${c.env.APP_URL}/api/auth/get-session`, {
+      headers: {
+        cookie: c.req.header('cookie') ?? '',
+      },
+    }).catch((error) => {
+      console.error(error)
+
+      return c.notFound()
+    })
+
+    if (!res.ok) {
+      return c.notFound()
+    }
+
+    let session: { session?: { id: string }; user?: { id: string } }
+
+    try {
+      session = await res.json()
+
+      if (!session.session || !session.user) {
+        return c.notFound()
+      }
+    } catch (error) {
+      return c.notFound()
+    }
+
+    const prisma = createPrismaClient(c.env.DATABASE_URL)
+
+    // Check if the attachment belongs to the user
+    const attachment = await prisma.attachment
+      .findUnique({
+        where: {
+          r2_key: key,
+          message: {
+            project: {
+              team: {
+                members: {
+                  some: {
+                    user_id: session.user.id,
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+      .catch((error) => {
+        console.error(error)
+
+        return c.notFound()
+      })
+
+    if (!attachment) {
+      return c.notFound()
+    }
+
+    return c.body(r2Object.body, {
+      headers: {
+        'Content-Type': r2Object.httpMetadata?.contentType ?? 'application/octet-stream',
+      },
+    })
   },
 )
 
