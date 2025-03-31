@@ -6,6 +6,7 @@ import { trpc } from '@/trpc/client'
 import NumberFlow from '@number-flow/react'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { Skeleton } from './ui/skeleton'
 
 export const DashboardInfo = () => {
   const teamSlug = useTeamSlug()
@@ -17,7 +18,7 @@ export const DashboardInfo = () => {
   })
 
   return (
-    <Card className="xl:w-1/2">
+    <Card>
       <CardHeader>
         <CardTitle>Information</CardTitle>
         <CardDescription>Some handy information about this project</CardDescription>
@@ -43,7 +44,6 @@ export const DashboardInfo = () => {
           <div className="flex-1 border border-dashed p-4">
             <p className="text-xs uppercase text-muted-foreground">Total messages sent</p>
             <NumberOfMessages nr={info.numberOfMessages} />
-            {/* <p className="font-mono mt-2 text-3xl">{info.numberOfMessages}</p> */}
           </div>
         </div>
       </CardContent>
@@ -61,4 +61,29 @@ const NumberOfMessages = ({ nr }: { nr: number }) => {
   const displayValue = !isMounted ? 0 : nr
 
   return <NumberFlow className="font-mono mt-2 text-3xl" value={displayValue} />
+}
+
+export const DashboardInfoSkeleton = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Information</CardTitle>
+        <CardDescription>Some handy information about this project</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="border-t pt-6 flex gap-8">
+          <div className="flex-1 border border-dashed p-4">
+            <p className="text-xs uppercase text-muted-foreground">Connected email address</p>
+            <Skeleton className="h-6 mt-2 w-56" />
+            <p className="text-muted-foreground mt-4">All emails sent to this address will be forwarded.</p>
+          </div>
+
+          <div className="flex-1 border border-dashed p-4">
+            <p className="text-xs uppercase text-muted-foreground">Total messages sent</p>
+            <Skeleton className="h-10 mt-2 w-16" />
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }

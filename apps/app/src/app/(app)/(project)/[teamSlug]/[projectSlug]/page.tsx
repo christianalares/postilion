@@ -1,5 +1,5 @@
-import { MessagesChart } from '@/components/charts/messages-chart'
-import { DashboardInfo } from '@/components/dashboard-info'
+import { MessagesChart, MessagesChartSkeleton } from '@/components/charts/messages-chart'
+import { DashboardInfo, DashboardInfoSkeleton } from '@/components/dashboard-info'
 import { HydrateClient, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
@@ -21,11 +21,12 @@ const ProjectPage = async ({ params }: Props) => {
   return (
     <HydrateClient>
       <div className="flex flex-col gap-8">
-        <Suspense fallback={<p>Loading...</p>}>
+        <Suspense fallback={<MessagesChartSkeleton />}>
           <MessagesChart />
         </Suspense>
 
-        <Suspense fallback={<p>Loading...</p>}>
+        <Suspense fallback={<DashboardInfoSkeleton />}>
+          {/* <DashboardInfoSkeleton /> */}
           <DashboardInfo />
         </Suspense>
       </div>
