@@ -1,7 +1,6 @@
 import { createShortId } from '@/lib/utils'
 import { TEAM_ROLE_ENUM } from '@postilion/db'
 import { TRPCError } from '@trpc/server'
-import { cookies } from 'next/headers'
 import { z } from 'zod'
 import { authProcedure, baseProcedure, createTRPCRouter } from '../init'
 

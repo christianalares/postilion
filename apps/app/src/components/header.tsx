@@ -1,6 +1,5 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { Logo } from './logo'
 import { UserDropdown } from './user-dropdown'
 

@@ -4,8 +4,6 @@ import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@
 import { trpc } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { useState } from 'react'
-import { toast } from 'sonner'
-import { popAlert } from '.'
 import { Button } from '../ui/button'
 import { DialogHeader } from '../ui/dialog'
 import { Input } from '../ui/input'

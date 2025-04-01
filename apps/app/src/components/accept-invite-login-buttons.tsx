@@ -1,6 +1,5 @@
 'use client'
 import { authClient } from '@/lib/auth/auth-client'
-import { cn } from '@/lib/utils'
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'

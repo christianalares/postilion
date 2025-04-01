@@ -1,4 +1,3 @@
-import { ForwardEmailClient } from '@/lib/forward-email-client'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'

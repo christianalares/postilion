@@ -1,7 +1,5 @@
-import { setInviteCookie } from '@/actions'
 import { AcceptInviteLoginButtons } from '@/components/accept-invite-login-buttons'
 import { Logo } from '@/components/logo'
-import { Button } from '@/components/ui/button'
 import { ThreeDBox } from '@/components/ui/three-d-box'
 import { trpc } from '@/trpc/server'
 import { cookies } from 'next/headers'

@@ -2,8 +2,6 @@
 
 import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
 import { trpc } from '@/trpc/client'
-import { toast } from 'sonner'
-import { popAlert } from '.'
 import { Button } from '../ui/button'
 import { DialogHeader } from '../ui/dialog'
 

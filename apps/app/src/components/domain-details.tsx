@@ -9,7 +9,7 @@ import { Button } from './ui/button'
 import { CopyToClipboardButton } from './ui/copy-to-clipboard-button'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 
 export const DomainDetails = () => {
   const trpcUtils = trpc.useUtils()
