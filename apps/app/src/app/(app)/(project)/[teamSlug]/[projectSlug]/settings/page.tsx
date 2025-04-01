@@ -1,5 +1,6 @@
 import { ConnectedDomainFormSkeleton } from '@/components/forms/connected-domain-form'
 import { ConnectedDomainForm } from '@/components/forms/connected-domain-form'
+import { DeleteProjectForm, DeleteProjectFormSkeleton } from '@/components/forms/delete-project-form'
 import { ProjectNameForm, ProjectNameFormSkeleton } from '@/components/forms/project-name-form'
 import { HydrateClient, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
@@ -32,6 +33,12 @@ const ProjectSettingsPage = async ({ params }: Props) => {
         <Suspense fallback={<ConnectedDomainFormSkeleton />}>
           <ConnectedDomainForm />
         </Suspense>
+
+        {projectSlug !== 'default' && (
+          <Suspense fallback={<DeleteProjectFormSkeleton />}>
+            <DeleteProjectForm />
+          </Suspense>
+        )}
       </div>
     </HydrateClient>
   )

@@ -2,17 +2,23 @@
 
 import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
 import { trpc } from '@/trpc/client'
+import type { RouterOutputs } from '@/trpc/routers/_app'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { popAlert } from '.'
 import { Button } from '../ui/button'
 import { DialogHeader } from '../ui/dialog'
+import { Input } from '../ui/input'
 
 type Props = {
-  domainId: string
+  project: RouterOutputs['projects']['getBySlug']
 }
 
-export const ConfirmDeleteDomainAlert = ({ domainId }: Props) => {
+export const ConfirmDeleteProjectAlert = ({ project }: Props) => {
+  const [confirmText, setConfirmText] = useState('')
   const trpcUtils = trpc.useUtils()
+
+  const isConfirmed = confirmText === project.name.toUpperCase()
 
   // const leaveTeamMutation = trpc.teams.leave.useMutation({
   //   onSuccess: (leftTeam) => {
@@ -31,23 +37,31 @@ export const ConfirmDeleteDomainAlert = ({ domainId }: Props) => {
   return (
     <Alert>
       <DialogHeader>
-        <AlertTitle>Delete domain</AlertTitle>
+        <AlertTitle>Delete project</AlertTitle>
         <AlertDescription>
-          By deleting this domain you will no longer have access to it. All projects that use this domain will no longer
-          work.
+          By deleting this project you will no longer have access to it. All data associated with this project will be
+          permanently deleted.
         </AlertDescription>
       </DialogHeader>
 
       <p>Are you sure you want to continue?</p>
 
+      <Input
+        type="text"
+        placeholder={`Type ${project.name.toUpperCase()} to confirm`}
+        value={confirmText}
+        onChange={(e) => setConfirmText(e.target.value)}
+      />
+
       <AlertFooter>
         <AlertCancel /* disabled={leaveTeamMutation.isPending} */>Cancel</AlertCancel>
         <Button
+          disabled={!isConfirmed}
           // loading={leaveTeamMutation.isPending}
           variant="destructive"
           // onClick={() => leaveTeamMutation.mutate({ teamId })}
         >
-          Delete domain
+          Delete project
         </Button>
       </AlertFooter>
     </Alert>

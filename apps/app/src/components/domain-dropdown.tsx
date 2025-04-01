@@ -1,4 +1,3 @@
-import type { RouterOutputs } from '@/trpc/routers/_app'
 import { pushAlert } from './alerts'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'

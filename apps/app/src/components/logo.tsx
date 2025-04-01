@@ -6,7 +6,7 @@ type Props = {
 
 export const Logo = ({ className }: Props) => {
   return (
-    <div className={cn('aspect-squareflex items-center justify-center', className)}>
+    <div className={cn('aspect-square flex items-center justify-center', className)}>
       <p className="font-bold border-2 border-foreground size-8 flex items-center justify-center rounded-full">P</p>
     </div>
   )

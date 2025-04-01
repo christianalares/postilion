@@ -1,6 +1,5 @@
-import { type TEAM_ROLE_ENUM, isPrismaError } from '@postilion/db'
+import type { TEAM_ROLE_ENUM } from '@postilion/db'
 import { TRPCError } from '@trpc/server'
-import { notFound } from 'next/navigation'
 import { z } from 'zod'
 import { t } from '../init'
 
@@ -30,7 +29,11 @@ export const isMemberOfTeam = t.middleware(async ({ ctx, input, next }) => {
       slug: parsedInput.data.slug,
     },
     include: {
-      members: true,
+      members: {
+        include: {
+          user: true,
+        },
+      },
     },
   })
 

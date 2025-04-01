@@ -7,6 +7,7 @@ import { trpc } from '@/trpc/client'
 import { Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { pushModal } from '../modals'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Combobox, type ComboboxItem } from '../ui/combobox'
@@ -23,6 +24,7 @@ export const ConnectedDomainForm = () => {
 
   const [project] = trpc.projects.getBySlug.useSuspenseQuery({ teamSlug, projectSlug })
   const [domains] = trpc.domains.getForTeam.useSuspenseQuery({ teamSlug })
+
   const updateProjectMutation = trpc.projects.update.useMutation({
     onSuccess: (updatedProject) => {
       trpcUtils.projects.getBySlug.invalidate({ teamSlug, projectSlug })
@@ -72,37 +74,51 @@ export const ConnectedDomainForm = () => {
       <Card>
         <CardHeader>
           <CardTitle>Connected domain</CardTitle>
-          <CardDescription>The domain connecteded to this project.</CardDescription>
+          <CardDescription>
+            {domains.length === 0
+              ? "You don't have any domains configured for this team yet"
+              : 'The domain connecteded to this project'}
+          </CardDescription>
         </CardHeader>
 
         <CardContent className="flex gap-4">
-          <Controller
-            control={form.control}
-            name="domainId"
-            render={({ field }) => {
-              return (
-                <Combobox
-                  searchPlaceholder="Search domain..."
-                  label="Select domain"
-                  emptyMessage="No domains found."
-                  popover={{ content: { align: 'start', style: { width: 'auto' } } }}
-                  items={comboboxItems}
-                  selectedItem={selectedDomain}
-                  onSelect={(item) => {
-                    field.onChange(item.value)
-                  }}
-                />
-              )
-            }}
-          />
+          {domains.length === 0 ? (
+            <>
+              <Button type="button" onClick={() => pushModal('addDomainModal')}>
+                Add domain
+              </Button>
+            </>
+          ) : (
+            <>
+              <Controller
+                control={form.control}
+                name="domainId"
+                render={({ field }) => {
+                  return (
+                    <Combobox
+                      searchPlaceholder="Search domain..."
+                      label="Select domain"
+                      emptyMessage="No domains found."
+                      popover={{ content: { align: 'start', style: { width: 'auto' } } }}
+                      items={comboboxItems}
+                      selectedItem={selectedDomain}
+                      onSelect={(item) => {
+                        field.onChange(item.value)
+                      }}
+                    />
+                  )
+                }}
+              />
 
-          <Button
-            type="submit"
-            disabled={!selectedDomain || selectedDomain.value === project.domain?.id}
-            loading={updateProjectMutation.isPending}
-          >
-            Connect
-          </Button>
+              <Button
+                type="submit"
+                disabled={!selectedDomain || selectedDomain.value === project.domain?.id}
+                loading={updateProjectMutation.isPending}
+              >
+                Connect
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
     </form>

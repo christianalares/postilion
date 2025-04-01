@@ -1,5 +1,5 @@
 import { createShortId, createSlug } from '@/lib/utils'
-import { isPrismaError } from '@postilion/db'
+import { TEAM_ROLE_ENUM, isPrismaError } from '@postilion/db'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'

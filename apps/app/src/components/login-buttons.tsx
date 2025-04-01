@@ -4,16 +4,18 @@ import { authClient } from '@/lib/auth/auth-client'
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
+import { ThreeDBox } from './ui/three-d-box'
 
 type Props = {
   redirectTo?: string
 }
 
 export const LoginButtons = ({ redirectTo }: Props) => {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingGithub, setIsLoadingGithub] = useState(false)
+  const [isLoadingGoogle, setIsLoadingGoogle] = useState(false)
 
   const loginWithGitHub = async () => {
-    setIsLoading(true)
+    setIsLoadingGithub(true)
 
     authClient.signIn.social({
       provider: 'github',
@@ -21,17 +23,33 @@ export const LoginButtons = ({ redirectTo }: Props) => {
     })
   }
 
-  return (
-    <div className="border p-8 bg-background relative after:absolute after:inset-0 after:translate-3 after:border after:border-border after:bg-foreground/2 after:z-[-1]">
-      <h1 className="text-2xl">Login to Postilion</h1>
-      <p className="text-sm text-muted-foreground mt-2">Login to Postilion using GitHub to continue.</p>
+  const loginWithGoogle = async () => {
+    setIsLoadingGoogle(true)
 
-      <div className="mt-8">
-        <Button type="button" onClick={loginWithGitHub} loading={isLoading}>
+    authClient.signIn.social({
+      provider: 'google',
+      callbackURL: redirectTo ?? '/',
+    })
+  }
+
+  const disabled = isLoadingGithub || isLoadingGoogle
+
+  return (
+    <ThreeDBox>
+      <h1 className="text-2xl">Login to Postilion</h1>
+      <p className="text-sm text-muted-foreground mt-2">Login to Postilion using your preferred provider.</p>
+
+      <div className="mt-8 flex flex-col gap-4">
+        <Button type="button" onClick={loginWithGitHub} loading={isLoadingGithub} disabled={disabled}>
           <Icon name="github" className="size-6" />
           Login with GitHub
         </Button>
+
+        <Button type="button" onClick={loginWithGoogle} loading={isLoadingGoogle} disabled={disabled}>
+          <Icon name="google" className="size-6" />
+          Login with Google
+        </Button>
       </div>
-    </div>
+    </ThreeDBox>
   )
 }

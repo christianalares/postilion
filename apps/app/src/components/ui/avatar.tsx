@@ -31,7 +31,7 @@ function AvatarFallback({ className, ...props }: React.ComponentProps<typeof Ava
 }
 
 type Props = {
-  imageUrl?: string
+  imageUrl?: string | null
   name: string
   className?: string
   fallbackClassName?: string
@@ -54,7 +54,7 @@ export const Avatar = ({ imageUrl, name, className, fallbackClassName }: Props) 
 
   return (
     <ShadcnAvatar className={cn(className)}>
-      <AvatarImage src={imageUrl} />
+      <AvatarImage src={imageUrl ?? undefined} />
       <AvatarFallback className={cn(fallbackClassName)}>{initials}</AvatarFallback>
     </ShadcnAvatar>
   )

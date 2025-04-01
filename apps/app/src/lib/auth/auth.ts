@@ -3,7 +3,7 @@ import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { nextCookies } from 'better-auth/next-js'
 import { cookies } from 'next/headers'
-import { createDefaultTeam } from './utils'
+import { createDefaultTeam, handleInvitedUser } from './utils'
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -14,18 +14,42 @@ export const auth = betterAuth({
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
     },
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
   },
   plugins: [nextCookies()],
   databaseHooks: {
     user: {
       create: {
-        after: async (user, ctx) => {
+        after: async (user) => {
           const cookieStore = await cookies()
-          const createdTeam = await createDefaultTeam(user)
 
-          if (createdTeam && ctx) {
-            // The middleware will remove this cookie and redirect the user to the team
-            cookieStore.set('redirectTo', `/${createdTeam.slug}`)
+          const inviteCodeCookie = cookieStore.get('invite-code')
+
+          if (inviteCodeCookie) {
+            try {
+              const userOnTeam = await handleInvitedUser(user, inviteCodeCookie.value)
+
+              if (userOnTeam) {
+                cookieStore.set('redirectTo', `/${userOnTeam.team.slug}`)
+              }
+            } catch (error) {
+              const createdTeam = await createDefaultTeam(user)
+
+              if (createdTeam) {
+                // The middleware will remove this cookie and redirect the user to the team
+                cookieStore.set('redirectTo', `/${createdTeam.slug}`)
+              }
+            }
+          } else {
+            const createdTeam = await createDefaultTeam(user)
+
+            if (createdTeam) {
+              // The middleware will remove this cookie and redirect the user to the team
+              cookieStore.set('redirectTo', `/${createdTeam.slug}`)
+            }
           }
         },
       },

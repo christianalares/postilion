@@ -2,6 +2,7 @@ import type { inferRouterOutputs } from '@trpc/server'
 import { createTRPCRouter } from '../init'
 import { dashboardRouter } from './dashboard-router'
 import { domainsRouter } from './domains-router'
+import { invitesRouter } from './invites-router'
 import { messagesRouter } from './messages-router'
 import { projectsRouter } from './projects-router'
 import { teamsRouter } from './teams-router'
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   dashboard: dashboardRouter,
   domains: domainsRouter,
   webhooks: webhooksRouter,
+  invites: invitesRouter,
 })
 
 export type AppRouter = typeof appRouter

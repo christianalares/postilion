@@ -27,6 +27,7 @@ export const TeamNameForm = () => {
     },
     onError: (error) => {
       toast.error(error.message)
+      form.reset()
     },
   })
 

@@ -1,8 +1,9 @@
 import { getSession } from '@/lib/auth/get-session'
 import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
+import picomatch from 'picomatch'
 
-const OPEN_PATHS = ['/login']
+const OPEN_PATHS = ['/login', '/invite/*']
 
 export async function middleware(req: NextRequest) {
   const nextUrl = req.nextUrl
@@ -10,7 +11,9 @@ export async function middleware(req: NextRequest) {
 
   const session = await getSession()
 
-  if (!session && !OPEN_PATHS.includes(nextUrl.pathname)) {
+  const isOpenPath = OPEN_PATHS.some((pattern) => picomatch(pattern)(nextUrl.pathname))
+
+  if (!session && !isOpenPath) {
     const returnTo =
       req.nextUrl.pathname === '/'
         ? new URL('/login', req.url)

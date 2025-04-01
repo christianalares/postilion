@@ -128,17 +128,18 @@ model UserOnTeam {
 }
 
 model TeamInvite {
-  id                 String   @id @default(ulid())
-  created_at         DateTime @default(now())
+  id                 String         @id @default(ulid())
+  created_at         DateTime       @default(now())
   email              String
+  role               TEAM_ROLE_ENUM
   team_id            String
-  team               Team     @relation(fields: [team_id], references: [id])
+  team               Team           @relation(fields: [team_id], references: [id])
   created_by_user_id String
-  created_by         User     @relation(fields: [created_by_user_id], references: [id])
-  code               String   @unique
+  created_by         User           @relation(fields: [created_by_user_id], references: [id])
+  code               String         @unique
 
   @@unique([email, team_id])
-  @@index([team_id, created_by_user_id])
+  @@index([team_id, code])
   @@map("team_invites")
 }
 

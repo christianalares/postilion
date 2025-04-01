@@ -1,4 +1,4 @@
-import type { MESSAGE_STATUS_ENUM } from '@postilion/db'
+import type { MESSAGE_STATUS_ENUM, TEAM_ROLE_ENUM } from '@postilion/db'
 import { type ClassValue, clsx } from 'clsx'
 import { customAlphabet } from 'nanoid'
 import slugify from 'slugify'
@@ -34,6 +34,19 @@ export const formatMessageStatus = (status: MESSAGE_STATUS_ENUM) => {
       return 'Failed'
     default: {
       const exhaustiveCheck: never = status
+      return exhaustiveCheck
+    }
+  }
+}
+
+export const teamRoleEnumToLabel = (role: TEAM_ROLE_ENUM) => {
+  switch (role) {
+    case 'OWNER':
+      return 'Owner'
+    case 'MEMBER':
+      return 'Member'
+    default: {
+      const exhaustiveCheck: never = role
       return exhaustiveCheck
     }
   }

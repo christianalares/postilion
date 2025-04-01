@@ -103,6 +103,16 @@ const getBySlug = authProcedure
             domain: true,
           },
         },
+        team: {
+          select: {
+            members: {
+              select: {
+                user_id: true,
+                role: true,
+              },
+            },
+          },
+        },
       },
     })
 
