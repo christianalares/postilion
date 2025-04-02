@@ -5,7 +5,8 @@
 	"exports": {
 		"./provider": "./src/provider.tsx",
 		"./client": "./src/create-analytics-client.ts",
-		"./identify-component": "./src/identify-component.tsx"
+		"./identify-component": "./src/identify-component.tsx",
+		"./route-handler": "./src/route-handler.ts"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
