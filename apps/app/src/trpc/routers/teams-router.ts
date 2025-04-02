@@ -71,6 +71,10 @@ const update = authProcedure
         })
       })
 
+    ctx.analyticsClient.track('team_updated', {
+      team_id: updatedTeam.id,
+    })
+
     return updatedTeam
   })
 
@@ -132,6 +136,11 @@ const create = authProcedure
           message: 'Failed to create team',
         })
       })
+
+    ctx.analyticsClient.track('team_created', {
+      team_id: createdTeam.id,
+      team_name: createdTeam.name,
+    })
 
     return createdTeam
   })

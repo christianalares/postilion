@@ -1,3 +1,4 @@
+import { createAnalyticsClient } from '@postilion/analytics/client'
 import { prisma } from '@postilion/db'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
@@ -51,6 +52,19 @@ export const auth = betterAuth({
               cookieStore.set('redirectTo', `/${createdTeam.slug}`)
             }
           }
+
+          const analyticsClient = createAnalyticsClient({
+            clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
+            clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
+            eventNames: ['user_created'],
+            profileId: user.id,
+          })
+
+          analyticsClient.track('user_created', {
+            user_id: user.id,
+            user_email: user.email,
+            user_name: user.name,
+          })
         },
       },
     },
