@@ -50,7 +50,7 @@ export const CreateWebhookModal = () => {
             createWebhookMutation.mutate({
               teamSlug,
               projectSlug,
-              url: values.url,
+              url: values.url.trim(),
               method: values.method,
             })
           }}

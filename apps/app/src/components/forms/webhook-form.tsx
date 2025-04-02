@@ -1,4 +1,5 @@
 import { useZodForm } from '@/hooks/use-zod-form'
+import { ENUMS } from '@postilion/db/enums'
 import { Controller, type DefaultValues } from 'react-hook-form'
 import { z } from 'zod'
 import { popModal } from '../modals'
@@ -8,10 +9,9 @@ import { Icon } from '../ui/icon'
 import { Input } from '../ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
-const REQUEST_METHODS = ['GET', 'POST', 'PUT', 'DELETE'] as const
 const formSchema = z.object({
   url: z.string().url(),
-  method: z.enum(REQUEST_METHODS),
+  method: z.nativeEnum(ENUMS.WEBHOOK_REQUEST_METHOD_ENUM),
 })
 
 type Props = {
@@ -47,7 +47,7 @@ export const WebhookForm = ({ onSubmit, isLoading, defaultValues, ctaText }: Pro
                   </SelectTrigger>
 
                   <SelectContent>
-                    {REQUEST_METHODS.map((method) => (
+                    {Object.values(ENUMS.WEBHOOK_REQUEST_METHOD_ENUM).map((method) => (
                       <SelectItem key={method} value={method}>
                         {method}
                       </SelectItem>
@@ -70,7 +70,15 @@ export const WebhookForm = ({ onSubmit, isLoading, defaultValues, ctaText }: Pro
       )}
 
       <div className="flex justify-end gap-2 mt-4">
-        <Button variant="outline" type="button" onClick={() => popModal('createWebhookModal')} disabled={isLoading}>
+        <Button
+          variant="outline"
+          type="button"
+          onClick={() => {
+            popModal('createWebhookModal')
+            popModal('editWebhookModal')
+          }}
+          disabled={isLoading}
+        >
           Cancel
         </Button>
         <Button type="submit" loading={isLoading}>

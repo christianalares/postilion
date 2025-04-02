@@ -230,7 +230,7 @@ model WebhookLog {
   id         String                      @id @default(ulid())
   created_at DateTime                    @default(now())
   message_id String
-  message    Message                     @relation(fields: [message_id], references: [id])
+  message    Message                     @relation(fields: [message_id], references: [id], onDelete: Cascade)
   status     WEBHOOK_LOG_STATUS_ENUM
   url        String
   method     WEBHOOK_REQUEST_METHOD_ENUM

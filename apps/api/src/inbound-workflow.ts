@@ -430,8 +430,6 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
                     method: webhook.method,
                   },
                 })
-
-                return response
               }
 
               if (webhook.method === 'GET' || webhook.method === 'DELETE') {
@@ -459,8 +457,6 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
                     method: webhook.method,
                   },
                 })
-
-                return response
               }
             },
           )

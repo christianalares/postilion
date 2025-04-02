@@ -249,7 +249,7 @@ export default {
 
     const newId = crypto.randomUUID()
 
-    const instance = await env.INBOUND_EMAIL_WORKFLOW.create({
+    await env.INBOUND_EMAIL_WORKFLOW.create({
       id: newId,
       params: {
         from: email.from.address,

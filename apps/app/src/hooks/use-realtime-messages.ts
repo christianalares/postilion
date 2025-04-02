@@ -40,6 +40,8 @@ export const useRealtimeMessages = () => {
     }
 
     eventSource.addEventListener('error', (event) => {
+      // biome-ignore lint/suspicious/noConsoleLog: <explanation>
+      console.log(event)
       toast.error('Failed to connect to the message stream')
     })
 

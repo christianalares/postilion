@@ -4,6 +4,7 @@ import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { trpc } from '@/trpc/client'
 import { Badge } from './ui/badge'
+import { CopyToClipboardButton } from './ui/copy-to-clipboard-button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 import { WebhookDropdown } from './webhook-dropdown'
 
@@ -35,7 +36,10 @@ export const WebhooksList = () => {
               <Badge>{webhook.method}</Badge>
             </TableCell>
             <TableCell>
-              <p className="font-mono text-sm">{webhook.url}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-mono text-sm">{webhook.url}</p>
+                <CopyToClipboardButton text={webhook.url} />
+              </div>
             </TableCell>
             <TableCell align="right">
               <WebhookDropdown webhook={webhook} />

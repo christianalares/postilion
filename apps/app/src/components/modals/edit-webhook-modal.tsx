@@ -55,7 +55,7 @@ export const EditWebhookModal = ({ webhook }: Props) => {
             updateWebhookMutation.mutate({
               id: webhook.id,
               data: {
-                url: values.url,
+                url: values.url.trim(),
                 method: values.method,
               },
             })
