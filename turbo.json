@@ -22,7 +22,11 @@
 				"DATABASE_URL",
 				"GITHUB_CLIENT_ID",
 				"GITHUB_CLIENT_SECRET",
-				"FORWARDEMAIL_API_TOKEN"
+				"GOOGLE_CLIENT_ID",
+				"GOOGLE_CLIENT_SECRET",
+				"FORWARDEMAIL_API_TOKEN",
+				"NEXT_PUBLIC_OPENPANEL_CLIENT_ID",
+				"OPENPANEL_CLIENT_SECRET"
 			],
 			"outputs": [".next/**", "!.next/cache/**"]
 		},
