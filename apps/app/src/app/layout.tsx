@@ -1,10 +1,11 @@
+import { AlertProvider } from '@/components/alerts'
 import { ModalProvider } from '@/components/modals'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { TRPCProvider } from '@/trpc/client'
+import { AnalyticsProvider } from '@postilion/analytics/provider'
 import type { Metadata } from 'next'
 import './globals.css'
-import { AlertProvider } from '@/components/alerts'
 
 // Allow custom CSS properties in React
 declare module 'react' {
@@ -26,6 +27,13 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
       <body className="h-full">
+        <AnalyticsProvider
+          clientId={process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!}
+          clientSecret={process.env.OPENPANEL_CLIENT_SECRET!}
+          apiUrl="/api/openpanel"
+          disabled={process.env.NODE_ENV !== 'production'}
+        />
+
         <TRPCProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             {children}

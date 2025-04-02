@@ -63,6 +63,14 @@ const create = authProcedure
       },
     })
 
+    ctx.analyticsClient.track('webhook_created', {
+      webhook_id: createdWebhook.id,
+      webhook_url: createdWebhook.url,
+      webhook_method: createdWebhook.method,
+      project_id: project.id,
+      project_name: project.name,
+    })
+
     return createdWebhook
   })
 
@@ -192,6 +200,13 @@ const update = authProcedure
         })
       })
 
+    ctx.analyticsClient.track('webhook_updated', {
+      webhook_id: updatedWebhook.id,
+      webhook_url: updatedWebhook.url,
+      webhook_method: updatedWebhook.method,
+      project_id: updatedWebhook.project_id,
+    })
+
     return updatedWebhook
   })
 
@@ -242,6 +257,13 @@ const _delete = authProcedure.input(z.object({ id: z.string() })).mutation(async
   }
 
   const deletedWebhook = await ctx.prisma.webhook.delete({ where: { id: input.id } })
+
+  ctx.analyticsClient.track('webhook_deleted', {
+    webhook_id: deletedWebhook.id,
+    webhook_url: deletedWebhook.url,
+    webhook_method: deletedWebhook.method,
+    project_id: deletedWebhook.project_id,
+  })
 
   return deletedWebhook
 })

@@ -186,6 +186,12 @@ const verify = authProcedure
       })
     })
 
+    ctx.analyticsClient.track('domain_verified', {
+      domain_id: domain.id,
+      domain_name: domain.domain,
+      team_id: domain.team_id,
+    })
+
     return status
   })
 
@@ -255,6 +261,13 @@ const create = authProcedure
           message: 'Could not create domain',
         })
       })
+
+    ctx.analyticsClient.track('domain_created', {
+      domain_id: createdDomain.id,
+      domain_name: createdDomain.domain,
+      team_id: userOnTeam.team_id,
+      team_name: userOnTeam.team.name,
+    })
 
     return createdDomain
   })

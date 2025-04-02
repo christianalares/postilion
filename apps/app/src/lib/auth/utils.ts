@@ -1,3 +1,4 @@
+import { createAnalyticsClient } from '@postilion/analytics/client'
 import { prisma } from '@postilion/db'
 import { createShortId, createSlug } from '../utils'
 import type { auth } from './auth'
@@ -28,8 +29,23 @@ export const createDefaultTeam = async (user: User) => {
         },
       },
       select: {
+        id: true,
+        name: true,
         slug: true,
       },
+    })
+
+    const analyticsClient = createAnalyticsClient({
+      clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
+      clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
+      eventNames: ['default_team_created'],
+      profileId: user.id,
+    })
+
+    analyticsClient.track('default_team_created', {
+      team_id: createdTeam.id,
+      team_name: createdTeam.name,
+      team_slug: createdTeam.slug,
     })
 
     return createdTeam
@@ -52,6 +68,7 @@ export const handleInvitedUser = async (user: User, inviteCode: string) => {
         role: true,
         team: {
           select: {
+            name: true,
             slug: true,
           },
         },
@@ -86,12 +103,27 @@ export const handleInvitedUser = async (user: User, inviteCode: string) => {
         team: {
           select: {
             slug: true,
+            name: true,
           },
         },
       },
     })
 
     return userOnTeam
+  })
+
+  const analyticsClient = createAnalyticsClient({
+    clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
+    clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
+    eventNames: ['invite_accepted'],
+    profileId: user.id,
+  })
+
+  analyticsClient.track('invite_accepted', {
+    invite_id: invite.id,
+    user_id: user.id,
+    team_id: invite.team_id,
+    team_name: invite.team.name,
   })
 
   return userOnTeam

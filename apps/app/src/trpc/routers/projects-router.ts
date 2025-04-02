@@ -201,6 +201,20 @@ const update = authProcedure
       },
     })
 
+    if (input.data.name) {
+      ctx.analyticsClient.track('project_updated', {
+        project_id: updatedProject.id,
+        project_name: updatedProject.name,
+      })
+    }
+
+    if (input.data.domainId) {
+      ctx.analyticsClient.track('project_updated', {
+        project_id: updatedProject.id,
+        domain_id: input.data.domainId,
+      })
+    }
+
     return updatedProject
   })
 
@@ -257,68 +271,12 @@ const create = authProcedure
       },
     })
 
+    ctx.analyticsClient.track('project_created', {
+      project_id: createdProject.id,
+      project_name: createdProject.name,
+    })
+
     return createdProject
-  })
-
-const connectDomain = authProcedure
-  .input(
-    z.object({
-      teamSlug: z.string(),
-      projectSlug: z.string(),
-      domainId: z.string(),
-    }),
-  )
-  .mutation(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team.findUnique({
-      where: {
-        slug: input.teamSlug,
-      },
-      select: {
-        id: true,
-        members: true,
-      },
-    })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
-    const userInTeam = team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userInTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (userInTeam.role !== 'OWNER') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: "You don't have permission to create projects in this team",
-      })
-    }
-
-    const updatedProject = await ctx.prisma.project.update({
-      where: {
-        team_id_slug: {
-          slug: input.projectSlug,
-          team_id: team.id,
-        },
-      },
-      data: {
-        domain: {
-          connect: {
-            id: input.domainId,
-          },
-        },
-      },
-    })
-
-    return updatedProject
   })
 
 export const projectsRouter = createTRPCRouter({

@@ -60,6 +60,9 @@ importers:
       '@number-flow/react':
         specifier: ^0.5.8
         version: 0.5.8(react-dom@19.0.0)(react@19.0.0)
+      '@postilion/analytics':
+        specifier: workspace:*
+        version: link:../../packages/analytics
       '@postilion/db':
         specifier: workspace:*
         version: link:../../packages/db
@@ -214,6 +217,25 @@ importers:
       wrangler:
         specifier: ^3.114.1
         version: 3.114.1
+
+  packages/analytics:
+    dependencies:
+      '@openpanel/nextjs':
+        specifier: ^1.0.7
+        version: 1.0.7(next@15.2.2)(react-dom@19.0.0)(react@19.0.0)
+      '@openpanel/sdk':
+        specifier: ^1.0.0
+        version: 1.0.0
+      '@vercel/functions':
+        specifier: ^2.0.0
+        version: 2.0.0
+    devDependencies:
+      '@postilion/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^22.13.10
+        version: 22.13.10
 
   packages/db:
     dependencies:
@@ -1595,6 +1617,29 @@ packages:
       number-flow: 0.5.6
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
+    dev: false
+
+  /@openpanel/nextjs@1.0.7(next@15.2.2)(react-dom@19.0.0)(react@19.0.0):
+    resolution: {integrity: sha512-XygTPiVlxUkcnZ3DYYwnWiogDgCL1hFK5G8nxokdrFKKuM0XQ+9mFElW/+dKgnVfmV2QiP1aAscudHAlRSUQhg==}
+    peerDependencies:
+      next: ^12.0.0 || ^13.0.0 || ^14.0.0 || ^15.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    dependencies:
+      '@openpanel/web': 1.0.1
+      next: 15.2.2(react-dom@19.0.0)(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    dev: false
+
+  /@openpanel/sdk@1.0.0:
+    resolution: {integrity: sha512-FNmmfjdXoC/VHEjA+WkrQ4lyM5lxEmV7xDd57uj4E+lIS0sU3DLG2mV/dpS8AscnZbUvuMn3kPhiLCqYzuv/gg==}
+    dev: false
+
+  /@openpanel/web@1.0.1:
+    resolution: {integrity: sha512-cVZ7Kr9SicczJ/RDIfEtZs8+1iGDzwkabVA/j3NqSl8VSucsC8m1+LVbjmCDzCJNnK4yVn6tEcc9PJRi2rtllw==}
+    dependencies:
+      '@openpanel/sdk': 1.0.0
     dev: false
 
   /@opentelemetry/api-logs@0.52.1:
@@ -3168,6 +3213,16 @@ packages:
 
   /@types/shimmer@1.2.0:
     resolution: {integrity: sha512-UE7oxhQLLd9gub6JKIAhDq06T0F6FnztwMNRvYgjeQSBeMc1ZG/tA47EwfduvkuQS8apbkM/lpLpWsaCeYsXVg==}
+    dev: false
+
+  /@vercel/functions@2.0.0:
+    resolution: {integrity: sha512-BSwIihLHoV18gerKZJyGuqd3rtaYM6rJvET1kOwKktshucyaHXTJel7Cxegs+sdX0NZqsX4LO2MFnMU2jG01Cw==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@aws-sdk/credential-provider-web-identity': '*'
+    peerDependenciesMeta:
+      '@aws-sdk/credential-provider-web-identity':
+        optional: true
     dev: false
 
   /acorn-import-attributes@1.9.5(acorn@8.14.1):

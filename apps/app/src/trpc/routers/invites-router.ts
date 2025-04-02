@@ -85,6 +85,14 @@ const create = authProcedure
       },
     })
 
+    ctx.analyticsClient.track('invite_created', {
+      invite_id: createdInvite.id,
+      invite_email: createdInvite.email,
+      invite_role: createdInvite.role,
+      team_id: team.id,
+      team_name: team.name,
+    })
+
     return createdInvite
   })
 
@@ -182,6 +190,13 @@ const cancel = authProcedure
 
     const deletedInvite = await ctx.prisma.teamInvite.delete({
       where: { id: input.inviteId },
+    })
+
+    ctx.analyticsClient.track('invite_deleted', {
+      invite_id: deletedInvite.id,
+      invite_email: deletedInvite.email,
+      invite_role: deletedInvite.role,
+      team_id: deletedInvite.team_id,
     })
 
     return deletedInvite

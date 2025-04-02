@@ -21,6 +21,18 @@ const update = authProcedure
         },
       })
 
+      ctx.analyticsClient.track('user_updated', {
+        user_id: updatedUser.id,
+        from: {
+          name: updatedUser.name,
+          email: updatedUser.email,
+        },
+        to: {
+          name: updatedUser.name,
+          email: updatedUser.email,
+        },
+      })
+
       return updatedUser
     } catch (error) {
       throw new TRPCError({
