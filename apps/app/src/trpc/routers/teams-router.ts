@@ -1,5 +1,6 @@
 import { createShortId, createSlug } from '@/lib/utils'
 import { isPrismaError } from '@postilion/db'
+import { ENUMS } from '@postilion/db/enums'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -145,9 +146,136 @@ const create = authProcedure
     return createdTeam
   })
 
+const leave = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const team = await ctx.prisma.team
+      .findUnique({
+        where: {
+          slug: input.teamSlug,
+        },
+        include: {
+          members: true,
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to leave team',
+        })
+      })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
+
+    if (!userOnTeam) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
+      })
+    }
+
+    // We have already checked that the user is on the team, so we can safely check if they are the last member
+    const isLastMember = team.members.length === 1
+
+    if (isLastMember) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'You are the only member of this team. Please delete the team instead.',
+      })
+    }
+
+    const leftTeam = await ctx.prisma.userOnTeam.delete({
+      where: {
+        user_id_team_id: {
+          user_id: ctx.user.id,
+          team_id: team.id,
+        },
+      },
+    })
+
+    return leftTeam
+  })
+
+const editRole = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+      userId: z.string(),
+      role: z.nativeEnum(ENUMS.TEAM_ROLE_ENUM),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const team = await ctx.prisma.team
+      .findUnique({
+        where: { slug: input.teamSlug },
+        include: {
+          members: true,
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to edit role',
+        })
+      })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
+
+    if (!userOnTeam) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
+      })
+    }
+
+    if (userOnTeam.role !== 'OWNER') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not an owner of this team',
+      })
+    }
+
+    const updatedUserOnTeam = await ctx.prisma.userOnTeam.update({
+      where: {
+        user_id_team_id: {
+          user_id: input.userId,
+          team_id: team.id,
+        },
+      },
+      data: {
+        role: input.role,
+      },
+      include: {
+        user: true,
+      },
+    })
+
+    return updatedUserOnTeam
+  })
+
 export const teamsRouter = createTRPCRouter({
   update,
   getBySlug,
   getForUser,
   create,
+  leave,
+  editRole,
 })

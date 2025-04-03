@@ -1,4 +1,6 @@
-import { cookies } from 'next/headers'
+import { auth } from '@/lib/auth/auth'
+import { handleInvitedUser } from '@/lib/auth/utils'
+import { cookies, headers } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 
 type Params = Promise<{
@@ -12,7 +14,17 @@ export const GET = async (req: Request, { params }: { params: Params }) => {
     notFound()
   }
 
-  // TODO: Check if the visitor is logged in, if so, add them to the team and redirect to the team dashboard
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  })
+
+  if (session) {
+    const joinedTeam = await handleInvitedUser(session.user, inviteCode)
+
+    if (joinedTeam) {
+      redirect(`/${joinedTeam.team.slug}`)
+    }
+  }
 
   const cookieStore = await cookies()
   cookieStore.set('invite-code', inviteCode)

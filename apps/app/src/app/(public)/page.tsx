@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth/auth'
 import { prisma } from '@postilion/db'
 import { headers } from 'next/headers'
-import { notFound, redirect } from 'next/navigation'
+import { redirect } from 'next/navigation'
 
 const AuthorizedPage = async () => {
   const session = await auth.api.getSession({
@@ -24,10 +24,10 @@ const AuthorizedPage = async () => {
   })
 
   if (firstFoundTeam) {
-    redirect(`/${firstFoundTeam.slug}/default`)
+    redirect(`/${firstFoundTeam.slug}`)
   }
 
-  notFound()
+  redirect('/create-team')
 }
 
 export default AuthorizedPage

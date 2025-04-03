@@ -6,6 +6,7 @@ import { CannotDeleteDomainAlert } from './cannot-delete-domain-alert'
 import { ConfirmDeleteDomainAlert } from './confirm-delete-domain-alert'
 import { ConfirmDeleteProjectAlert } from './confirm-delete-project-alert'
 import { ConfirmDeleteWebhookAlert } from './confirm-delete-webhook-alert'
+import { ConfirmLeaveTeamAlert } from './confirm-leave-team-alert'
 
 export const {
   pushModal: pushAlert,
@@ -27,6 +28,10 @@ export const {
     },
     confirmDeleteProject: {
       Component: ConfirmDeleteProjectAlert,
+      Wrapper: (props) => <AlertDialog {...props} />,
+    },
+    confirmLeaveTeam: {
+      Component: ConfirmLeaveTeamAlert,
       Wrapper: (props) => <AlertDialog {...props} />,
     },
   },

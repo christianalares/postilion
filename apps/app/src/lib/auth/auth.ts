@@ -34,6 +34,7 @@ export const auth = betterAuth({
               const userOnTeam = await handleInvitedUser(user, inviteCodeCookie.value)
 
               if (userOnTeam) {
+                cookieStore.delete('invite-code')
                 cookieStore.set('redirectTo', `/${userOnTeam.team.slug}`)
               }
             } catch (error) {

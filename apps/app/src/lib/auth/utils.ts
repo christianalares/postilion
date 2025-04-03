@@ -87,12 +87,6 @@ export const handleInvitedUser = async (user: User, inviteCode: string) => {
   }
 
   const userOnTeam = await prisma.$transaction(async (tx) => {
-    await tx.teamInvite.delete({
-      where: {
-        id: invite.id,
-      },
-    })
-
     const userOnTeam = await tx.userOnTeam.create({
       data: {
         user_id: user.id,
@@ -106,6 +100,12 @@ export const handleInvitedUser = async (user: User, inviteCode: string) => {
             name: true,
           },
         },
+      },
+    })
+
+    await tx.teamInvite.delete({
+      where: {
+        id: invite.id,
       },
     })
 

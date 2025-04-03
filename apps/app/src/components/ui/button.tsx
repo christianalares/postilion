@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils'
 import { Spinner } from './spinner'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:opacity-50 [&_svg]:pointer-events-none disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  // disabled:pointer-events-none
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
       variant: {
@@ -16,7 +17,7 @@ const buttonVariants = cva(
           'border bg-input/20 shadow-xs [&:not(:disabled)]:hover:bg-accent [&:not(:disabled)]:hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50',
         secondary: 'bg-secondary text-secondary-foreground shadow-xs [&:not(:disabled)]:hover:bg-secondary/80',
         ghost:
-          '[&:not(:disabled)]:hover:bg-accent [&:not(:disabled)]:hover:text-accent-foreground dark:hover:bg-accent/50',
+          '[&:not(:disabled)]:hover:bg-accent [&:not(:disabled)]:hover:text-accent-foreground [&:not(:disabled)]:dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 [&:not(:disabled)]:hover:underline',
       },
       size: {
@@ -71,11 +72,7 @@ function Button({
   }
 
   return (
-    <Comp
-      data-slot="button"
-      className={cn('grid [grid-template-areas:stack]', buttonVariants({ variant, size, loading, className }))}
-      {...props}
-    >
+    <Comp data-slot="button" className={cn(buttonVariants({ variant, size, loading, className }))} {...props}>
       {children}
     </Comp>
   )
