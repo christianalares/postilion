@@ -1,7 +1,7 @@
 import { Header } from '@/components/header'
 import { TeamMenu } from '@/components/sidebar-menus/team-menu'
 import { TeamsDropdown, TeamsDropdownSkeleton } from '@/components/teams-dropdown'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
 type Params = Promise<{
@@ -16,9 +16,9 @@ type Props = {
 const TeamLayout = async ({ children, params }: Props) => {
   const { teamSlug } = await params
 
-  trpc.users.me.prefetch()
-  trpc.teams.getBySlug.prefetch({ slug: teamSlug })
-  trpc.teams.getForUser.prefetch()
+  prefetch(trpc.users.me.queryOptions())
+  prefetch(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  prefetch(trpc.teams.getForUser.queryOptions())
 
   return (
     <HydrateClient>

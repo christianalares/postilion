@@ -1,5 +1,4 @@
 'use client'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,27 +8,30 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import Link from 'next/link'
 import { pushModal } from './modals'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 export const TeamsDropdown = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
 
-  const trpcUtils = trpc.useUtils()
+  const queryClient = useQueryClient()
 
-  const [team] = trpc.teams.getBySlug.useSuspenseQuery({ slug: teamSlug })
-  const [teams] = trpc.teams.getForUser.useSuspenseQuery()
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  const { data: teams } = useSuspenseQuery(trpc.teams.getForUser.queryOptions())
 
   return (
     <div className="flex items-center gap-1">
       <Link href={`/${team.slug}`} className="text-sm font-medium hover:underline underline-offset-4">
         {team.name}
       </Link>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
@@ -48,7 +50,7 @@ export const TeamsDropdown = () => {
                   href={`/${team.slug}`}
                   className="flex items-center justify-between gap-2"
                   onClick={() => {
-                    trpcUtils.teams.getBySlug.invalidate({ slug: team.slug })
+                    queryClient.invalidateQueries(trpc.teams.getBySlug.queryFilter({ slug: team.slug }))
                   }}
                 >
                   {team.name}

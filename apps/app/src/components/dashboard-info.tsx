@@ -1,21 +1,25 @@
 'use client'
-
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import NumberFlow from '@number-flow/react'
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Skeleton } from './ui/skeleton'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const DashboardInfo = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
 
-  const [info] = trpc.dashboard.getInfo.useSuspenseQuery({
-    teamSlug,
-    projectSlug,
-  })
+  const { data: info } = useSuspenseQuery(
+    trpc.dashboard.getInfo.queryOptions({
+      teamSlug,
+      projectSlug,
+    }),
+  )
 
   return (
     <Card>

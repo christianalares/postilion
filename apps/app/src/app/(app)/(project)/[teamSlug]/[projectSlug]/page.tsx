@@ -1,6 +1,6 @@
 import { MessagesChart, MessagesChartSkeleton } from '@/components/charts/messages-chart'
 import { DashboardInfo, DashboardInfoSkeleton } from '@/components/dashboard-info'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
 type Params = Promise<{
@@ -15,8 +15,8 @@ type Props = {
 const ProjectPage = async ({ params }: Props) => {
   const { teamSlug, projectSlug } = await params
 
-  trpc.dashboard.getStats.prefetch({ teamSlug, projectSlug, by: 'DAILY' })
-  trpc.dashboard.getInfo.prefetch({ teamSlug, projectSlug })
+  prefetch(trpc.dashboard.getStats.queryOptions({ teamSlug, projectSlug, by: 'DAILY' }))
+  prefetch(trpc.dashboard.getInfo.queryOptions({ teamSlug, projectSlug }))
 
   return (
     <HydrateClient>

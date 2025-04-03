@@ -1,38 +1,44 @@
 'use client'
-
 import { Input } from '@/components/ui/input'
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useZodForm } from '@/hooks/use-zod-form'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 const formSchema = z.object({
   projectName: z.string(),
 })
 
 export const ProjectNameForm = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
-  const trpcUtils = trpc.useUtils()
+  const queryClient = useQueryClient()
 
-  const [project] = trpc.projects.getBySlug.useSuspenseQuery({ teamSlug, projectSlug })
+  const { data: project } = useSuspenseQuery(trpc.projects.getBySlug.queryOptions({ teamSlug, projectSlug }))
 
-  const updateProjectMutation = trpc.projects.update.useMutation({
-    onSuccess: () => {
-      toast.success('Project name updated')
-      trpcUtils.projects.getBySlug.invalidate({ teamSlug, projectSlug })
-      trpcUtils.projects.getForTeam.invalidate({ slug: teamSlug })
-    },
-    onError: (error) => {
-      toast.error('Error updating project name', {
-        description: error.message,
-      })
-    },
-  })
+  const updateProjectMutation = useMutation(
+    trpc.projects.update.mutationOptions({
+      onSuccess: () => {
+        toast.success('Project name updated')
+        queryClient.invalidateQueries(trpc.projects.getBySlug.queryFilter({ teamSlug, projectSlug }))
+        queryClient.invalidateQueries(trpc.projects.getForTeam.queryFilter({ slug: teamSlug }))
+      },
+      onError: (error) => {
+        toast.error('Error updating project name', {
+          description: error.message,
+        })
+      },
+    }),
+  )
 
   const form = useZodForm(formSchema, {
     defaultValues: {

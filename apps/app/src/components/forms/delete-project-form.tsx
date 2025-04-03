@@ -1,18 +1,20 @@
 'use client'
-
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { pushAlert } from '../alerts'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const DeleteProjectForm = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
 
-  const [me] = trpc.users.me.useSuspenseQuery()
-  const [project] = trpc.projects.getBySlug.useSuspenseQuery({ teamSlug, projectSlug })
+  const { data: me } = useSuspenseQuery(trpc.users.me.queryOptions())
+  const { data: project } = useSuspenseQuery(trpc.projects.getBySlug.queryOptions({ teamSlug, projectSlug }))
 
   const isNotOwner = !project.team.members.some((member) => member.user_id === me.id && member.role === 'OWNER')
   const isLastOwner = !isNotOwner && project.team.members.filter((member) => member.role === 'OWNER').length === 1

@@ -1,7 +1,7 @@
 import { AcceptInviteLoginButtons } from '@/components/accept-invite-login-buttons'
 import { Logo } from '@/components/logo'
 import { ThreeDBox } from '@/components/ui/three-d-box'
-import { trpc } from '@/trpc/server'
+import { getQueryClient, trpc } from '@/trpc/server'
 import { cookies } from 'next/headers'
 import { notFound } from 'next/navigation'
 import { ThemeSwitcherWrapper } from '../../login/theme-switcher-wrapper'
@@ -23,7 +23,9 @@ const InvitePage = async ({ params }: Props) => {
     notFound()
   }
 
-  const invite = await trpc.invites.get({ code: inviteCodeParam }).catch(() => {
+  const queryClient = getQueryClient()
+
+  const invite = await queryClient.fetchQuery(trpc.invites.get.queryOptions({ code: inviteCodeParam })).catch(() => {
     notFound()
   })
 

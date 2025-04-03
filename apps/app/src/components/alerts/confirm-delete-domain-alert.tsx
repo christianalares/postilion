@@ -1,16 +1,16 @@
 'use client'
-
 import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
-import { trpc } from '@/trpc/client'
 import { Button } from '../ui/button'
 import { DialogHeader } from '../ui/dialog'
+
+import { useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   domainId: string
 }
 
 export const ConfirmDeleteDomainAlert = ({ domainId }: Props) => {
-  const trpcUtils = trpc.useUtils()
+  const queryClient = useQueryClient()
 
   // const leaveTeamMutation = trpc.teams.leave.useMutation({
   //   onSuccess: (leftTeam) => {

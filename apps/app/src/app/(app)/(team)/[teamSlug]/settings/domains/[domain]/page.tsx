@@ -1,5 +1,5 @@
 import { DomainDetails, DomainDetailsSkeleton } from '@/components/domain-details'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
 type Params = Promise<{
@@ -9,7 +9,7 @@ type Params = Promise<{
 const DomainPage = async ({ params }: { params: Params }) => {
   const { domain } = await params
 
-  trpc.domains.getByDomain.prefetch({ domain })
+  prefetch(trpc.domains.getByDomain.queryOptions({ domain }))
 
   return (
     <HydrateClient>

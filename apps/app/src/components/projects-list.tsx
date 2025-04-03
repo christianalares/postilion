@@ -1,14 +1,16 @@
 'use client'
-
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import Link from 'next/link'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const ProjectsList = () => {
+  const trpc = useTRPC()
   const teamsSlug = useTeamSlug()
-  const [projects] = trpc.projects.getForTeam.useSuspenseQuery({ slug: teamsSlug })
+  const { data: projects } = useSuspenseQuery(trpc.projects.getForTeam.queryOptions({ slug: teamsSlug }))
 
   return (
     <ul className="flex flex-wrap gap-4">

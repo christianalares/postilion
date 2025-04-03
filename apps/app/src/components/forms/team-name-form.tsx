@@ -1,35 +1,41 @@
 'use client'
-
 import { Input } from '@/components/ui/input'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useZodForm } from '@/hooks/use-zod-form'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 const formSchema = z.object({
   teamName: z.string(),
 })
 
 export const TeamNameForm = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
-  const trpcUtils = trpc.useUtils()
+  const queryClient = useQueryClient()
 
-  const [team] = trpc.teams.getBySlug.useSuspenseQuery({ slug: teamSlug })
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
 
-  const updateTeamMutation = trpc.teams.update.useMutation({
-    onSuccess: () => {
-      toast.success('Team name updated')
-      trpcUtils.teams.getBySlug.invalidate()
-      trpcUtils.teams.getForUser.invalidate()
-    },
-    onError: (error) => {
-      toast.error(error.message)
-      form.reset()
-    },
-  })
+  const updateTeamMutation = useMutation(
+    trpc.teams.update.mutationOptions({
+      onSuccess: () => {
+        toast.success('Team name updated')
+        queryClient.invalidateQueries(trpc.teams.getBySlug.pathFilter())
+        queryClient.invalidateQueries(trpc.teams.getForUser.pathFilter())
+      },
+      onError: (error) => {
+        toast.error(error.message)
+        form.reset()
+      },
+    }),
+  )
 
   const form = useZodForm(formSchema, {
     defaultValues: {

@@ -111,6 +111,9 @@ importers:
       '@trpc/server':
         specifier: 11.0.0-rc.828
         version: 11.0.0-rc.828(typescript@5.8.2)
+      '@trpc/tanstack-react-query':
+        specifier: ^11.0.1
+        version: 11.0.1(@tanstack/react-query@5.67.3)(@trpc/client@11.0.0-rc.828)(@trpc/server@11.0.0-rc.828)(react-dom@19.0.0)(react@19.0.0)(typescript@5.8.2)
       better-auth:
         specifier: ^1.2.3
         version: 1.2.3(typescript@5.8.2)
@@ -3132,6 +3135,24 @@ packages:
     peerDependencies:
       typescript: '>=5.7.2'
     dependencies:
+      typescript: 5.8.2
+    dev: false
+
+  /@trpc/tanstack-react-query@11.0.1(@tanstack/react-query@5.67.3)(@trpc/client@11.0.0-rc.828)(@trpc/server@11.0.0-rc.828)(react-dom@19.0.0)(react@19.0.0)(typescript@5.8.2):
+    resolution: {integrity: sha512-Dk/8450MaoDdUmubyRoaDovCKZBCmawllq1BtU/7LReUT1HRM87weUHZykZYNCsEsc6pdKm6tHPj6FU3tR16dQ==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.67.1
+      '@trpc/client': 11.0.1
+      '@trpc/server': 11.0.1
+      react: '>=18.2.0'
+      react-dom: '>=18.2.0'
+      typescript: '>=5.7.2'
+    dependencies:
+      '@tanstack/react-query': 5.67.3(react@19.0.0)
+      '@trpc/client': 11.0.0-rc.828(@trpc/server@11.0.0-rc.828)(typescript@5.8.2)
+      '@trpc/server': 11.0.0-rc.828(typescript@5.8.2)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
       typescript: 5.8.2
     dev: false
 

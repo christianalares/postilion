@@ -1,7 +1,7 @@
 import { AccountTeamsDropdown } from '@/components/account-teams-dropdown'
 import { Header } from '@/components/header'
 import { TeamsDropdownSkeleton } from '@/components/teams-dropdown'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
 type Props = {
@@ -9,8 +9,8 @@ type Props = {
 }
 
 const AccountLayout = async ({ children }: Props) => {
-  trpc.users.me.prefetch()
-  trpc.teams.getForUser.prefetch()
+  prefetch(trpc.users.me.queryOptions())
+  prefetch(trpc.teams.getForUser.queryOptions())
 
   return (
     <HydrateClient>

@@ -1,7 +1,6 @@
 'use client'
-
 import { useDomain } from '@/hooks/use-domain'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { toast } from 'sonner'
 import { DomainDropdown } from './domain-dropdown'
 import { Badge } from './ui/badge'
@@ -11,25 +10,32 @@ import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 export const DomainDetails = () => {
-  const trpcUtils = trpc.useUtils()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
   const domainParam = useDomain()
 
-  const [domain] = trpc.domains.getByDomain.useSuspenseQuery({ domain: domainParam })
-  const verifyMutation = trpc.domains.verify.useMutation({
-    onSuccess: ({ success }) => {
-      trpcUtils.domains.getByDomain.invalidate({ domain: domain.domain })
+  const { data: domain } = useSuspenseQuery(trpc.domains.getByDomain.queryOptions({ domain: domainParam }))
+  const verifyMutation = useMutation(
+    trpc.domains.verify.mutationOptions({
+      onSuccess: ({ success }) => {
+        queryClient.invalidateQueries(trpc.domains.getByDomain.queryFilter({ domain: domain.domain }))
 
-      if (success) {
-        toast.success('Domain verified')
-      } else {
+        if (success) {
+          toast.success('Domain verified')
+        } else {
+          toast.error('Domain verification failed')
+        }
+      },
+      onError: () => {
         toast.error('Domain verification failed')
-      }
-    },
-    onError: () => {
-      toast.error('Domain verification failed')
-    },
-  })
+      },
+    }),
+  )
 
   const dnsValue = (domain.domain.split('.').length > 2 ? domain.domain.split('.')[0] : '@') ?? ''
   const isVerified = domain.has_mx_record && domain.has_txt_record

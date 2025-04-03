@@ -1,9 +1,8 @@
 'use client'
-
 import { Modal, ModalDescription, ModalHeader, ModalTitle } from '@/components/ui/modal'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useZodForm } from '@/hooks/use-zod-form'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -11,6 +10,9 @@ import { popModal } from '.'
 import { Button } from '../ui/button'
 import { ErrorMessage } from '../ui/error-message'
 import { Input } from '../ui/input'
+
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 const formSchema = z.object({
   domain: z
@@ -22,24 +24,27 @@ const formSchema = z.object({
 })
 
 export const AddDomainModal = () => {
-  const trpcUtils = trpc.useUtils()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
   const form = useZodForm(formSchema)
   const router = useRouter()
   const teamSlug = useTeamSlug()
 
-  const createDomainMutation = trpc.domains.create.useMutation({
-    onSuccess: (createdDomain) => {
-      trpcUtils.domains.getForTeam.invalidate({ teamSlug })
-      popModal('addDomainModal')
-      toast.success('Domain created successfully')
-      router.push(`/${teamSlug}/settings/domains/${createdDomain.domain}`)
-    },
-    onError: (error) => {
-      toast.error('Failed to create domain', {
-        description: error.message,
-      })
-    },
-  })
+  const createDomainMutation = useMutation(
+    trpc.domains.create.mutationOptions({
+      onSuccess: (createdDomain) => {
+        queryClient.invalidateQueries(trpc.domains.getForTeam.queryFilter({ teamSlug }))
+        popModal('addDomainModal')
+        toast.success('Domain created successfully')
+        router.push(`/${teamSlug}/settings/domains/${createdDomain.domain}`)
+      },
+      onError: (error) => {
+        toast.error('Failed to create domain', {
+          description: error.message,
+        })
+      },
+    }),
+  )
 
   const handleSubmit = form.handleSubmit((values) => {
     createDomainMutation.mutate({

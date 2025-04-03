@@ -1,7 +1,7 @@
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useZodForm } from '@/hooks/use-zod-form'
 import { teamRoleEnumToLabel } from '@/lib/utils'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { ENUMS } from '@postilion/db/enums'
 import { Controller } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -13,38 +13,44 @@ import { Input } from '../ui/input'
 import { Modal, ModalDescription, ModalHeader, ModalTitle } from '../ui/modal'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 const formSchema = z.object({
   email: z.string().email({ message: 'Invalid email address' }),
   role: z.nativeEnum(ENUMS.TEAM_ROLE_ENUM),
 })
 
 export const InviteMemberModal = () => {
-  const trpcUtils = trpc.useUtils()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
   const teamSlug = useTeamSlug()
 
-  const inviteMutation = trpc.invites.create.useMutation({
-    onSuccess: (data) => {
-      trpcUtils.invites.getForTeam.invalidate({ teamSlug })
-      popModal('inviteMemberModal')
+  const inviteMutation = useMutation(
+    trpc.invites.create.mutationOptions({
+      onSuccess: (data) => {
+        queryClient.invalidateQueries(trpc.invites.getForTeam.queryFilter({ teamSlug }))
+        popModal('inviteMemberModal')
 
-      toast.success('Invite sent', {
-        description: `Invite sent to ${data.email}`,
-      })
-    },
-    onError: (error) => {
-      if (error.message === 'MEMBER_ALREADY_EXISTS') {
-        toast.error('Already a member', {
-          description: 'That user is already a member of this team',
+        toast.success('Invite sent', {
+          description: `Invite sent to ${data.email}`,
         })
-      } else if (error.message === 'INVITE_ALREADY_EXISTS') {
-        toast.error('Invite already sent', {
-          description: 'That user has already been invited to this team',
-        })
-      } else {
-        toast.error(error.message)
-      }
-    },
-  })
+      },
+      onError: (error) => {
+        if (error.message === 'MEMBER_ALREADY_EXISTS') {
+          toast.error('Already a member', {
+            description: 'That user is already a member of this team',
+          })
+        } else if (error.message === 'INVITE_ALREADY_EXISTS') {
+          toast.error('Invite already sent', {
+            description: 'That user has already been invited to this team',
+          })
+        } else {
+          toast.error(error.message)
+        }
+      },
+    }),
+  )
 
   const form = useZodForm(formSchema, {
     defaultValues: {

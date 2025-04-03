@@ -1,5 +1,4 @@
 'use client'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { pushModal } from './modals'
@@ -18,15 +17,18 @@ import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const ProjectsDropdown = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
   const pathname = usePathname()
   const projectSlug = useProjectSlug()
 
-  const [projects] = trpc.projects.getForTeam.useSuspenseQuery({ slug: teamSlug })
-  const [project] = trpc.projects.getBySlug.useSuspenseQuery({ teamSlug, projectSlug })
+  const { data: projects } = useSuspenseQuery(trpc.projects.getForTeam.queryOptions({ slug: teamSlug }))
+  const { data: project } = useSuspenseQuery(trpc.projects.getBySlug.queryOptions({ teamSlug, projectSlug }))
 
-  const [team] = trpc.teams.getBySlug.useSuspenseQuery({ slug: teamSlug })
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
 
   return (
     <div className="flex items-center gap-1">

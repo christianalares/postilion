@@ -1,26 +1,32 @@
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { toast } from 'sonner'
 import { popModal } from '.'
 import { WebhookForm } from '../forms/webhook-form'
 import { Modal, ModalDescription, ModalHeader, ModalTitle } from '../ui/modal'
 
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 export const CreateWebhookModal = () => {
-  const trpcUtils = trpc.useUtils()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
 
-  const createWebhookMutation = trpc.webhooks.create.useMutation({
-    onSuccess: () => {
-      toast.success('Webhook created')
-      popModal('createWebhookModal')
-      trpcUtils.webhooks.getForProject.invalidate({ teamSlug, projectSlug })
-    },
-    onError: (error) => {
-      toast.error(error.message)
-    },
-  })
+  const createWebhookMutation = useMutation(
+    trpc.webhooks.create.mutationOptions({
+      onSuccess: () => {
+        toast.success('Webhook created')
+        popModal('createWebhookModal')
+        queryClient.invalidateQueries(trpc.webhooks.getForProject.queryFilter({ teamSlug, projectSlug }))
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    }),
+  )
 
   return (
     <Modal className="!max-w-2xl">

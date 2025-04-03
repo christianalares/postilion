@@ -1,9 +1,8 @@
 'use client'
-
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useZodForm } from '@/hooks/use-zod-form'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -12,33 +11,40 @@ import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Combobox, type ComboboxItem } from '../ui/combobox'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 const formSchema = z.object({
   domainId: z.string().optional(),
 })
 
 export const ConnectedDomainForm = () => {
-  const trpcUtils = trpc.useUtils()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
 
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
 
-  const [project] = trpc.projects.getBySlug.useSuspenseQuery({ teamSlug, projectSlug })
-  const [domains] = trpc.domains.getForTeam.useSuspenseQuery({ teamSlug })
+  const { data: project } = useSuspenseQuery(trpc.projects.getBySlug.queryOptions({ teamSlug, projectSlug }))
+  const { data: domains } = useSuspenseQuery(trpc.domains.getForTeam.queryOptions({ teamSlug }))
 
-  const updateProjectMutation = trpc.projects.update.useMutation({
-    onSuccess: (updatedProject) => {
-      trpcUtils.projects.getBySlug.invalidate({ teamSlug, projectSlug })
-      trpcUtils.domains.getForTeam.invalidate({ teamSlug })
+  const updateProjectMutation = useMutation(
+    trpc.projects.update.mutationOptions({
+      onSuccess: (updatedProject) => {
+        queryClient.invalidateQueries(trpc.projects.getBySlug.queryFilter({ teamSlug, projectSlug }))
+        queryClient.invalidateQueries(trpc.domains.getForTeam.queryFilter({ teamSlug }))
 
-      form.reset({
-        domainId: updatedProject.domain?.id,
-      })
+        form.reset({
+          domainId: updatedProject.domain?.id,
+        })
 
-      toast.success('Project updated', {
-        description: `${updatedProject.domain?.domain} was connected to ${updatedProject.name}`,
-      })
-    },
-  })
+        toast.success('Project updated', {
+          description: `${updatedProject.domain?.domain} was connected to ${updatedProject.name}`,
+        })
+      },
+    }),
+  )
 
   const comboboxItems: ComboboxItem[] = domains.map((domain) => ({
     value: domain.id,

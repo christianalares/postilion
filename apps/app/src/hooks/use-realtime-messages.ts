@@ -1,16 +1,20 @@
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { useProjectSlug } from './use-project-slug'
 import { useTeamSlug } from './use-team-slug'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 export const useRealtimeMessages = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
-  const trpcUtils = trpc.useUtils()
+  const queryClient = useQueryClient()
 
-  const [messages] = trpc.messages.getForProject.useSuspenseQuery({ teamSlug, projectSlug })
+  const { data: messages } = useSuspenseQuery(trpc.messages.getForProject.queryOptions({ teamSlug, projectSlug }))
 
   useEffect(() => {
     const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_API_BASE_URL}/sse/${teamSlug}/${projectSlug}`, {
@@ -24,7 +28,7 @@ export const useRealtimeMessages = () => {
 
       const incomingMessage = JSON.parse(event.data) as RouterOutputs['messages']['getForProject'][number]
 
-      trpcUtils.messages.getForProject.setData({ teamSlug, projectSlug }, (prev) => {
+      queryClient.setQueryData(trpc.messages.getForProject.queryKey({ teamSlug, projectSlug }), (prev) => {
         if (!prev) {
           return prev
         }
@@ -48,7 +52,7 @@ export const useRealtimeMessages = () => {
     return () => {
       eventSource.close()
     }
-  }, [teamSlug, projectSlug, trpcUtils])
+  }, [teamSlug, projectSlug, queryClient, trpc])
 
   return messages
 }
