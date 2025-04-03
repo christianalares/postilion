@@ -1,5 +1,4 @@
 'use client'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,17 +7,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import Link from 'next/link'
 import { pushModal } from './modals'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
-export const AccountTeamsDropdown = () => {
-  const trpcUtils = trpc.useUtils()
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
-  const [teams] = trpc.teams.getForUser.useSuspenseQuery()
+export const AccountTeamsDropdown = () => {
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+
+  const { data: teams } = useSuspenseQuery(trpc.teams.getForUser.queryOptions())
 
   const firstTeam = teams[0]
 
@@ -31,7 +34,6 @@ export const AccountTeamsDropdown = () => {
       <Link href={`/${firstTeam.slug}`} className="text-sm font-medium hover:underline">
         {firstTeam.name}
       </Link>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
@@ -48,7 +50,7 @@ export const AccountTeamsDropdown = () => {
                   href={`/${team.slug}`}
                   className="flex items-center justify-between gap-2"
                   onClick={() => {
-                    trpcUtils.teams.getBySlug.invalidate({ slug: team.slug })
+                    queryClient.invalidateQueries(trpc.teams.getBySlug.queryFilter({ slug: team.slug }))
                   }}
                 >
                   {team.name}

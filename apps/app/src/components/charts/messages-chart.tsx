@@ -1,14 +1,15 @@
 'use client'
-
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { eachDayOfInterval, startOfMonth } from 'date-fns'
 import { useState } from 'react'
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 function getRandomInt(min: number, max: number) {
   const minCeiled = Math.ceil(min)
@@ -41,15 +42,18 @@ const getOptionLabel = (option: ByOption) => {
 }
 
 export const MessagesChart = () => {
+  const trpc = useTRPC()
   const [by, setBy] = useState<ByOption>('DAILY')
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
 
-  const [messages] = trpc.dashboard.getStats.useSuspenseQuery({
-    teamSlug,
-    projectSlug,
-    by,
-  })
+  const { data: messages } = useSuspenseQuery(
+    trpc.dashboard.getStats.queryOptions({
+      teamSlug,
+      projectSlug,
+      by,
+    }),
+  )
 
   const data = messages.map((msg) => ({
     date: msg.date.toISOString(),
@@ -93,10 +97,14 @@ export const MessagesChart = () => {
               dataKey="date"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
+              tickMargin={16}
+              minTickGap={8}
+              className="-translate-x-3"
+              height={40}
+              angle={-45}
               tickFormatter={(value) => {
                 const date = new Date(value)
+
                 return date.toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',

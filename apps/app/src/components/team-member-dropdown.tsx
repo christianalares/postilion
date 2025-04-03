@@ -1,4 +1,4 @@
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { Button } from './ui/button'
 import {
@@ -11,12 +11,15 @@ import {
 } from './ui/dropdown-menu'
 import { Icon } from './ui/icon'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 type Props = {
   member: RouterOutputs['teams']['getBySlug']['members'][number]
 }
 
 export const TeamMemberDropdown = ({ member }: Props) => {
-  const [me] = trpc.users.me.useSuspenseQuery()
+  const trpc = useTRPC()
+  const { data: me } = useSuspenseQuery(trpc.users.me.queryOptions())
 
   const nameLabel = member.user.id === me.id ? 'You' : member.user.name
 

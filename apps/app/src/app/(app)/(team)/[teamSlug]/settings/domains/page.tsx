@@ -1,5 +1,5 @@
 import { DomainsList } from '@/components/domains-list'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 import { DomainHeader } from './_header'
 
@@ -10,7 +10,7 @@ type Params = Promise<{
 const TeamSettingsDomainsPage = async ({ params }: { params: Params }) => {
   const { teamSlug } = await params
 
-  trpc.domains.getForTeam.prefetch({ teamSlug })
+  prefetch(trpc.domains.getForTeam.queryOptions({ teamSlug }))
 
   return (
     <HydrateClient>

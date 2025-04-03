@@ -1,26 +1,32 @@
 'use client'
-
 import { Input } from '@/components/ui/input'
 import { useZodForm } from '@/hooks/use-zod-form'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { Button } from '../ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
+
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 
 const formSchema = z.object({
   email: z.string().email(),
 })
 
 export const EmailForm = () => {
-  const trpcUtils = trpc.useUtils()
-  const [me] = trpc.users.me.useSuspenseQuery()
-  const updateUserMutation = trpc.users.update.useMutation({
-    onSuccess: () => {
-      toast.success('Email updated')
-      trpcUtils.users.me.invalidate()
-    },
-  })
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
+  const { data: me } = useSuspenseQuery(trpc.users.me.queryOptions())
+  const updateUserMutation = useMutation(
+    trpc.users.update.mutationOptions({
+      onSuccess: () => {
+        toast.success('Email updated')
+        queryClient.invalidateQueries(trpc.users.me.pathFilter())
+      },
+    }),
+  )
 
   const form = useZodForm(formSchema, {
     defaultValues: {

@@ -1,6 +1,6 @@
 import { TeamNameForm, TeamNameFormSkeleton } from '@/components/forms/team-name-form'
 import { TeamManagement } from '@/components/team-management'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 import { TeamSettingsHeader } from './_header'
 
@@ -11,8 +11,8 @@ type Params = Promise<{
 const TeamSettingsPage = async ({ params }: { params: Params }) => {
   const { teamSlug } = await params
 
-  trpc.teams.getBySlug.prefetch({ slug: teamSlug })
-  trpc.invites.getForTeam.prefetch({ teamSlug })
+  prefetch(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  prefetch(trpc.invites.getForTeam.queryOptions({ teamSlug }))
 
   return (
     <HydrateClient>

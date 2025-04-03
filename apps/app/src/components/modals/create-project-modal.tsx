@@ -1,10 +1,9 @@
 'use client'
-
 import { Modal, ModalDescription, ModalHeader, ModalTitle } from '@/components/ui/modal'
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useZodForm } from '@/hooks/use-zod-form'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { z } from 'zod'
@@ -13,33 +12,38 @@ import { Button } from '../ui/button'
 import { ErrorMessage } from '../ui/error-message'
 import { Input } from '../ui/input'
 
+import { useMutation } from '@tanstack/react-query'
+
 const formSchema = z.object({
   projectName: z.string().min(3, { message: 'Project name must be at least 3 characters long' }),
 })
 
 export const CreateProjectModal = () => {
+  const trpc = useTRPC()
   const form = useZodForm(formSchema)
   const router = useRouter()
   const projectSlug = useProjectSlug()
   const pathname = usePathname()
   const teamSlug = useTeamSlug()
 
-  const createProjectMutation = trpc.projects.create.useMutation({
-    onSuccess: (createdProject) => {
-      const newPath = pathname
-        .split('/')
-        .map((segment) => (segment === projectSlug ? createdProject.slug : segment))
-        .join('/')
+  const createProjectMutation = useMutation(
+    trpc.projects.create.mutationOptions({
+      onSuccess: (createdProject) => {
+        const newPath = pathname
+          .split('/')
+          .map((segment) => (segment === projectSlug ? createdProject.slug : segment))
+          .join('/')
 
-      popModal('createProjectModal')
-      toast.success('Project created successfully')
+        popModal('createProjectModal')
+        toast.success('Project created successfully')
 
-      router.push(newPath)
-    },
-    onError: (error) => {
-      toast.error(error.message)
-    },
-  })
+        router.push(newPath)
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    }),
+  )
 
   const handleSubmit = form.handleSubmit((data) => {
     createProjectMutation.mutate({

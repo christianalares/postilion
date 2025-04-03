@@ -1,14 +1,16 @@
 'use client'
-
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { teamRoleEnumToLabel } from '@/lib/utils'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { TeamMemberDropdown } from './team-member-dropdown'
 import { Avatar } from './ui/avatar'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const TeamMembers = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
-  const [team] = trpc.teams.getBySlug.useSuspenseQuery({ slug: teamSlug })
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
 
   return (
     <ul className="flex flex-col gap-4">

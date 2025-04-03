@@ -2,7 +2,7 @@ import { ConnectedDomainFormSkeleton } from '@/components/forms/connected-domain
 import { ConnectedDomainForm } from '@/components/forms/connected-domain-form'
 import { DeleteProjectForm, DeleteProjectFormSkeleton } from '@/components/forms/delete-project-form'
 import { ProjectNameForm, ProjectNameFormSkeleton } from '@/components/forms/project-name-form'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 import { ProjectSettingsHeader } from './_header'
 
@@ -18,8 +18,8 @@ type Props = {
 const ProjectSettingsPage = async ({ params }: Props) => {
   const { teamSlug, projectSlug } = await params
 
-  trpc.projects.getBySlug.prefetch({ teamSlug, projectSlug })
-  trpc.domains.getForTeam.prefetch({ teamSlug })
+  prefetch(trpc.projects.getBySlug.queryOptions({ teamSlug, projectSlug }))
+  prefetch(trpc.domains.getForTeam.queryOptions({ teamSlug }))
 
   return (
     <HydrateClient>

@@ -1,12 +1,12 @@
 'use client'
-
 import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
-import { trpc } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { useState } from 'react'
 import { Button } from '../ui/button'
 import { DialogHeader } from '../ui/dialog'
 import { Input } from '../ui/input'
+
+import { useQueryClient } from '@tanstack/react-query'
 
 type Props = {
   project: RouterOutputs['projects']['getBySlug']
@@ -14,7 +14,7 @@ type Props = {
 
 export const ConfirmDeleteProjectAlert = ({ project }: Props) => {
   const [confirmText, setConfirmText] = useState('')
-  const trpcUtils = trpc.useUtils()
+  const queryClient = useQueryClient()
 
   const isConfirmed = confirmText === project.name.toUpperCase()
 

@@ -1,25 +1,31 @@
 'use client'
-
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { DomainDropdown } from './domain-dropdown'
 import { Badge } from './ui/badge'
 import { Icon } from './ui/icon'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 export const DomainsList = () => {
-  const trpcUtils = trpc.useUtils()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
   const teamSlug = useTeamSlug()
 
-  const [domains] = trpc.domains.getForTeam.useSuspenseQuery({ teamSlug })
+  const { data: domains } = useSuspenseQuery(trpc.domains.getForTeam.queryOptions({ teamSlug }))
 
-  const createDomainMutation = trpc.domains.create.useMutation({
-    onSuccess: (createdDomain) => {
-      trpcUtils.domains.getForTeam.invalidate({ teamSlug })
-      toast.success(`Domain \"${createdDomain.domain}\" created`)
-    },
-  })
+  const createDomainMutation = useMutation(
+    trpc.domains.create.mutationOptions({
+      onSuccess: (createdDomain) => {
+        queryClient.invalidateQueries(trpc.domains.getForTeam.queryFilter({ teamSlug }))
+        toast.success(`Domain \"${createdDomain.domain}\" created`)
+      },
+    }),
+  )
 
   if (domains.length === 0) {
     return <p>You don't have any domains yet.</p>

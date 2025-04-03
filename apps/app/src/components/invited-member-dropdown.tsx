@@ -1,33 +1,39 @@
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { toast } from 'sonner'
 import { Button } from './ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from './ui/dropdown-menu'
 import { Icon } from './ui/icon'
 
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 type Props = {
   invite: RouterOutputs['invites']['getForTeam'][number]
 }
 
 export const InvitedMemberDropdown = ({ invite }: Props) => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
-  const trpcUtils = trpc.useUtils()
+  const queryClient = useQueryClient()
 
-  const cancelInviteMutation = trpc.invites.cancel.useMutation({
-    onSuccess: (deletedInvite) => {
-      trpcUtils.invites.getForTeam.invalidate({ teamSlug })
+  const cancelInviteMutation = useMutation(
+    trpc.invites.cancel.mutationOptions({
+      onSuccess: (deletedInvite) => {
+        queryClient.invalidateQueries(trpc.invites.getForTeam.queryFilter({ teamSlug }))
 
-      toast.success('Invite cancelled', {
-        description: `Invite to ${deletedInvite.email} cancelled`,
-      })
-    },
-    onError: (error) => {
-      toast.error('Failed to cancel invite', {
-        description: error.message,
-      })
-    },
-  })
+        toast.success('Invite cancelled', {
+          description: `Invite to ${deletedInvite.email} cancelled`,
+        })
+      },
+      onError: (error) => {
+        toast.error('Failed to cancel invite', {
+          description: error.message,
+        })
+      },
+    }),
+  )
 
   return (
     <DropdownMenu>

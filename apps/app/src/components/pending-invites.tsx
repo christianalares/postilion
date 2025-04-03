@@ -1,14 +1,16 @@
 'use client'
-
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { teamRoleEnumToLabel } from '@/lib/utils'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { InvitedMemberDropdown } from './invited-member-dropdown'
 import { Avatar } from './ui/avatar'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const PendingInvites = () => {
+  const trpc = useTRPC()
   const teamSlug = useTeamSlug()
-  const [invites] = trpc.invites.getForTeam.useSuspenseQuery({ teamSlug })
+  const { data: invites } = useSuspenseQuery(trpc.invites.getForTeam.queryOptions({ teamSlug }))
 
   if (invites.length === 0) {
     return (

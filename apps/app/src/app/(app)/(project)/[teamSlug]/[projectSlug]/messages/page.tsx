@@ -1,5 +1,5 @@
 import { MessagesList } from '@/components/messages-list'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
 type Params = Promise<{
@@ -13,7 +13,8 @@ type Props = {
 
 const ProjectPage = async ({ params }: Props) => {
   const { teamSlug, projectSlug } = await params
-  trpc.messages.getForProject.prefetch({ teamSlug, projectSlug })
+
+  prefetch(trpc.messages.getForProject.queryOptions({ teamSlug, projectSlug }))
 
   return (
     <HydrateClient>

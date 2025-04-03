@@ -1,13 +1,13 @@
 import { EmailForm, EmailFormSkeleton } from '@/components/forms/email-form'
 import { FullNameForm, FullNameFormSkeleton } from '@/components/forms/full-name-form'
-import { trpc } from '@/trpc/server'
+import { prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 import { AccountHeader } from './_header'
 
 export const dynamic = 'force-dynamic'
 
 const AccountPage = () => {
-  trpc.users.me.prefetch()
+  prefetch(trpc.users.me.queryOptions())
 
   return (
     <>

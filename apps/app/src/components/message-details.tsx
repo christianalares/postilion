@@ -1,16 +1,18 @@
 'use client'
-
 import { useMessageId } from '@/hooks/use-message-id'
 import { cn } from '@/lib/utils'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { Badge, badgeLabelVariants } from './ui/badge'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const MessageDetails = () => {
+  const trpc = useTRPC()
   const messageId = useMessageId()
 
-  const [message] = trpc.messages.getById.useSuspenseQuery({ messageId })
+  const { data: message } = useSuspenseQuery(trpc.messages.getById.queryOptions({ messageId }))
 
   return (
     <article>

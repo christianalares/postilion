@@ -6,9 +6,9 @@ import {
   isSameDay,
   isSameMonth,
   isSameWeek,
-  startOfMonth,
-  startOfWeek,
-  startOfYear,
+  subDays,
+  subWeeks,
+  subYears,
 } from 'date-fns'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -59,7 +59,7 @@ const getStats = authProcedure
 
     const now = new Date()
     const startDate =
-      input.by === 'DAILY' ? startOfMonth(now) : input.by === 'WEEKLY' ? startOfWeek(now) : startOfYear(now)
+      input.by === 'DAILY' ? subDays(now, 30) : input.by === 'WEEKLY' ? subWeeks(now, 4) : subYears(now, 1)
 
     const messages = await ctx.prisma.message.findMany({
       where: {
@@ -78,7 +78,7 @@ const getStats = authProcedure
 
     if (input.by === 'DAILY') {
       const allDays = eachDayOfInterval({
-        start: startOfMonth(new Date()),
+        start: startDate,
         end: new Date(),
       })
 
@@ -96,7 +96,7 @@ const getStats = authProcedure
 
     if (input.by === 'WEEKLY') {
       const allWeeks = eachWeekOfInterval({
-        start: startOfMonth(new Date()),
+        start: startDate,
         end: new Date(),
       })
 
@@ -114,7 +114,7 @@ const getStats = authProcedure
 
     if (input.by === 'MONTHLY') {
       const allMonths = eachMonthOfInterval({
-        start: startOfYear(new Date()),
+        start: startDate,
         end: new Date(),
       })
 

@@ -1,8 +1,9 @@
-import { trpc } from '@/trpc/server'
+import { getQueryClient, trpc } from '@/trpc/server'
 import { IdentifyComponent } from '@postilion/analytics/identify-component'
 
 const AppLayout = async ({ children }: { children: React.ReactNode }) => {
-  const user = await trpc.users.me()
+  const queryClient = getQueryClient()
+  const user = await queryClient.fetchQuery(trpc.users.me.queryOptions())
 
   return (
     <>

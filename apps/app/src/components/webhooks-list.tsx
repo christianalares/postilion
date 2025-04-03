@@ -1,17 +1,19 @@
 'use client'
-
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import { Badge } from './ui/badge'
 import { CopyToClipboardButton } from './ui/copy-to-clipboard-button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 import { WebhookDropdown } from './webhook-dropdown'
 
+import { useSuspenseQuery } from '@tanstack/react-query'
+
 export const WebhooksList = () => {
+  const trpc = useTRPC()
   const projectSlug = useProjectSlug()
   const teamSlug = useTeamSlug()
-  const [webhooks] = trpc.webhooks.getForProject.useSuspenseQuery({ projectSlug, teamSlug })
+  const { data: webhooks } = useSuspenseQuery(trpc.webhooks.getForProject.queryOptions({ projectSlug, teamSlug }))
 
   if (webhooks.length === 0) {
     return <p>You don't have any webhooks yet.</p>

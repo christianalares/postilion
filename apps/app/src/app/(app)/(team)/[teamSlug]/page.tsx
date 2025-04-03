@@ -1,5 +1,5 @@
 import { ProjectsList, ProjectsListSkeleton } from '@/components/projects-list'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 import { ProjectsHeader } from './_header'
 
@@ -12,7 +12,7 @@ type Params = Promise<{
 const TeamPage = async ({ params }: { params: Params }) => {
   const { teamSlug } = await params
 
-  trpc.projects.getForTeam.prefetch({ slug: teamSlug })
+  prefetch(trpc.projects.getForTeam.queryOptions({ slug: teamSlug }))
 
   return (
     <HydrateClient>

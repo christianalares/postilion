@@ -1,5 +1,4 @@
 'use client'
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,11 +9,13 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { authClient } from '@/lib/auth/auth-client'
 import { cn } from '@/lib/utils'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Avatar } from './ui/avatar'
+
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 const ThemeSwitcher = dynamic(() => import('@/components/theme-switcher').then(({ ThemeSwitcher }) => ThemeSwitcher), {
   ssr: false,
@@ -24,8 +25,9 @@ type Props = {
   className?: string
 }
 export const UserDropdown = ({ className }: Props) => {
+  const trpc = useTRPC()
   const router = useRouter()
-  const [me] = trpc.users.me.useSuspenseQuery()
+  const { data: me } = useSuspenseQuery(trpc.users.me.queryOptions())
 
   return (
     <DropdownMenu>

@@ -1,5 +1,5 @@
 import { WebhooksList } from '@/components/webhooks-list'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 import { WebhooksHeader } from './_header'
 
@@ -15,7 +15,7 @@ type Props = {
 const WebhooksPage = async ({ params }: Props) => {
   const { teamSlug, projectSlug } = await params
 
-  trpc.webhooks.getForProject.prefetch({ teamSlug, projectSlug })
+  prefetch(trpc.webhooks.getForProject.queryOptions({ teamSlug, projectSlug }))
 
   return (
     <HydrateClient>

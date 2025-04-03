@@ -3,7 +3,7 @@ import { ProjectsDropdown } from '@/components/projects-dropdown'
 import { ProjectMenu } from '@/components/sidebar-menus/project-menu'
 import { TeamsDropdownSkeleton } from '@/components/teams-dropdown'
 import { TeamsDropdown } from '@/components/teams-dropdown'
-import { HydrateClient, trpc } from '@/trpc/server'
+import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
 type Params = Promise<{
@@ -19,11 +19,11 @@ type Props = {
 const ProjectLayout = async ({ children, params }: Props) => {
   const { teamSlug, projectSlug } = await params
 
-  trpc.users.me.prefetch()
-  trpc.projects.getForTeam.prefetch({ slug: teamSlug })
-  trpc.projects.getBySlug.prefetch({ teamSlug, projectSlug })
-  trpc.teams.getBySlug.prefetch({ slug: teamSlug })
-  trpc.teams.getForUser.prefetch()
+  prefetch(trpc.users.me.queryOptions())
+  prefetch(trpc.projects.getForTeam.queryOptions({ slug: teamSlug }))
+  prefetch(trpc.projects.getBySlug.queryOptions({ teamSlug, projectSlug }))
+  prefetch(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  prefetch(trpc.teams.getForUser.queryOptions())
 
   return (
     <HydrateClient>

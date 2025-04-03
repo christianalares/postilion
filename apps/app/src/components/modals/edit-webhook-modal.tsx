@@ -1,31 +1,37 @@
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { trpc } from '@/trpc/client'
+import { useTRPC } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { toast } from 'sonner'
 import { popModal } from '.'
 import { WebhookForm } from '../forms/webhook-form'
 import { Modal, ModalDescription, ModalHeader, ModalTitle } from '../ui/modal'
 
+import { useMutation } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
+
 type Props = {
   webhook: RouterOutputs['webhooks']['getForProject'][number]
 }
 
 export const EditWebhookModal = ({ webhook }: Props) => {
-  const trpcUtils = trpc.useUtils()
+  const trpc = useTRPC()
+  const queryClient = useQueryClient()
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
 
-  const updateWebhookMutation = trpc.webhooks.update.useMutation({
-    onSuccess: () => {
-      toast.success('Webhook updated')
-      popModal('editWebhookModal')
-      trpcUtils.webhooks.getForProject.invalidate({ teamSlug, projectSlug })
-    },
-    onError: (error) => {
-      toast.error(error.message)
-    },
-  })
+  const updateWebhookMutation = useMutation(
+    trpc.webhooks.update.mutationOptions({
+      onSuccess: () => {
+        toast.success('Webhook updated')
+        popModal('editWebhookModal')
+        queryClient.invalidateQueries(trpc.webhooks.getForProject.queryFilter({ teamSlug, projectSlug }))
+      },
+      onError: (error) => {
+        toast.error(error.message)
+      },
+    }),
+  )
 
   return (
     <Modal className="!max-w-2xl">
