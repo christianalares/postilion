@@ -93,10 +93,14 @@ export const MessagesChart = () => {
               dataKey="date"
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
+              tickMargin={16}
+              minTickGap={8}
+              className="-translate-x-3"
+              height={40}
+              angle={-45}
               tickFormatter={(value) => {
                 const date = new Date(value)
+
                 return date.toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
