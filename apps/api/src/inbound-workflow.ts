@@ -19,6 +19,7 @@ type Params = {
   to: string
   subject: string
   content: string
+  contentText: string
   attachments: Array<{
     filename: string
     mimeType: string
@@ -122,6 +123,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           handle: event.payload.to.split('@')[0],
           from: event.payload.from.trim(),
           body_raw: event.payload.content.trim(),
+          body_text: event.payload.contentText.trim(),
           subject: event.payload.subject.trim(),
           status: 'PROCESSING',
         },

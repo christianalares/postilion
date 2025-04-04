@@ -171,6 +171,7 @@ model Message {
   subject         String
   from            String
   body_raw        String
+  body_text       String?
   body_stripped   String?
   body_ai_summary String?
   metadata        Json?

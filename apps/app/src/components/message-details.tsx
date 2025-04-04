@@ -60,39 +60,49 @@ export const MessageDetails = () => {
           <p className="text-xs font-mono">{message.body_stripped}</p>
         </div>
 
+        {message.body_text && (
+          <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
+            <p className={badgeLabelVariants()}>Text body:</p>
+            <p className="text-xs font-mono">{message.body_text}</p>
+          </div>
+        )}
+
         <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
           <p className={badgeLabelVariants()}>Raw body:</p>
           <p className="text-xs font-mono break-all">{message.body_raw}</p>
         </div>
 
-        <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
-          <p className={badgeLabelVariants()}>Attachments:</p>
-          <ul className="flex items-center gap-4">
-            {message.attachments
-              .filter(
-                (attachment) => attachment.mime_type.startsWith('image/') || attachment.mime_type === 'application/pdf',
-              )
-              .map((attachment) => {
-                return (
-                  <li key={attachment.id}>
-                    <a
-                      href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/attachments/${attachment.r2_key}`}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="font-mono text-xs flex items-center gap-1 hover:underline underline-offset-4"
-                    >
-                      <Icon
-                        name={attachment.mime_type === 'application/pdf' ? 'document' : 'image'}
-                        className="size-4"
-                        strokeWidth={1}
-                      />
-                      {attachment.filename}
-                    </a>
-                  </li>
+        {message.attachments.length > 0 && (
+          <div className="border p-2 bg-muted/50 items-center gap-1 space-y-2">
+            <p className={badgeLabelVariants()}>Attachments:</p>
+            <ul className="flex items-center gap-4">
+              {message.attachments
+                .filter(
+                  (attachment) =>
+                    attachment.mime_type.startsWith('image/') || attachment.mime_type === 'application/pdf',
                 )
-              })}
-          </ul>
-        </div>
+                .map((attachment) => {
+                  return (
+                    <li key={attachment.id}>
+                      <a
+                        href={`${process.env.NEXT_PUBLIC_API_BASE_URL}/attachments/${attachment.r2_key}`}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="font-mono text-xs flex items-center gap-1 hover:underline underline-offset-4"
+                      >
+                        <Icon
+                          name={attachment.mime_type === 'application/pdf' ? 'document' : 'image'}
+                          className="size-4"
+                          strokeWidth={1}
+                        />
+                        {attachment.filename}
+                      </a>
+                    </li>
+                  )
+                })}
+            </ul>
+          </div>
+        )}
       </div>
     </article>
   )

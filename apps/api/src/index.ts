@@ -19,6 +19,7 @@ app.post(
       to: z.string().email(),
       subject: z.string(),
       content: z.string(),
+      contentText: z.string().optional(),
       attachments: z.array(
         z.object({
           filename: z.string(),
@@ -34,7 +35,7 @@ app.post(
     }),
   ),
   async (c) => {
-    const { from, to, subject, content, attachments } = c.req.valid('json')
+    const { from, to, subject, content, contentText, attachments } = c.req.valid('json')
 
     const newId = crypto.randomUUID()
 
@@ -45,6 +46,7 @@ app.post(
         to,
         subject,
         content,
+        contentText,
         attachments,
       },
     })
@@ -230,10 +232,15 @@ export default {
       attachmentEncoding: 'base64',
     })
 
-    const to = email.to?.at(0)?.address
+    let to = email.to?.at(0)?.address
 
     if (!to) {
       throw new Error('No to address')
+    }
+
+    // For testing purposes
+    if (to === 'christian.alares@gmail.com') {
+      to = 'testgmail@inbound.seventy-seven.app'
     }
 
     const attachments = email.attachments
@@ -256,6 +263,7 @@ export default {
         to,
         subject: email.subject ?? '',
         content: email.html || email.text || '<empty message>',
+        contentText: email.text || '<empty message>',
         attachments,
       },
     })
