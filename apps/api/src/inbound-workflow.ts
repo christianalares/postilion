@@ -288,7 +288,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
       const prisma = createPrismaClient(this.env.DATABASE_URL)
 
       const { object } = await generateObject({
-        model: workersai('@cf/meta/llama-3.1-8b-instruct'),
+        model: workersai('@cf/meta/llama-3.3-70b-instruct-fp8-fast'),
         system:
           'You are a helpful assistant that summarizes an email. You will be given a body of an email and you will need to summarize it in a few sentences. ONLY respond with the parsed text without any prefixes about "Here is your desired results" or similar.',
         schema: z.object({
