@@ -13,6 +13,13 @@ export const generateShortId = () => {
   return createId()
 }
 
+// Add this helper function near the top of the file
+function isTextTooLong(text: string, maxTokens = 7000): boolean {
+  // Rough estimation: 1 token ≈ 4 characters for English text
+  // Using a conservative estimate to account for special characters and formatting
+  return text.length > maxTokens * 3
+}
+
 // User-defined params passed to your workflow
 type Params = {
   from: string
@@ -154,11 +161,26 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
     })
 
     const strippedBody = await step.do('Get a stripped body of the email', async () => {
-      const workersai = createWorkersAI({ binding: this.env.AI })
       const prisma = createPrismaClient(this.env.DATABASE_URL)
 
+      // if (isTextTooLong(event.payload.content)) {
+      //   await prisma.message.update({
+      //     where: {
+      //       id: createdMessage.id,
+      //     },
+      //     data: {
+      //       body_stripped: '',
+      //     },
+      //   })
+
+      //   return ''
+      // }
+
+      const workersai = createWorkersAI({ binding: this.env.AI })
+
       const { object } = await generateObject({
-        model: workersai('@cf/meta/llama-3.1-8b-instruct'),
+        model: workersai('@cf/meta/llama-3.3-70b-instruct-fp8-fast'),
+        // model: workersai('@cf/meta/llama-3.1-8b-instruct'),
         system: `You are a helpful assistant that analyzes email HTML and returns a stripped clean text version of the email body.
   * Analyze this and give me a version where all the HTML is removed.
   * Remove any irrelevant information such as copyrights, footers, unsubscribe links/texts etc.
@@ -273,6 +295,14 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           summary: z.string().describe('A summary of the email'),
         }),
         messages: [
+          {
+            role: 'user',
+            content: `The subject of the email is: ${event.payload.subject}`,
+          },
+          {
+            role: 'user',
+            content: `The text body of the email is: ${event.payload.contentText}`,
+          },
           {
             role: 'user',
             content: strippedBody,

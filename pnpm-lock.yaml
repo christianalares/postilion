@@ -39,8 +39,8 @@ importers:
         specifier: ^2.4.3
         version: 2.4.3
       workers-ai-provider:
-        specifier: ^0.1.3
-        version: 0.1.3(react@19.0.0)
+        specifier: ^0.3.0
+        version: 0.3.0
       zod:
         specifier: ^3.24.2
         version: 3.24.2
@@ -269,22 +269,6 @@ importers:
 
 packages:
 
-  /@ai-sdk/provider-utils@1.0.22(zod@3.24.2):
-    resolution: {integrity: sha512-YHK2rpj++wnLVc9vPGzGFP3Pjeld2MwhKinetA0zKXOoHAT/Jit5O8kZsxcSlJPu9wvcGT1UGZEjZrtO7PfFOQ==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.0.0
-    peerDependenciesMeta:
-      zod:
-        optional: true
-    dependencies:
-      '@ai-sdk/provider': 0.0.26
-      eventsource-parser: 1.1.2
-      nanoid: 3.3.9
-      secure-json-parse: 2.7.0
-      zod: 3.24.2
-    dev: false
-
   /@ai-sdk/provider-utils@2.1.13(zod@3.24.2):
     resolution: {integrity: sha512-kLjqsfOdONr6DGcGEntFYM1niXz1H05vyZNf9OAzK+KKKc64izyP4/q/9HX7W4+6g8hm6BnmKxu8vkr6FSOqDg==}
     engines: {node: '>=18'}
@@ -299,13 +283,6 @@ packages:
       nanoid: 3.3.9
       secure-json-parse: 2.7.0
       zod: 3.24.2
-    dev: false
-
-  /@ai-sdk/provider@0.0.26:
-    resolution: {integrity: sha512-dQkfBDs2lTYpKM8389oopPdQgIU007GQyCbuPPrV+K6MtSII3HBfE0stUIMXUb44L+LK1t6GXPP7wjSzjO6uKg==}
-    engines: {node: '>=18'}
-    dependencies:
-      json-schema: 0.4.0
     dev: false
 
   /@ai-sdk/provider@1.0.11:
@@ -531,6 +508,10 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@cloudflare/workers-types@4.20250404.0:
+    resolution: {integrity: sha512-XB8LNS9spWcxU56Tt/RPl0S06oyXfZCSDVKBbzjHYZtgN5kZP4UtTR01t16HUfo330EtJOo8cdo/PbiBAwRNIg==}
+    dev: false
 
   /@cspotcode/source-map-support@0.8.1:
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -3862,11 +3843,6 @@ packages:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
     dev: false
 
-  /eventsource-parser@1.1.2:
-    resolution: {integrity: sha512-v0eOBUbiaFojBu2s2NPBfYUoRR9GjcDNvCXVaqEf5vVfpIAh9f8RCo4vXTP8c63QRKCFwoLpMpTdPwwhEKVgzA==}
-    engines: {node: '>=14.18'}
-    dev: false
-
   /eventsource-parser@3.0.0:
     resolution: {integrity: sha512-T1C0XCUimhxVQzW4zFipdx0SficT651NnkR0ZSH3yQwh+mFMdLfgjABVi4YtMTtaL4s168593DaoaRLMqryavA==}
     engines: {node: '>=18.0.0'}
@@ -3897,10 +3873,6 @@ packages:
   /fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
     dev: true
-
-  /fetch-event-stream@0.1.5:
-    resolution: {integrity: sha512-V1PWovkspxQfssq/NnxoEyQo1DV+MRK/laPuPblIZmSjMN8P5u46OhlFQznSr9p/t0Sp8Uc6SbM3yCMfr0KU8g==}
-    dev: false
 
   /file-entry-cache@8.0.0:
     resolution: {integrity: sha512-XXTUwCvisa5oacNGRP9SfNtYBNAMi+RPwBFmblZEF7N7swHYQS6/Zfk7SRwx4D5j3CH211YNRco1DEMNVfZCnQ==}
@@ -5257,16 +5229,10 @@ packages:
       '@cloudflare/workerd-windows-64': 1.20250310.0
     dev: true
 
-  /workers-ai-provider@0.1.3(react@19.0.0):
-    resolution: {integrity: sha512-5cayJvvnPZ4gNQ3ypLg0mxWSybOvCqpeN/cbzkMJYrO88cZhq1HiUJYdbMz/TW4hx2Ry/ZbYGn+Aa4bwhwhNuw==}
+  /workers-ai-provider@0.3.0:
+    resolution: {integrity: sha512-NCnwRJ0OVgyVIZwbHRmn+8A80vi4iXxnjvLaxn0CCYMsooVKgf52rEIcbap5FJNd7fx3nLOi2OgNKjqS1ipz5A==}
     dependencies:
-      '@ai-sdk/provider': 1.0.11
-      '@ai-sdk/provider-utils': 1.0.22(zod@3.24.2)
-      ai: 4.1.61(react@19.0.0)(zod@3.24.2)
-      fetch-event-stream: 0.1.5
-      zod: 3.24.2
-    transitivePeerDependencies:
-      - react
+      '@cloudflare/workers-types': 4.20250404.0
     dev: false
 
   /wrangler@3.114.1:
