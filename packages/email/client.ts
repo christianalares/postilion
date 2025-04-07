@@ -19,7 +19,7 @@ export class EmailClient {
       return this.client.emails.send({
         from: 'Postilion <christian@postilion.ai>',
         to: email.to,
-        subject: 'Test',
+        subject: "You've been invited to join a team on Postilion",
         react: InviteUserEmail(email.props),
       })
     }
