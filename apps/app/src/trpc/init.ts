@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth/auth'
 import { ForwardEmailClient } from '@/lib/forward-email-client'
 import { createAnalyticsClient } from '@postilion/analytics/client'
 import { prisma } from '@postilion/db'
+import { EmailClient } from '@postilion/email/client'
 import { TRPCError, initTRPC } from '@trpc/server'
 import { headers } from 'next/headers'
 import { cache } from 'react'
@@ -17,28 +18,16 @@ export const createTRPCContext = cache(async () => {
   const analyticsClient = createAnalyticsClient({
     clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
     clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
-    eventNames: [
-      'team_updated',
-      'team_created',
-      'project_created',
-      'project_updated',
-      'user_updated',
-      'domain_created',
-      'domain_verified',
-      'webhook_created',
-      'webhook_updated',
-      'webhook_deleted',
-      'invite_created',
-      'invite_deleted',
-      'invite_accepted',
-    ],
     profileId: user?.id,
   })
+
+  const emailClient = new EmailClient(process.env.RESEND_API_KEY!)
 
   return {
     prisma,
     user,
     analyticsClient,
+    emailClient,
   }
 })
 

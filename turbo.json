@@ -26,7 +26,8 @@
 				"GOOGLE_CLIENT_SECRET",
 				"FORWARDEMAIL_API_TOKEN",
 				"NEXT_PUBLIC_OPENPANEL_CLIENT_ID",
-				"OPENPANEL_CLIENT_SECRET"
+				"OPENPANEL_CLIENT_SECRET",
+				"RESEND_API_KEY"
 			],
 			"outputs": [".next/**", "!.next/cache/**"]
 		},

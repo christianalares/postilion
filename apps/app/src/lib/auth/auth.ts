@@ -7,6 +7,8 @@ import { cookies } from 'next/headers'
 import { createDefaultTeam, handleInvitedUser } from './utils'
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL!,
+  secret: process.env.BETTER_AUTH_SECRET!,
   database: prismaAdapter(prisma, {
     provider: 'postgresql',
   }),
@@ -57,7 +59,6 @@ export const auth = betterAuth({
           const analyticsClient = createAnalyticsClient({
             clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
             clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
-            eventNames: ['user_created'],
             profileId: user.id,
           })
 
