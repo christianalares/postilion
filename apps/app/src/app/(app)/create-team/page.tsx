@@ -29,7 +29,7 @@ const CreateTeamPage = () => {
   return (
     <div className="h-full grid grid-rows-[auto_1fr]">
       <header className="flex items-center justify-between p-8">
-        <Logo />
+        <Logo className="size-10" />
 
         <ThemeSwitcherWrapper />
       </header>
