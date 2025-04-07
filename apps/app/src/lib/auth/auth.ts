@@ -57,7 +57,6 @@ export const auth = betterAuth({
           const analyticsClient = createAnalyticsClient({
             clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
             clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
-            eventNames: ['user_created'],
             profileId: user.id,
           })
 

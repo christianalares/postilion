@@ -1,6 +1,7 @@
 import { createShortId } from '@/lib/utils'
 import { TEAM_ROLE_ENUM } from '@postilion/db'
 import { TRPCError } from '@trpc/server'
+import { after } from 'next/server'
 import { z } from 'zod'
 import { authProcedure, baseProcedure, createTRPCRouter } from '../init'
 
@@ -92,6 +93,25 @@ const create = authProcedure
       team_id: team.id,
       team_name: team.name,
     })
+
+    after(
+      ctx.emailClient.send({
+        type: 'invite-user',
+        to: input.email,
+        props: {
+          code: createdInvite.code,
+          email: input.email,
+          team: {
+            name: team.name,
+          },
+          invitedBy: {
+            name: ctx.user.name,
+            avatar: ctx.user.image,
+            email: ctx.user.email,
+          },
+        },
+      }),
+    )
 
     return createdInvite
   })

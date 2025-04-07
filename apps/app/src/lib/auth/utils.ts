@@ -38,7 +38,6 @@ export const createDefaultTeam = async (user: User) => {
     const analyticsClient = createAnalyticsClient({
       clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
       clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
-      eventNames: ['default_team_created'],
       profileId: user.id,
     })
 
@@ -115,7 +114,6 @@ export const handleInvitedUser = async (user: User, inviteCode: string) => {
   const analyticsClient = createAnalyticsClient({
     clientId: process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!,
     clientSecret: process.env.OPENPANEL_CLIENT_SECRET!,
-    eventNames: ['invite_accepted'],
     profileId: user.id,
   })
 
