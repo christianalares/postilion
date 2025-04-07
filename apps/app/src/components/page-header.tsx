@@ -2,7 +2,7 @@ import { Button } from './ui/button'
 import { Icon, type IconName } from './ui/icon'
 
 type Props = {
-  heading: string
+  heading: React.ReactNode
   cta?: {
     icon?: IconName
     label: string

@@ -97,16 +97,18 @@ model Verification {
 }
 
 model Team {
-  id         String       @id @default(ulid())
-  slug       String       @unique
-  created_at DateTime     @default(now())
-  updated_at DateTime?
-  name       String
-  image_url  String?
-  members    UserOnTeam[]
-  invites    TeamInvite[]
-  projects   Project[]
-  domains    Domain[]
+  id                      String       @id @default(ulid())
+  slug                    String       @unique
+  created_at              DateTime     @default(now())
+  updated_at              DateTime?
+  name                    String
+  image_url               String?
+  members                 UserOnTeam[]
+  invites                 TeamInvite[]
+  projects                Project[]
+  domains                 Domain[]
+  end_free_trial          DateTime?
+  subscription_product_id String?
 
   @@index([slug])
   @@map("teams")

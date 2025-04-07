@@ -14,7 +14,10 @@
 	"dependencies": {
 		"@hookform/resolvers": "^4.1.3",
 		"@number-flow/react": "^0.5.8",
+		"@polar-sh/checkout": "^0.1.10",
+		"@polar-sh/nextjs": "^0.3.23",
 		"@postilion/analytics": "workspace:*",
+		"@postilion/billing": "workspace:*",
 		"@postilion/db": "workspace:*",
 		"@postilion/email": "workspace:*",
 		"@radix-ui/react-alert-dialog": "^1.1.6",
