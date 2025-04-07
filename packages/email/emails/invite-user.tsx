@@ -33,7 +33,7 @@ const baseUrl = process.env.VERCEL_URL
     ? 'http://localhost:3000'
     : ''
 
-const baseImageUrl = process.env.NODE_ENV === 'development' ? '' : 'https://postilion.ai/public'
+const baseImageUrl = process.env.NODE_ENV === 'development' ? '' : 'https://app.postilion.ai/public'
 
 export const InviteUserEmail = ({ invitedBy, team, code, email }: VercelInviteUserEmailProps) => {
   const inviteLink = `${baseUrl}/api/invite/${code}`
