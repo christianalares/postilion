@@ -26,7 +26,7 @@ const LoginPage = async ({ searchParams }: Props) => {
         <ThemeSwitcherWrapper />
       </header>
 
-      <main className="flex items-center justify-center">
+      <main className="flex items-center justify-center p-4">
         <LoginButtons redirectTo={parsedSearchParams.data?.return_to} />
       </main>
     </div>
