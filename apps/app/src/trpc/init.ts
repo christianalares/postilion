@@ -23,7 +23,10 @@ export const createTRPCContext = cache(async () => {
   })
 
   const emailClient = new EmailClient(process.env.RESEND_API_KEY!)
-  const polarClient = new PolarClient(process.env.POLAR_ACCESS_TOKEN!)
+  const polarClient = new PolarClient({
+    accessToken: process.env.POLAR_ACCESS_TOKEN!,
+    server: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+  })
 
   return {
     prisma,

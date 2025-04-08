@@ -1,14 +1,18 @@
 import { Polar } from '@polar-sh/sdk'
 import type { Subscription } from '@polar-sh/sdk/models/components/subscription.js'
 
+type ClientArgs = {
+  accessToken: string
+  server: 'production' | 'sandbox'
+}
+
 export class PolarClient {
   private polar: Polar
 
-  constructor(accessToken: string) {
+  constructor(args: ClientArgs) {
     this.polar = new Polar({
-      accessToken,
-      // TODO: Remove hardcoded sandbox
-      server: 'sandbox',
+      accessToken: args.accessToken,
+      server: args.server,
     })
   }
 
