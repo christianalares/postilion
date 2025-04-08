@@ -115,9 +115,7 @@ const ProductCard = ({ product, currentIndex, currentPlanIndex }: ProductCardPro
     <Card>
       <CardHeader className="flex justify-between items-center">
         <div>
-          <CardTitle className="font-mono text-2xl font-normal">
-            {product.name} {product.id}
-          </CardTitle>
+          <CardTitle className="font-mono text-2xl font-normal">{product.name}</CardTitle>
           <CardDescription className="font-mono mt-2">{product.description}</CardDescription>
         </div>
 
