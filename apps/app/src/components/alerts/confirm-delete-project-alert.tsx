@@ -14,7 +14,7 @@ type Props = {
 
 export const ConfirmDeleteProjectAlert = ({ project }: Props) => {
   const [confirmText, setConfirmText] = useState('')
-  const queryClient = useQueryClient()
+  const _queryClient = useQueryClient()
 
   const isConfirmed = confirmText === project.name.toUpperCase()
 

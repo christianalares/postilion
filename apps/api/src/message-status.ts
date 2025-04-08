@@ -55,7 +55,7 @@ export class MessageStatus {
       for (const controller of this.connections) {
         try {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(update)}\n\n`))
-        } catch (error) {
+        } catch (_error) {
           // If we can't enqueue, the connection is probably dead
           deadConnections.add(controller)
         }

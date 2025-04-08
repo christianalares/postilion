@@ -7,7 +7,7 @@ type Params = Promise<{
   inviteCode: string
 }>
 
-export const GET = async (req: Request, { params }: { params: Params }) => {
+export const GET = async (_req: Request, { params }: { params: Params }) => {
   const { inviteCode } = await params
 
   if (!inviteCode) {

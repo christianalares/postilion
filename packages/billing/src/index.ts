@@ -1,4 +1,5 @@
 import { Polar } from '@polar-sh/sdk'
+import type { Subscription } from '@polar-sh/sdk/models/components/subscription.js'
 
 export class PolarClient {
   private polar: Polar
@@ -9,6 +10,18 @@ export class PolarClient {
       // TODO: Remove hardcoded sandbox
       server: 'sandbox',
     })
+  }
+
+  #normalizeSubscription(subscription: Subscription) {
+    return {
+      id: subscription.id,
+      teamId: subscription.metadata.teamId as string,
+      createdAt: subscription.createdAt,
+      currentPeriodStart: subscription.currentPeriodStart,
+      currentPeriodEnd: subscription.currentPeriodEnd,
+      productId: subscription.productId,
+      endsAt: subscription.endsAt,
+    }
   }
 
   async getProduct(productId: string) {
@@ -103,14 +116,7 @@ export class PolarClient {
       return null
     }
 
-    return {
-      id: subscriptionForTeam.id,
-      teamId: subscriptionForTeam.metadata.teamId as string,
-      createdAt: subscriptionForTeam.createdAt,
-      currentPeriodStart: subscriptionForTeam.currentPeriodStart,
-      currentPeriodEnd: subscriptionForTeam.currentPeriodEnd,
-      productId: subscriptionForTeam.productId,
-    }
+    return this.#normalizeSubscription(subscriptionForTeam)
   }
 
   async updateSubscription({ subscriptionId, productId }: { subscriptionId: string; productId: string }) {
@@ -119,16 +125,55 @@ export class PolarClient {
       subscriptionUpdate: {
         productId,
         cancelAtPeriodEnd: true,
+        revoke: null,
       },
     })
 
-    return {
-      id: subscription.id,
-      teamId: subscription.metadata.teamId as string,
-      createdAt: subscription.createdAt,
-      currentPeriodStart: subscription.currentPeriodStart,
-      currentPeriodEnd: subscription.currentPeriodEnd,
-      productId: subscription.productId,
+    return this.#normalizeSubscription(subscription)
+  }
+
+  async cancelSubscription({ teamId }: { teamId: string }) {
+    const subscription = await this.getSubscription({ teamId })
+
+    if (!subscription) {
+      throw new Error('Subscription not found')
     }
+
+    try {
+      const cancelledSubscription = await this.polar.subscriptions.update({
+        id: subscription.id,
+        subscriptionUpdate: {
+          cancelAtPeriodEnd: true,
+          revoke: null,
+        },
+      })
+
+      return this.#normalizeSubscription(cancelledSubscription)
+    } catch (error) {
+      // If the subscription is already canceled, just return the subscription
+      if (error instanceof Error && error.name === 'AlreadyCanceledSubscription') {
+        return subscription
+      }
+
+      throw error
+    }
+  }
+
+  async reactivateSubscription({ teamId }: { teamId: string }) {
+    const subscription = await this.getSubscription({ teamId })
+
+    if (!subscription) {
+      throw new Error('Subscription not found')
+    }
+
+    const reactivatedSubscription = await this.polar.subscriptions.update({
+      id: subscription.id,
+      subscriptionUpdate: {
+        cancelAtPeriodEnd: false,
+        revoke: null,
+      },
+    })
+
+    return this.#normalizeSubscription(reactivatedSubscription)
   }
 }

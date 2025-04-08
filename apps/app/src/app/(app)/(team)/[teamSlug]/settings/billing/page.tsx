@@ -1,5 +1,4 @@
-import { NoSubscription } from '@/components/no-subscription'
-import { ProductsList } from '@/components/products-list'
+import { ProductsList, ProductsListSkeleton } from '@/components/products-list'
 import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
 
@@ -20,8 +19,7 @@ const BillingSettingsPage = async ({ params }: Props) => {
   return (
     <HydrateClient>
       <div className="max-w-4xl">
-        <Suspense fallback={<div>Loading...</div>}>
-          <NoSubscription />
+        <Suspense fallback={<ProductsListSkeleton />}>
           <ProductsList />
         </Suspense>
       </div>

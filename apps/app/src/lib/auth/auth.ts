@@ -39,7 +39,7 @@ export const auth = betterAuth({
                 cookieStore.delete('invite-code')
                 cookieStore.set('redirectTo', `/${userOnTeam.team.slug}`)
               }
-            } catch (error) {
+            } catch (_error) {
               const createdTeam = await createDefaultTeam(user)
 
               if (createdTeam) {

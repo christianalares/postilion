@@ -34,7 +34,7 @@ const update = authProcedure
       })
 
       return updatedUser
-    } catch (error) {
+    } catch (_error) {
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to update user',

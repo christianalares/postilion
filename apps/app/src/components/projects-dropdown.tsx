@@ -11,7 +11,6 @@ import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useTRPC } from '@/trpc/client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
 import { pushModal } from './modals'
 import { Button } from './ui/button'
 import { Icon } from './ui/icon'
@@ -22,7 +21,6 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 export const ProjectsDropdown = () => {
   const trpc = useTRPC()
   const teamSlug = useTeamSlug()
-  const pathname = usePathname()
   const projectSlug = useProjectSlug()
 
   const { data: projects } = useSuspenseQuery(trpc.projects.getForTeam.queryOptions({ slug: teamSlug }))
@@ -47,10 +45,7 @@ export const ProjectsDropdown = () => {
           <DropdownMenuSeparator />
           {projects.map((project) => {
             const isActive = project.slug === projectSlug
-            const href = pathname
-              .split('/')
-              .map((segment) => (segment === projectSlug ? project.slug : segment))
-              .join('/')
+
             return (
               <DropdownMenuItem key={project.id} asChild>
                 <Link href={`/${team.slug}/${project.slug}`} className="flex items-center justify-between gap-2">

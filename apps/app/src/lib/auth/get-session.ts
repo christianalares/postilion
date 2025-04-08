@@ -18,7 +18,7 @@ export const getSession = async () => {
     const session = (await res.json()) as Session | null
 
     return session
-  } catch (error) {
+  } catch (_error) {
     return null
   }
 }

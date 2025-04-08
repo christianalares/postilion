@@ -87,70 +87,6 @@ const createCheckout = authProcedure
     }
   })
 
-// const getPlan = authProcedure
-//   .input(
-//     z.object({
-//       teamSlug: z.string(),
-//     }),
-//   )
-//   .query(async ({ ctx, input }) => {
-//     const team = await ctx.prisma.team
-//       .findUnique({
-//         where: {
-//           slug: input.teamSlug,
-//         },
-//         select: {
-//           id: true,
-//           subscription_product_id: true,
-//           members: {
-//             select: {
-//               user_id: true,
-//             },
-//           },
-//         },
-//       })
-//       .catch(() => {
-//         throw new TRPCError({
-//           code: 'INTERNAL_SERVER_ERROR',
-//           message: 'Failed to get team',
-//         })
-//       })
-
-//     if (!team) {
-//       throw new TRPCError({
-//         code: 'NOT_FOUND',
-//         message: 'Team not found',
-//       })
-//     }
-
-//     const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
-
-//     if (!userOnTeam) {
-//       throw new TRPCError({
-//         code: 'FORBIDDEN',
-//         message: 'You are not a member of this team',
-//       })
-//     }
-
-//     if (!team.subscription_product_id) {
-//       return null
-//     }
-
-//     const product = await ctx.polarClient.getProduct(team.subscription_product_id)
-
-//     if (!product) {
-//       throw new TRPCError({
-//         code: 'INTERNAL_SERVER_ERROR',
-//         message: 'Failed to get product',
-//       })
-//     }
-
-//     return {
-//       id: product.id,
-//       plan: product.name,
-//     }
-//   })
-
 const createPortal = authProcedure
   .input(
     z.object({
@@ -275,7 +211,6 @@ const updateSubscription = authProcedure
         },
         select: {
           id: true,
-          subscription_product_id: true,
           members: {
             select: {
               user_id: true,
@@ -307,16 +242,9 @@ const updateSubscription = authProcedure
       })
     }
 
-    if (!team.subscription_product_id) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Team does not have a subscription',
-      })
-    }
+    const currentSubscription = await ctx.polarClient.getSubscription({ teamId: team.id })
 
-    const subscription = await ctx.polarClient.getSubscription({ teamId: team.id })
-
-    if (!subscription) {
+    if (!currentSubscription) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'Team does not have a subscription',
@@ -334,18 +262,115 @@ const updateSubscription = authProcedure
     }
 
     const updatedSubscription = await ctx.polarClient.updateSubscription({
-      subscriptionId: subscription.id,
+      subscriptionId: currentSubscription.id,
       productId: foundProduct.id,
     })
 
     return updatedSubscription
   })
 
+const cancelSubscription = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+    }),
+  )
+  .mutation(async ({ input, ctx }) => {
+    const team = await ctx.prisma.team
+      .findUnique({
+        where: {
+          slug: input.teamSlug,
+        },
+        select: {
+          id: true,
+          members: {
+            select: {
+              user_id: true,
+              role: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to get team',
+        })
+      })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
+
+    if (!userOnTeam) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
+      })
+    }
+
+    const cancelledSubscription = await ctx.polarClient.cancelSubscription({ teamId: team.id })
+
+    return cancelledSubscription
+  })
+
+const reactivateSubscription = authProcedure
+  .input(z.object({ teamSlug: z.string() }))
+  .mutation(async ({ input, ctx }) => {
+    const team = await ctx.prisma.team
+      .findUnique({
+        where: {
+          slug: input.teamSlug,
+        },
+        select: {
+          id: true,
+          members: {
+            select: {
+              user_id: true,
+              role: true,
+            },
+          },
+        },
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to get team',
+        })
+      })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
+
+    if (!userOnTeam) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
+      })
+    }
+
+    const reactivatedSubscription = await ctx.polarClient.reactivateSubscription({ teamId: team.id })
+
+    return reactivatedSubscription
+  })
+
 export const billingRouter = createTRPCRouter({
   getProducts,
   createCheckout,
-  // getPlan,
   createPortal,
   getSubscription,
   updateSubscription,
+  cancelSubscription,
+  reactivateSubscription,
 })

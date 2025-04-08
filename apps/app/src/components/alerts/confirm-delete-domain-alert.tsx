@@ -9,8 +9,8 @@ type Props = {
   domainId: string
 }
 
-export const ConfirmDeleteDomainAlert = ({ domainId }: Props) => {
-  const queryClient = useQueryClient()
+export const ConfirmDeleteDomainAlert = ({ domainId: _domainId }: Props) => {
+  const _queryClient = useQueryClient()
 
   // const leaveTeamMutation = trpc.teams.leave.useMutation({
   //   onSuccess: (leftTeam) => {
