@@ -187,7 +187,7 @@ const ProductCard = ({ product, currentIndex, currentPlanIndex }: ProductCardPro
               </Button>
               <Button
                 loading={createPortalMutation.isPending}
-                variant="secondary"
+                variant="outline"
                 onClick={() => {
                   createPortalMutation.mutate({ teamSlug })
                 }}

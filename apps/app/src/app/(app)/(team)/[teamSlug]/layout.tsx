@@ -1,4 +1,5 @@
 import { Header } from '@/components/header'
+import { Sidebar } from '@/components/sidebar-menus/sidebar'
 import { TeamMenu } from '@/components/sidebar-menus/team-menu'
 import { TeamsDropdown, TeamsDropdownSkeleton } from '@/components/teams-dropdown'
 import { HydrateClient, prefetch, trpc } from '@/trpc/server'
@@ -32,9 +33,9 @@ const TeamLayout = async ({ children, params }: Props) => {
         </Header>
 
         <div className="flex">
-          <aside className="border-r min-w-52">
+          <Sidebar>
             <TeamMenu />
-          </aside>
+          </Sidebar>
 
           <main className="flex-1 p-8">{children}</main>
         </div>

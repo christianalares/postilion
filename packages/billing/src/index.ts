@@ -106,21 +106,10 @@ export class PolarClient {
     }
   }
 
-  async getSubscription({ teamId }: { teamId: string }) {
-    const subscriptions = await this.polar.subscriptions.list({
-      limit: 100,
-      active: true,
-    })
+  async getSubscription({ subscriptionId }: { subscriptionId: string }) {
+    const subscription = await this.polar.subscriptions.get({ id: subscriptionId })
 
-    const subscriptionForTeam = subscriptions.result.items.filter(
-      (subscription) => subscription.customer.externalId === teamId,
-    )[0]
-
-    if (!subscriptionForTeam) {
-      return null
-    }
-
-    return this.#normalizeSubscription(subscriptionForTeam)
+    return this.#normalizeSubscription(subscription)
   }
 
   async updateSubscription({ subscriptionId, productId }: { subscriptionId: string; productId: string }) {
@@ -136,16 +125,10 @@ export class PolarClient {
     return this.#normalizeSubscription(subscription)
   }
 
-  async cancelSubscription({ teamId }: { teamId: string }) {
-    const subscription = await this.getSubscription({ teamId })
-
-    if (!subscription) {
-      throw new Error('Subscription not found')
-    }
-
+  async cancelSubscription({ subscriptionId }: { subscriptionId: string }) {
     try {
       const cancelledSubscription = await this.polar.subscriptions.update({
-        id: subscription.id,
+        id: subscriptionId,
         subscriptionUpdate: {
           cancelAtPeriodEnd: true,
           revoke: null,
@@ -156,22 +139,16 @@ export class PolarClient {
     } catch (error) {
       // If the subscription is already canceled, just return the subscription
       if (error instanceof Error && error.name === 'AlreadyCanceledSubscription') {
-        return subscription
+        return this.getSubscription({ subscriptionId })
       }
 
       throw error
     }
   }
 
-  async reactivateSubscription({ teamId }: { teamId: string }) {
-    const subscription = await this.getSubscription({ teamId })
-
-    if (!subscription) {
-      throw new Error('Subscription not found')
-    }
-
+  async reactivateSubscription({ subscriptionId }: { subscriptionId: string }) {
     const reactivatedSubscription = await this.polar.subscriptions.update({
-      id: subscription.id,
+      id: subscriptionId,
       subscriptionUpdate: {
         cancelAtPeriodEnd: false,
         revoke: null,

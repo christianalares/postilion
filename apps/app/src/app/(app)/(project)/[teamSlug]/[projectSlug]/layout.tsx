@@ -1,6 +1,7 @@
 import { Header } from '@/components/header'
 import { ProjectsDropdown } from '@/components/projects-dropdown'
 import { ProjectMenu } from '@/components/sidebar-menus/project-menu'
+import { Sidebar } from '@/components/sidebar-menus/sidebar'
 import { TeamsDropdownSkeleton } from '@/components/teams-dropdown'
 import { TeamsDropdown } from '@/components/teams-dropdown'
 import { HydrateClient, prefetch, trpc } from '@/trpc/server'
@@ -33,20 +34,16 @@ const ProjectLayout = async ({ children, params }: Props) => {
             <Suspense fallback={<TeamsDropdownSkeleton />}>
               <TeamsDropdown />
             </Suspense>
-
             <span className="w-px bg-foreground/50 self-stretch scale-y-50 -skew-[15deg] mr-2" />
-
             <Suspense fallback={<TeamsDropdownSkeleton />}>
               <ProjectsDropdown />
             </Suspense>
           </div>
         </Header>
-
         <div className="flex">
-          <aside className="border-r min-w-52">
+          <Sidebar>
             <ProjectMenu />
-          </aside>
-
+          </Sidebar>
           <main className="flex-1 p-8">{children}</main>
         </div>
       </div>

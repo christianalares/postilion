@@ -160,6 +160,7 @@ const getSubscription = authProcedure
         },
         select: {
           id: true,
+          subscription_id: true,
           members: {
             select: {
               user_id: true,
@@ -191,7 +192,11 @@ const getSubscription = authProcedure
       })
     }
 
-    const subscription = await ctx.polarClient.getSubscription({ teamId: team.id })
+    if (!team.subscription_id) {
+      return null
+    }
+
+    const subscription = await ctx.polarClient.getSubscription({ subscriptionId: team.subscription_id })
 
     return subscription
   })
@@ -211,6 +216,7 @@ const updateSubscription = authProcedure
         },
         select: {
           id: true,
+          subscription_id: true,
           members: {
             select: {
               user_id: true,
@@ -242,9 +248,7 @@ const updateSubscription = authProcedure
       })
     }
 
-    const currentSubscription = await ctx.polarClient.getSubscription({ teamId: team.id })
-
-    if (!currentSubscription) {
+    if (!team.subscription_id) {
       throw new TRPCError({
         code: 'BAD_REQUEST',
         message: 'Team does not have a subscription',
@@ -262,7 +266,7 @@ const updateSubscription = authProcedure
     }
 
     const updatedSubscription = await ctx.polarClient.updateSubscription({
-      subscriptionId: currentSubscription.id,
+      subscriptionId: team.subscription_id,
       productId: foundProduct.id,
     })
 
@@ -283,6 +287,7 @@ const cancelSubscription = authProcedure
         },
         select: {
           id: true,
+          subscription_id: true,
           members: {
             select: {
               user_id: true,
@@ -314,7 +319,21 @@ const cancelSubscription = authProcedure
       })
     }
 
-    const cancelledSubscription = await ctx.polarClient.cancelSubscription({ teamId: team.id })
+    if (userOnTeam.role !== 'OWNER') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not an owner of this team',
+      })
+    }
+
+    if (!team.subscription_id) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Team does not have a subscription',
+      })
+    }
+
+    const cancelledSubscription = await ctx.polarClient.cancelSubscription({ subscriptionId: team.subscription_id })
 
     return cancelledSubscription
   })
@@ -329,6 +348,7 @@ const reactivateSubscription = authProcedure
         },
         select: {
           id: true,
+          subscription_id: true,
           members: {
             select: {
               user_id: true,
@@ -360,7 +380,23 @@ const reactivateSubscription = authProcedure
       })
     }
 
-    const reactivatedSubscription = await ctx.polarClient.reactivateSubscription({ teamId: team.id })
+    if (userOnTeam.role !== 'OWNER') {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'You are not an owner of this team',
+      })
+    }
+
+    if (!team.subscription_id) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Team does not have a subscription',
+      })
+    }
+
+    const reactivatedSubscription = await ctx.polarClient.reactivateSubscription({
+      subscriptionId: team.subscription_id,
+    })
 
     return reactivatedSubscription
   })
