@@ -6,6 +6,38 @@ import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
 import { hasTeamRole, isMemberOfTeam } from '../middlewares/team'
 
+const checkTrialEnded = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+    }),
+  )
+  .query(async ({ ctx, input }) => {
+    const team = await ctx.prisma.team.findUnique({
+      where: { slug: input.teamSlug },
+      select: {
+        end_free_trial: true,
+        subscription_id: true,
+        slug: true,
+      },
+    })
+
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
+
+    const needs_subscription =
+      !!team.end_free_trial && new Date(team.end_free_trial) < new Date() && !team.subscription_id
+
+    return {
+      needs_subscription,
+      slug: team.slug,
+    }
+  })
+
 const getBySlug = authProcedure
   .input(
     z.object({
@@ -278,4 +310,5 @@ export const teamsRouter = createTRPCRouter({
   create,
   leave,
   editRole,
+  checkTrialEnded,
 })

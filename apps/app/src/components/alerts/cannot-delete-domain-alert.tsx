@@ -1,7 +1,6 @@
 'use client'
 
-import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
-import { DialogHeader } from '../ui/dialog'
+import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertHeader, AlertTitle } from '@/components/ui/alert'
 
 type Props = {
   reason: React.ReactNode
@@ -10,12 +9,10 @@ type Props = {
 export const CannotDeleteDomainAlert = ({ reason }: Props) => {
   return (
     <Alert>
-      <DialogHeader>
+      <AlertHeader>
         <AlertTitle>Cannot delete domain</AlertTitle>
-        <AlertDescription>This domain cannot be deleted.</AlertDescription>
-      </DialogHeader>
-
-      <p>{reason}</p>
+        <AlertDescription>{reason}</AlertDescription>
+      </AlertHeader>
 
       <AlertFooter>
         <AlertCancel>OK</AlertCancel>

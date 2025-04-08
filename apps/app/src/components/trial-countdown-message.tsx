@@ -13,7 +13,10 @@ export const TrialCountdownMessage = () => {
   const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
 
   if (!team.subscription_id && team.end_free_trial) {
-    const daysLeft = Math.ceil(differenceInMilliseconds(team.end_free_trial, new Date()) / (1000 * 60 * 60 * 24))
+    const daysLeft = Math.max(
+      0,
+      Math.ceil(differenceInMilliseconds(team.end_free_trial, new Date()) / (1000 * 60 * 60 * 24)),
+    )
 
     return (
       <div className="p-3 trial-countdown">

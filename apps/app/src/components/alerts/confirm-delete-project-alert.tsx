@@ -1,9 +1,8 @@
 'use client'
-import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertHeader, AlertTitle } from '@/components/ui/alert'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { useState } from 'react'
 import { Button } from '../ui/button'
-import { DialogHeader } from '../ui/dialog'
 import { Input } from '../ui/input'
 
 import { useQueryClient } from '@tanstack/react-query'
@@ -34,13 +33,13 @@ export const ConfirmDeleteProjectAlert = ({ project }: Props) => {
 
   return (
     <Alert>
-      <DialogHeader>
+      <AlertHeader>
         <AlertTitle>Delete project</AlertTitle>
         <AlertDescription>
           By deleting this project you will no longer have access to it. All data associated with this project will be
           permanently deleted.
         </AlertDescription>
-      </DialogHeader>
+      </AlertHeader>
 
       <p>Are you sure you want to continue?</p>
 

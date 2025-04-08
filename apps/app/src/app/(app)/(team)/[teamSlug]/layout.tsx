@@ -1,3 +1,4 @@
+import { TrialEndedAlertServer } from '@/components/alerts/trial-ended-alert.server'
 import { Header } from '@/components/header'
 import { Sidebar } from '@/components/sidebar-menus/sidebar'
 import { TeamMenu } from '@/components/sidebar-menus/team-menu'
@@ -22,25 +23,27 @@ const TeamLayout = async ({ children, params }: Props) => {
   prefetch(trpc.teams.getForUser.queryOptions())
 
   return (
-    <HydrateClient>
-      <div className="grid grid-rows-[auto_1fr] h-full">
-        <Header>
-          <div className="flex gap-2 items-center">
-            <Suspense fallback={<TeamsDropdownSkeleton />}>
-              <TeamsDropdown />
-            </Suspense>
+    <>
+      <TrialEndedAlertServer teamSlug={teamSlug} />
+
+      <HydrateClient>
+        <div className="grid grid-rows-[auto_1fr] h-full">
+          <Header>
+            <div className="flex gap-2 items-center">
+              <Suspense fallback={<TeamsDropdownSkeleton />}>
+                <TeamsDropdown />
+              </Suspense>
+            </div>
+          </Header>
+          <div className="flex">
+            <Sidebar>
+              <TeamMenu />
+            </Sidebar>
+            <main className="flex-1 p-8">{children}</main>
           </div>
-        </Header>
-
-        <div className="flex">
-          <Sidebar>
-            <TeamMenu />
-          </Sidebar>
-
-          <main className="flex-1 p-8">{children}</main>
         </div>
-      </div>
-    </HydrateClient>
+      </HydrateClient>
+    </>
   )
 }
 

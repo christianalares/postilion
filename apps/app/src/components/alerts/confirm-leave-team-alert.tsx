@@ -1,6 +1,6 @@
 'use client'
 
-import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertHeader, AlertTitle } from '@/components/ui/alert'
 import { useTRPC } from '@/trpc/client'
 import type { RouterOutputs } from '@/trpc/routers/_app'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -8,7 +8,6 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { popAlert } from '.'
 import { Button } from '../ui/button'
-import { DialogHeader } from '../ui/dialog'
 
 type Props = {
   team: RouterOutputs['teams']['getBySlug']
@@ -38,10 +37,10 @@ export const ConfirmLeaveTeamAlert = ({ team }: Props) => {
 
   return (
     <Alert>
-      <DialogHeader>
+      <AlertHeader>
         <AlertTitle>Delete project</AlertTitle>
         <AlertDescription>By leaving this team you will no longer have access to it or its projects.</AlertDescription>
-      </DialogHeader>
+      </AlertHeader>
 
       <p>Are you sure you want to continue?</p>
 

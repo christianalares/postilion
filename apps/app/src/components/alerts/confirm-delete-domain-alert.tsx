@@ -1,7 +1,6 @@
 'use client'
-import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertHeader, AlertTitle } from '@/components/ui/alert'
 import { Button } from '../ui/button'
-import { DialogHeader } from '../ui/dialog'
 
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -28,13 +27,13 @@ export const ConfirmDeleteDomainAlert = ({ domainId: _domainId }: Props) => {
 
   return (
     <Alert>
-      <DialogHeader>
+      <AlertHeader>
         <AlertTitle>Delete domain</AlertTitle>
         <AlertDescription>
           By deleting this domain you will no longer have access to it. All projects that use this domain will no longer
           work.
         </AlertDescription>
-      </DialogHeader>
+      </AlertHeader>
 
       <p>Are you sure you want to continue?</p>
 

@@ -6,7 +6,6 @@ import { useTRPC } from '@/trpc/client'
 import { toast } from 'sonner'
 import { popAlert } from '.'
 import { Button } from '../ui/button'
-import { DialogHeader } from '../ui/dialog'
 
 import { useMutation } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
@@ -33,10 +32,10 @@ export const ConfirmDeleteWebhookAlert = ({ webhookId }: Props) => {
 
   return (
     <Alert>
-      <DialogHeader>
+      <AlertHeader>
         <AlertTitle>Delete webhook</AlertTitle>
         <AlertDescription>This webhook will no longer be used to send requests to.</AlertDescription>
-      </DialogHeader>
+      </AlertHeader>
 
       <p>Are you sure you want to continue?</p>
 
