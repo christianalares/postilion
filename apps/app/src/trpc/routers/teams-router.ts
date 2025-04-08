@@ -13,7 +13,7 @@ const getBySlug = authProcedure
     }),
   )
   .use(isMemberOfTeam)
-  .query(async ({ ctx, input }) => {
+  .query(async ({ ctx }) => {
     return ctx.team
     // try {
     // 	const team = await ctx.prisma.team.findUnique({

@@ -2,7 +2,6 @@ import { TeamNameForm, TeamNameFormSkeleton } from '@/components/forms/team-name
 import { TeamManagement } from '@/components/team-management'
 import { HydrateClient, prefetch, trpc } from '@/trpc/server'
 import { Suspense } from 'react'
-import { TeamSettingsHeader } from './_header'
 
 type Params = Promise<{
   teamSlug: string
@@ -16,8 +15,6 @@ const TeamSettingsPage = async ({ params }: { params: Params }) => {
 
   return (
     <HydrateClient>
-      <TeamSettingsHeader />
-
       <div className="max-w-4xl space-y-8">
         <Suspense fallback={<TeamNameFormSkeleton />}>
           <TeamNameForm />

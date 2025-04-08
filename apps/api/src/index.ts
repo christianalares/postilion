@@ -80,7 +80,7 @@ app.get(
       return c.json({
         status,
       })
-    } catch (error) {
+    } catch (_error) {
       return c.json(
         {
           instanceId,
@@ -127,7 +127,7 @@ app.get(
       }
 
       await next()
-    } catch (error) {
+    } catch (_error) {
       return c.json({ error: 'Unauthorized' }, 401)
     }
   },
@@ -182,7 +182,7 @@ app.get(
       if (!session.session || !session.user) {
         return c.notFound()
       }
-    } catch (error) {
+    } catch (_error) {
       return c.notFound()
     }
 
@@ -227,7 +227,7 @@ app.get(
 // Export the worker
 export default {
   fetch: app.fetch,
-  email: async (message, env, ctx) => {
+  email: async (message, env) => {
     const email = await PostalMime.parse(message.raw, {
       attachmentEncoding: 'base64',
     })

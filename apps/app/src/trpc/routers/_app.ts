@@ -1,5 +1,6 @@
 import type { inferRouterOutputs } from '@trpc/server'
 import { createTRPCRouter } from '../init'
+import { billingRouter } from './billing-router'
 import { dashboardRouter } from './dashboard-router'
 import { domainsRouter } from './domains-router'
 import { invitesRouter } from './invites-router'
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   domains: domainsRouter,
   webhooks: webhooksRouter,
   invites: invitesRouter,
+  billing: billingRouter,
 })
 
 export type AppRouter = typeof appRouter

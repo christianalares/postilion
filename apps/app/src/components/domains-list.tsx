@@ -1,31 +1,17 @@
 'use client'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useTRPC } from '@/trpc/client'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import Link from 'next/link'
-import { toast } from 'sonner'
 import { DomainDropdown } from './domain-dropdown'
 import { Badge } from './ui/badge'
 import { Icon } from './ui/icon'
 
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { useMutation } from '@tanstack/react-query'
-import { useQueryClient } from '@tanstack/react-query'
-
 export const DomainsList = () => {
   const trpc = useTRPC()
-  const queryClient = useQueryClient()
   const teamSlug = useTeamSlug()
 
   const { data: domains } = useSuspenseQuery(trpc.domains.getForTeam.queryOptions({ teamSlug }))
-
-  const createDomainMutation = useMutation(
-    trpc.domains.create.mutationOptions({
-      onSuccess: (createdDomain) => {
-        queryClient.invalidateQueries(trpc.domains.getForTeam.queryFilter({ teamSlug }))
-        toast.success(`Domain \"${createdDomain.domain}\" created`)
-      },
-    }),
-  )
 
   if (domains.length === 0) {
     return <p>You don't have any domains yet.</p>
@@ -57,7 +43,7 @@ export const DomainsList = () => {
               </div>
 
               <Link
-                href={`/${teamSlug}/settings/domains/${domain.domain}`}
+                href={`/${teamSlug}/domains/${domain.domain}`}
                 className="domain-link w-max hover:[&:has(*)]:border-accent-foreground/30"
               >
                 <span className="font-mono">{domain.domain}</span>

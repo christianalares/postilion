@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth/auth'
 import { ForwardEmailClient } from '@/lib/forward-email-client'
 import { createAnalyticsClient } from '@postilion/analytics/client'
+import { PolarClient } from '@postilion/billing'
 import { prisma } from '@postilion/db'
 import { EmailClient } from '@postilion/email/client'
 import { TRPCError, initTRPC } from '@trpc/server'
@@ -22,12 +23,17 @@ export const createTRPCContext = cache(async () => {
   })
 
   const emailClient = new EmailClient(process.env.RESEND_API_KEY!)
+  const polarClient = new PolarClient({
+    accessToken: process.env.POLAR_ACCESS_TOKEN!,
+    server: process.env.NODE_ENV === 'production' ? 'production' : 'sandbox',
+  })
 
   return {
     prisma,
     user,
     analyticsClient,
     emailClient,
+    polarClient,
   }
 })
 

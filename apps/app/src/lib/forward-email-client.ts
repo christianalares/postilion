@@ -119,7 +119,7 @@ export class ForwardEmailClient {
     try {
       const json = await response.json()
       return args.outputSchema.parse(json)
-    } catch (error) {
+    } catch (_error) {
       if (response.ok) {
         return 'OK'
       }

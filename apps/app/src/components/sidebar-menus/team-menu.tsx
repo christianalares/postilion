@@ -15,14 +15,9 @@ export const TeamMenu = () => {
     <nav>
       <ul>
         <MenuItem isActive={segments.length === 0} href={`/${teamSlug}`} icon="home" label="Projects" />
+        <MenuItem isActive={segments[0] === 'domains'} href={`/${teamSlug}/domains`} icon="globe" label="Domains" />
         <MenuItem
-          isActive={segments[0] === 'settings' && segments[1] === 'domains'}
-          href={`/${teamSlug}/settings/domains`}
-          icon="globe"
-          label="Domains"
-        />
-        <MenuItem
-          isActive={segments.length === 1 && segments[0] === 'settings'}
+          isActive={segments[0] === 'settings'}
           href={`/${teamSlug}/settings`}
           icon="settings"
           label="Settings"

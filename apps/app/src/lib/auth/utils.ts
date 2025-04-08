@@ -1,5 +1,6 @@
 import { createAnalyticsClient } from '@postilion/analytics/client'
 import { prisma } from '@postilion/db'
+import { addDays } from 'date-fns'
 import { createShortId, createSlug } from '../utils'
 import type { auth } from './auth'
 
@@ -13,6 +14,7 @@ export const createDefaultTeam = async (user: User) => {
       data: {
         name: user.name,
         slug: `${slug}-${createShortId()}`,
+        end_free_trial: addDays(new Date(), 14),
         members: {
           create: {
             user_id: user.id,

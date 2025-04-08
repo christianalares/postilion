@@ -1,0 +1,21 @@
+{
+	"name": "@postilion/billing",
+	"version": "1.0.0",
+	"description": "",
+	"private": true,
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"devDependencies": {
+		"@postilion/typescript-config": "workspace:*"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@polar-sh/sdk": "^0.32.4"
+	}
+}

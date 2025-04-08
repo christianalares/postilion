@@ -13,8 +13,7 @@ export const generateShortId = () => {
   return createId()
 }
 
-// Add this helper function near the top of the file
-function isTextTooLong(text: string, maxTokens = 7000): boolean {
+function _isTextTooLong(text: string, maxTokens = 7000): boolean {
   // Rough estimation: 1 token ≈ 4 characters for English text
   // Using a conservative estimate to account for special characters and formatting
   return text.length > maxTokens * 3
