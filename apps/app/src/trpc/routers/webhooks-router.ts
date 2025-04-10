@@ -1,4 +1,6 @@
 import crypto from 'node:crypto'
+import { mutations } from '@postilion/db/mutations'
+import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -54,13 +56,11 @@ const create = authProcedure
       })
     }
 
-    const createdWebhook = await ctx.prisma.webhook.create({
-      data: {
-        project_id: project.id,
-        url: input.url,
-        method: input.method,
-        signing_key: generateSigningKey(),
-      },
+    const createdWebhook = await mutations.webhooks.createWebhook(ctx.prisma, {
+      projectId: project.id,
+      url: input.url,
+      method: input.method,
+      signingKey: generateSigningKey(),
     })
 
     ctx.analyticsClient.track('webhook_created', {
@@ -119,10 +119,8 @@ const getForProject = authProcedure
       })
     }
 
-    const webhooks = await ctx.prisma.webhook.findMany({
-      where: {
-        project_id: project.id,
-      },
+    const webhooks = await queries.webhooks.getForProject(ctx.prisma, {
+      projectId: project.id,
     })
 
     return webhooks
@@ -186,13 +184,15 @@ const update = authProcedure
       })
     }
 
-    const updatedWebhook = await ctx.prisma.webhook
-      .update({
-        where: {
-          id: webhook.id,
+    const updatedWebhook = await mutations.webhooks
+      .updateWebhook(ctx.prisma, {
+        id: webhook.id,
+        data: {
+          url: input.data.url,
+          method: input.data.method,
         },
-        data: input.data,
       })
+
       .catch(() => {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -256,7 +256,9 @@ const _delete = authProcedure.input(z.object({ id: z.string() })).mutation(async
     })
   }
 
-  const deletedWebhook = await ctx.prisma.webhook.delete({ where: { id: input.id } })
+  const deletedWebhook = await mutations.webhooks.deleteWekhook(ctx.prisma, {
+    id: webhook.id,
+  })
 
   ctx.analyticsClient.track('webhook_deleted', {
     webhook_id: deletedWebhook.id,

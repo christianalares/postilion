@@ -1,3 +1,4 @@
+import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import {
   eachDayOfInterval,
@@ -38,99 +39,13 @@ const getStats = authProcedure
       })
     }
 
-    const project = await ctx.prisma.project.findUnique({
-      where: {
-        team_id_slug: {
-          team_id: team.id,
-          slug: input.projectSlug,
-        },
-      },
-      include: {
-        team: true,
-      },
+    const stats = await queries.dashboard.getStats(ctx.prisma, {
+      teamId: team.id,
+      projectSlug: input.projectSlug,
+      by: input.by,
     })
 
-    if (!project) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Project not found',
-      })
-    }
-
-    const now = new Date()
-    const startDate =
-      input.by === 'DAILY' ? subDays(now, 30) : input.by === 'WEEKLY' ? subWeeks(now, 4) : subYears(now, 1)
-
-    const messages = await ctx.prisma.message.findMany({
-      where: {
-        project_id: project.id,
-        created_at: {
-          gte: startDate,
-        },
-      },
-      orderBy: {
-        created_at: 'asc',
-      },
-      select: {
-        created_at: true,
-      },
-    })
-
-    if (input.by === 'DAILY') {
-      const allDays = eachDayOfInterval({
-        start: startDate,
-        end: new Date(),
-      })
-
-      const sorted = allDays.map((day) => {
-        const entriesThisDay = messages.filter((msg) => isSameDay(msg.created_at, day))
-
-        return {
-          date: day,
-          messages: entriesThisDay.length,
-        }
-      })
-
-      return sorted
-    }
-
-    if (input.by === 'WEEKLY') {
-      const allWeeks = eachWeekOfInterval({
-        start: startDate,
-        end: new Date(),
-      })
-
-      const sorted = allWeeks.map((week) => {
-        const entriesThisWeek = messages.filter((msg) => isSameWeek(msg.created_at, week))
-
-        return {
-          date: week,
-          messages: entriesThisWeek.length,
-        }
-      })
-
-      return sorted
-    }
-
-    if (input.by === 'MONTHLY') {
-      const allMonths = eachMonthOfInterval({
-        start: startDate,
-        end: new Date(),
-      })
-
-      const sorted = allMonths.map((month) => {
-        const entriesThisMonth = messages.filter((msg) => isSameMonth(msg.created_at, month))
-
-        return {
-          date: month,
-          messages: entriesThisMonth.length,
-        }
-      })
-
-      return sorted
-    }
-
-    return []
+    return stats
   })
 
 const getInfo = authProcedure
@@ -157,36 +72,26 @@ const getInfo = authProcedure
       })
     }
 
-    const project = await ctx.prisma.project.findUnique({
-      where: {
-        team_id_slug: {
-          team_id: team.id,
-          slug: input.projectSlug,
-        },
-      },
-      include: {
-        team: true,
-        domain: true,
-        messages: {
-          select: {
-            _count: true,
-          },
-        },
-      },
-    })
-
-    if (!project) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Project not found',
+    const project = await queries.dashboard
+      .getInfo(ctx.prisma, {
+        teamId: team.id,
+        projectSlug: input.projectSlug,
       })
-    }
+      .catch((error) => {
+        if (error instanceof Error && error.name === 'PROJECT_NOT_FOUND') {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Project not found',
+          })
+        }
 
-    return {
-      domain: project.domain?.domain,
-      numberOfMessages: project.messages.length,
-      shortId: project.short_id,
-    }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to fetch project info',
+        })
+      })
+
+    return project
   })
 
 export const dashboardRouter = createTRPCRouter({

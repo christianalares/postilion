@@ -1,5 +1,7 @@
 import { createShortId } from '@/lib/utils'
 import { TEAM_ROLE_ENUM } from '@postilion/db'
+import { mutations } from '@postilion/db/mutations'
+import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { after } from 'next/server'
 import { z } from 'zod'
@@ -76,15 +78,20 @@ const create = authProcedure
       })
     }
 
-    const createdInvite = await ctx.prisma.teamInvite.create({
-      data: {
+    const createdInvite = await mutations.invites
+      .createInvite(ctx.prisma, {
         code: createShortId(),
         email: input.email,
         role: input.role,
-        created_by_user_id: ctx.user.id,
-        team_id: team.id,
-      },
-    })
+        teamId: team.id,
+        createdByUserId: ctx.user.id,
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to create invite',
+        })
+      })
 
     ctx.analyticsClient.track('invite_created', {
       invite_id: createdInvite.id,
@@ -146,14 +153,16 @@ const getForTeam = authProcedure
       })
     }
 
-    const invites = await ctx.prisma.teamInvite.findMany({
-      where: {
-        team_id: team.id,
-      },
-      include: {
-        created_by: true,
-      },
-    })
+    const invites = await queries.invites
+      .getByTeamId(ctx.prisma, {
+        teamId: team.id,
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to get invites',
+        })
+      })
 
     return invites
   })

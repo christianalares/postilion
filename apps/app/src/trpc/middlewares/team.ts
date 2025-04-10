@@ -51,12 +51,7 @@ export const isMemberOfTeam = t.middleware(async ({ ctx, input, next }) => {
     })
   }
 
-  return next({
-    ctx: {
-      ...ctx,
-      team,
-    },
-  })
+  return next()
 })
 
 export const hasTeamRole = (role: TEAM_ROLE_ENUM) =>

@@ -2,13 +2,13 @@ import { IdentifyComponent as OpenPanelIdentifyComponent } from '@openpanel/next
 
 type Props = {
   user: {
-    name: string
-    image: string | null
     id: string
-    createdAt: Date
-    updatedAt: Date
+    name: string
     email: string
     emailVerified: boolean
+    createdAt: Date
+    updatedAt: Date
+    image?: string | null | undefined
   }
 }
 

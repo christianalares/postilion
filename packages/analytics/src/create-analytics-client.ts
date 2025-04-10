@@ -4,6 +4,7 @@ import { waitUntil } from '@vercel/functions'
 type EventNames =
   | 'team_updated'
   | 'team_created'
+  | 'team_member_role_updated'
   | 'default_team_created'
   | 'project_created'
   | 'project_updated'

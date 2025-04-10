@@ -1,3 +1,4 @@
+import { mutations } from '@postilion/db/mutations'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -10,53 +11,38 @@ const update = authProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    try {
-      const updatedUser = await ctx.prisma.user.update({
-        where: {
-          id: ctx.user.id,
-        },
+    const updatedUser = await mutations.users
+      .updateUser(ctx.prisma, {
+        userId: ctx.user.id,
         data: {
           name: input.name,
           email: input.email,
         },
       })
-
-      ctx.analyticsClient.track('user_updated', {
-        user_id: updatedUser.id,
-        from: {
-          name: updatedUser.name,
-          email: updatedUser.email,
-        },
-        to: {
-          name: updatedUser.name,
-          email: updatedUser.email,
-        },
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to update user',
+        })
       })
 
-      return updatedUser
-    } catch (_error) {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to update user',
-      })
-    }
+    ctx.analyticsClient.track('user_updated', {
+      user_id: updatedUser.id,
+      from: {
+        name: input.name,
+        email: input.email,
+      },
+      to: {
+        name: updatedUser.name,
+        email: updatedUser.email,
+      },
+    })
+
+    return updatedUser
   })
 
 const me = authProcedure.query(async ({ ctx }) => {
-  const me = await ctx.prisma.user.findUnique({
-    where: {
-      id: ctx.user.id,
-    },
-  })
-
-  if (!me) {
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: 'User not found',
-    })
-  }
-
-  return me
+  return ctx.user
 })
 
 export const usersRouter = createTRPCRouter({

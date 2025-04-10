@@ -18,7 +18,7 @@ export const TeamMemberDropdown = ({ team, member, youAreOwner }: Props) => {
   const trpc = useTRPC()
   const { data: me } = useSuspenseQuery(trpc.users.me.queryOptions())
 
-  const isYou = member.user.id === me.id
+  const isYou = member.user_id === me.id
 
   return (
     <DropdownMenu>

@@ -1,4 +1,6 @@
 import { createShortId, createSlug } from '@/lib/utils'
+import { mutations } from '@postilion/db/mutations'
+import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -10,34 +12,10 @@ const getForTeam = authProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team.findUnique({
-      where: {
-        slug: input.slug,
-      },
-      select: {
-        id: true,
-        members: {
-          select: {
-            user_id: true,
-          },
-        },
-      },
-    })
-
-    if (!team?.members.some((member) => member.user_id === ctx.user.id)) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    const projects = await ctx.prisma.project
-      .findMany({
-        where: {
-          team: {
-            slug: input.slug,
-          },
-        },
+    const projects = await queries.projects
+      .getProjectsForTeam(ctx.prisma, {
+        teamSlug: input.slug,
+        userId: ctx.user.id,
       })
       .catch(() => {
         throw new TRPCError({
@@ -46,10 +24,11 @@ const getForTeam = authProcedure
         })
       })
 
-    if (!projects) {
+    // The member has to be a member of the team for all projects
+    if (!projects.every((project) => project.team.members.some((member) => member.user_id === ctx.user.id))) {
       throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'No projects found',
+        code: 'FORBIDDEN',
+        message: 'You are not a member of this team',
       })
     }
 
@@ -64,56 +43,10 @@ const getBySlug = authProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team.findUnique({
-      where: {
-        slug: input.teamSlug,
-      },
-      select: {
-        id: true,
-      },
-    })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
-    const project = await ctx.prisma.project.findUnique({
-      where: {
-        team_id_slug: {
-          slug: input.projectSlug,
-          team_id: team.id,
-        },
-
-        // Make sure the user is a member of the team that the project belongs to
-        team: {
-          members: {
-            some: {
-              user_id: ctx.user.id,
-            },
-          },
-        },
-      },
-      include: {
-        domain: {
-          select: {
-            id: true,
-            domain: true,
-          },
-        },
-        team: {
-          select: {
-            members: {
-              select: {
-                user_id: true,
-                role: true,
-              },
-            },
-          },
-        },
-      },
+    const project = await queries.projects.getProjectBySlug(ctx.prisma, {
+      teamSlug: input.teamSlug,
+      projectSlug: input.projectSlug,
+      userId: ctx.user.id,
     })
 
     if (!project) {
@@ -185,35 +118,20 @@ const update = authProcedure
       })
     }
 
-    const updatedProject = await ctx.prisma.project.update({
-      where: {
-        team_id_slug: {
-          slug: input.projectSlug,
-          team_id: team.id,
-        },
-      },
+    const updatedProject = await mutations.projects.updateProject(ctx.prisma, {
+      teamId: input.teamSlug,
+      projectSlug: input.projectSlug,
       data: {
         name: input.data.name,
-        domain: input.data.domainId ? { connect: { id: input.data.domainId } } : undefined,
-      },
-      include: {
-        domain: true,
+        domainId: input.data.domainId,
       },
     })
 
-    if (input.data.name) {
-      ctx.analyticsClient.track('project_updated', {
-        project_id: updatedProject.id,
-        project_name: updatedProject.name,
-      })
-    }
-
-    if (input.data.domainId) {
-      ctx.analyticsClient.track('project_updated', {
-        project_id: updatedProject.id,
-        domain_id: input.data.domainId,
-      })
-    }
+    ctx.analyticsClient.track('project_updated', {
+      project_id: updatedProject.id,
+      ...(input.data.name && { project_name: updatedProject.name }),
+      ...(input.data.domainId && { domain_id: input.data.domainId }),
+    })
 
     return updatedProject
   })
@@ -261,14 +179,12 @@ const create = authProcedure
 
     const shortId = createShortId()
 
-    const createdProject = await ctx.prisma.project.create({
-      data: {
-        name: input.name,
-        slug: `${createSlug(input.name)}-${shortId}`,
-        short_id: shortId,
-        created_by_user_id: ctx.user.id,
-        team_id: team.id,
-      },
+    const createdProject = await mutations.projects.createProject(ctx.prisma, {
+      name: input.name,
+      slug: `${createSlug(input.name)}-${shortId}`,
+      shortId: shortId,
+      createdByUserId: ctx.user.id,
+      teamId: team.id,
     })
 
     ctx.analyticsClient.track('project_created', {

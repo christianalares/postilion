@@ -1,6 +1,9 @@
+import { Input } from '@/components/ui/input'
 import { createShortId, createSlug } from '@/lib/utils'
 import { isPrismaError } from '@postilion/db'
 import { ENUMS } from '@postilion/db/enums'
+import { mutations } from '@postilion/db/mutations'
+import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -13,13 +16,8 @@ const checkTrialEnded = authProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team.findUnique({
-      where: { slug: input.teamSlug },
-      select: {
-        end_free_trial: true,
-        subscription_id: true,
-        slug: true,
-      },
+    const team = await queries.teams.checkTrialEnded(ctx.prisma, {
+      teamSlug: input.teamSlug,
     })
 
     if (!team) {
@@ -29,13 +27,7 @@ const checkTrialEnded = authProcedure
       })
     }
 
-    const needs_subscription =
-      !!team.end_free_trial && new Date(team.end_free_trial) < new Date() && !team.subscription_id
-
-    return {
-      needs_subscription,
-      slug: team.slug,
-    }
+    return team
   })
 
 const getBySlug = authProcedure
@@ -45,27 +37,26 @@ const getBySlug = authProcedure
     }),
   )
   .use(isMemberOfTeam)
-  .query(async ({ ctx }) => {
-    return ctx.team
-    // try {
-    // 	const team = await ctx.prisma.team.findUnique({
-    // 		where: { slug: input.slug },
-    // 	})
+  .query(async ({ input, ctx }) => {
+    const team = await queries.teams
+      .getBySlug(ctx.prisma, {
+        slug: input.slug,
+      })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to get team',
+        })
+      })
 
-    // 	if (!team) {
-    // 		throw new TRPCError({
-    // 			code: 'NOT_FOUND',
-    // 			message: 'Team not found',
-    // 		})
-    // 	}
+    if (!team) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Team not found',
+      })
+    }
 
-    // 	return team
-    // } catch (error) {
-    // 	throw new TRPCError({
-    // 		code: 'INTERNAL_SERVER_ERROR',
-    // 		message: 'Failed to get team',
-    // 	})
-    // }
+    return team
   })
 
 const update = authProcedure
@@ -81,23 +72,14 @@ const update = authProcedure
   )
   .use(hasTeamRole('OWNER'))
   .mutation(async ({ ctx, input }) => {
-    const updatedTeam = await ctx.prisma.team
-      .update({
-        where: {
-          slug: input.slug,
-        },
+    const updatedTeam = await mutations.teams
+      .updateTeam(ctx.prisma, {
+        teamSlug: input.slug,
         data: {
           name: input.data.name,
         },
       })
-      .catch((error) => {
-        if (isPrismaError(error) && error.code === 'P2002') {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Team slug is already taken',
-          })
-        }
-
+      .catch(() => {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
           message: 'Failed to update team',
@@ -112,18 +94,9 @@ const update = authProcedure
   })
 
 const getForUser = authProcedure.query(async ({ ctx }) => {
-  const teamsForUser = await ctx.prisma.team
-    .findMany({
-      where: {
-        members: {
-          some: {
-            user_id: ctx.user.id,
-          },
-        },
-      },
-      orderBy: {
-        created_at: 'asc',
-      },
+  const teamsForUser = await queries.teams
+    .getByUserId(ctx.prisma, {
+      userId: ctx.user.id,
     })
     .catch(() => {
       throw new TRPCError({
@@ -142,26 +115,12 @@ const create = authProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const createdTeam = await ctx.prisma.team
-      .create({
-        data: {
-          name: input.name,
-          slug: `${createSlug(input.name)}-${createShortId()}`,
-          members: {
-            create: {
-              user_id: ctx.user.id,
-              role: 'OWNER',
-            },
-          },
-          projects: {
-            create: {
-              name: 'Default',
-              slug: 'default',
-              created_by_user_id: ctx.user.id,
-              short_id: createShortId(),
-            },
-          },
-        },
+    const createdTeam = await mutations.teams
+      .createTeam(ctx.prisma, {
+        userId: ctx.user.id,
+        name: input.name,
+        slug: `${createSlug(input.name)}-${createShortId()}`,
+        projectShortId: createShortId(),
       })
       .catch(() => {
         throw new TRPCError({
@@ -227,13 +186,9 @@ const leave = authProcedure
       })
     }
 
-    const leftTeam = await ctx.prisma.userOnTeam.delete({
-      where: {
-        user_id_team_id: {
-          user_id: ctx.user.id,
-          team_id: team.id,
-        },
-      },
+    const leftTeam = await mutations.teams.leaveTeam(ctx.prisma, {
+      userId: ctx.user.id,
+      teamId: team.id,
     })
 
     return leftTeam
@@ -285,19 +240,16 @@ const editRole = authProcedure
       })
     }
 
-    const updatedUserOnTeam = await ctx.prisma.userOnTeam.update({
-      where: {
-        user_id_team_id: {
-          user_id: input.userId,
-          team_id: team.id,
-        },
-      },
-      data: {
-        role: input.role,
-      },
-      include: {
-        user: true,
-      },
+    const updatedUserOnTeam = await mutations.teams.editRole(ctx.prisma, {
+      teamId: team.id,
+      userId: input.userId,
+      role: input.role,
+    })
+
+    ctx.analyticsClient.track('team_member_role_updated', {
+      team_id: team.id,
+      user_id: input.userId,
+      role: input.role,
     })
 
     return updatedUserOnTeam

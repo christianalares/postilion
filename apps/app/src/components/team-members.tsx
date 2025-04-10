@@ -15,12 +15,12 @@ export const TeamMembers = () => {
   const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
   const { data: me } = useSuspenseQuery(trpc.users.me.queryOptions())
 
-  const youAreOwner = team.members.some((member) => member.user.id === me.id && member.role === 'OWNER')
+  const youAreOwner = team.members.some((member) => member.user_id === me.id && member.role === 'OWNER')
 
   return (
     <ul className="flex flex-col gap-4">
       {team.members.map((member) => {
-        const isYou = member.user.id === me.id
+        const isYou = member.user_id === me.id
 
         return (
           <li key={member.user_id} className="flex items-center justify-between">

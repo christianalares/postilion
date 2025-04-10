@@ -1,3 +1,5 @@
+import { mutations } from '@postilion/db/mutations'
+import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -37,22 +39,9 @@ const getForTeam = authProcedure
 
     const { team } = userOnTeam
 
-    const domains = await ctx.prisma.domain
-      .findMany({
-        where: {
-          team: {
-            id: team.id,
-          },
-        },
-        include: {
-          project: {
-            select: {
-              id: true,
-              slug: true,
-              name: true,
-            },
-          },
-        },
+    const domains = await queries.domains
+      .getByTeamId(ctx.prisma, {
+        teamId: team.id,
       })
       .catch(() => {
         throw new TRPCError({
@@ -90,25 +79,10 @@ const getByDomain = authProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const domain = await ctx.prisma.domain
-      .findUnique({
-        where: {
-          domain: input.domain,
-          team: {
-            // Make sure the domain is associated with the team the user is a member of
-            members: {
-              some: {
-                user_id: ctx.user.id,
-              },
-            },
-          },
-        },
-        omit: {
-          forwardemail_id: true,
-        },
-        include: {
-          project: true,
-        },
+    const domain = await queries.domains
+      .getByDomainName(ctx.prisma, {
+        userId: ctx.user.id,
+        domainName: input.domain,
       })
       .catch(() => {
         throw new TRPCError({
@@ -148,22 +122,10 @@ const verify = authProcedure
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const domain = await ctx.prisma.domain
-      .findUnique({
-        where: {
-          domain: input.domain,
-          team: {
-            // Make sure the domain is associated with the team the user is a member of
-            members: {
-              some: {
-                user_id: ctx.user.id,
-              },
-            },
-          },
-        },
-        omit: {
-          forwardemail_id: true,
-        },
+    const domain = await queries.domains
+      .getByDomainName(ctx.prisma, {
+        userId: ctx.user.id,
+        domainName: input.domain,
       })
       .catch(() => {
         throw new TRPCError({
@@ -238,20 +200,11 @@ const create = authProcedure
 
     const createdDomainOnForwardEmail = await ctx.forwardEmailClient.createDomain({ domain: input.domain })
 
-    const createdDomain = await ctx.prisma.domain
-      .create({
-        data: {
-          domain: input.domain,
-          forwardemail_id: createdDomainOnForwardEmail.id,
-          team: {
-            connect: {
-              id: userOnTeam.team_id,
-            },
-          },
-        },
-        omit: {
-          forwardemail_id: true,
-        },
+    const createdDomain = await mutations.domains
+      .createDomain(ctx.prisma, {
+        teamId: userOnTeam.team_id,
+        domainName: input.domain,
+        forwardemailId: createdDomainOnForwardEmail.id,
       })
       .catch(() => {
         // TODO: Rollback the domain on forward email

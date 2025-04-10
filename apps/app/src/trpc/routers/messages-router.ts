@@ -1,3 +1,4 @@
+import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
@@ -10,63 +11,20 @@ const getForProject = authProcedure
     }),
   )
   .query(async ({ ctx, input }) => {
-    const messages = await ctx.prisma.message.findMany({
-      where: {
-        project: {
-          slug: input.projectSlug,
-          team: {
-            slug: input.teamSlug,
-            // Make sure the user is a member of the team that the project belongs to
-            members: {
-              some: {
-                user_id: ctx.user.id,
-              },
-            },
-          },
-        },
-      },
-      include: {
-        attachments: true,
-        webhook_logs: true,
-        project: {
-          select: {
-            webhooks: true,
-          },
-        },
-      },
-      orderBy: {
-        created_at: 'desc',
-      },
+    const messages = await queries.messages.getMessagesForProject(ctx.prisma, {
+      projectSlug: input.projectSlug,
+      teamSlug: input.teamSlug,
+      userId: ctx.user.id,
     })
 
     return messages
   })
 
 const getById = authProcedure.input(z.object({ messageId: z.string() })).query(async ({ ctx, input }) => {
-  const message = await ctx.prisma.message
-    .findUnique({
-      where: {
-        id: input.messageId,
-        project: {
-          team: {
-            // Make sure the user is a member of the team that the project belongs to
-            members: {
-              some: {
-                user_id: ctx.user.id,
-              },
-            },
-          },
-        },
-      },
-      include: {
-        attachments: true,
-        webhook_logs: true,
-        project: {
-          select: {
-            webhooks: true,
-          },
-        },
-      },
+  const message = await queries.messages
+    .getMessageById(ctx.prisma, {
+      id: input.messageId,
+      userId: ctx.user.id,
     })
     .catch(() => {
       throw new TRPCError({
