@@ -1,5 +1,5 @@
 'use client'
-import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertCancel, AlertDescription, AlertFooter, AlertHeader, AlertTitle } from '@/components/ui/alert'
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useTRPC } from '@/trpc/client'
