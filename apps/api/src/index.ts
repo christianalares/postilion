@@ -4,7 +4,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import PostalMime from 'postal-mime'
 import { z } from 'zod'
-export { InboundEmailWorkflow } from './inbound-workflow'
+export { InboundEmailWorkflow } from './inbound-workflow/inbound-workflow'
 export { MessageStatus } from './message-status'
 
 const app = new Hono<{ Bindings: Env }>()
