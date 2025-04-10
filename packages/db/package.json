@@ -28,6 +28,7 @@
 		"./edge": "./src/client-edge.ts",
 		"./enums": "./src/enums.ts",
 		"./queries": "./src/queries/index.ts",
-		"./mutations": "./src/mutations/index.ts"
+		"./mutations": "./src/mutations/index.ts",
+		"./constants": "./src/constants.ts"
 	}
 }

@@ -1,4 +1,5 @@
 import type { PrismaClient } from '../client'
+import { MESSAGE_SELECT } from '../constants'
 
 export const getMessagesForProject = async (
   prisma: PrismaClient,
@@ -23,26 +24,7 @@ export const getMessagesForProject = async (
         },
       },
     },
-    select: {
-      id: true,
-      from: true,
-      subject: true,
-      created_at: true,
-      handle: true,
-      status: true,
-      body_ai_summary: true,
-      attachments: {
-        select: {
-          id: true,
-        },
-      },
-      webhook_logs: {
-        select: {
-          id: true,
-          status: true,
-        },
-      },
-    },
+    select: MESSAGE_SELECT,
     orderBy: {
       created_at: 'desc',
     },

@@ -1,6 +1,7 @@
 import crypto from 'node:crypto'
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from 'cloudflare:workers'
 import { NonRetryableError } from 'cloudflare:workflows'
+import { MESSAGE_SELECT } from '@postilion/db/constants'
 import { createPrismaClient } from '@postilion/db/edge'
 import { generateObject } from 'ai'
 import { customAlphabet } from 'nanoid'
@@ -133,15 +134,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
           subject: event.payload.subject.trim(),
           status: 'PROCESSING',
         },
-        include: {
-          attachments: true,
-          webhook_logs: true,
-          project: {
-            select: {
-              webhooks: true,
-            },
-          },
-        },
+        select: MESSAGE_SELECT,
       })
 
       const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
@@ -254,15 +247,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
               },
             },
           },
-          include: {
-            attachments: true,
-            webhook_logs: true,
-            project: {
-              select: {
-                webhooks: true,
-              },
-            },
-          },
+          select: MESSAGE_SELECT,
         })
         .catch((error) => {
           console.error(error)
@@ -316,15 +301,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         data: {
           body_ai_summary: object.summary,
         },
-        include: {
-          attachments: true,
-          webhook_logs: true,
-          project: {
-            select: {
-              webhooks: true,
-            },
-          },
-        },
+        select: MESSAGE_SELECT,
       })
 
       const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
@@ -530,15 +507,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, Params> {
         data: {
           status: allWebhooksSuccessful ? 'COMPLETED' : 'FAILED',
         },
-        include: {
-          attachments: true,
-          webhook_logs: true,
-          project: {
-            select: {
-              webhooks: true,
-            },
-          },
-        },
+        select: MESSAGE_SELECT,
       })
 
       const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
