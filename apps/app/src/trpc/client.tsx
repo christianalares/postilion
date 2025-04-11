@@ -34,7 +34,7 @@ export function getUrl() {
     return process.env.NEXT_PUBLIC_URL
   }
 
-  if (process.env.VERCEL_ENV === 'preview') {
+  if (process.env.VERCEL_ENV) {
     return `https://${process.env.VERCEL_URL}`
   }
 
