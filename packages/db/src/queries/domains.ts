@@ -8,7 +8,7 @@ export const getByTeamId = async (
 ) => {
   const domains = await prisma.domain.findMany({
     where: {
-      id: input.teamId,
+      team_id: input.teamId,
     },
     select: {
       id: true,
