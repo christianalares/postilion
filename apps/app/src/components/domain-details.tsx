@@ -1,4 +1,5 @@
 'use client'
+
 import { useDomain } from '@/hooks/use-domain'
 import { useTRPC } from '@/trpc/client'
 import { toast } from 'sonner'

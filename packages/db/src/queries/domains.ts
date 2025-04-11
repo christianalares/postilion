@@ -44,9 +44,6 @@ export const getByDomainName = async (
         },
       },
     },
-    omit: {
-      forwardemail_id: true,
-    },
     select: {
       id: true,
       domain: true,
