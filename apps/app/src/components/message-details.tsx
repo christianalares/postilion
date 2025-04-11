@@ -30,6 +30,7 @@ export const MessageDetails = () => {
             <p className={badgeLabelVariants()}>Webhook calls:</p>
             <ul className="space-y-2">
               {message.webhook_logs.map((log) => {
+                const tookMoreThanOneAttempt = log.attempts > 1
                 const wasSuccess = log.status === 'SUCCESS'
                 const wasFailed = log.status === 'FAILED'
 
@@ -38,11 +39,15 @@ export const MessageDetails = () => {
                     <Icon
                       name={wasSuccess ? 'checkCircle' : wasFailed ? 'xCircle' : 'circleAlert'}
                       className={cn('size-4', {
-                        'text-green-400': wasSuccess,
+                        'text-green-400': wasSuccess && !tookMoreThanOneAttempt,
+                        'text-warning': tookMoreThanOneAttempt,
                         'text-destructive': wasFailed,
                       })}
                     />
                     <span className="text-xs font-mono">{log.url}</span>
+                    {tookMoreThanOneAttempt && wasSuccess && (
+                      <span className="text-xs font-mono text-warning">{`(${log.attempts} attempts)`}</span>
+                    )}
                   </li>
                 )
               })}

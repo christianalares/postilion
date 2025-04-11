@@ -1,4 +1,3 @@
-import crypto from 'node:crypto'
 import type { WorkflowEvent } from 'cloudflare:workers'
 import { NonRetryableError } from 'cloudflare:workflows'
 import { MESSAGE_SELECT } from '@postilion/db/constants'
@@ -8,10 +7,11 @@ import { customAlphabet } from 'nanoid'
 import { createWorkersAI } from 'workers-ai-provider'
 import { z } from 'zod'
 import type { WorkflowParams } from '../inbound-workflow'
+import { executeGetOrDelete, executePostOrPut, getAttachments, getFreshMessageAndBroadcast } from '../utils'
 
 type Event = WorkflowEvent<WorkflowParams>
 
-type ReturnOfMethod<T extends keyof StepFactory> = Awaited<
+export type ReturnOfMethod<T extends keyof StepFactory> = Awaited<
   ReturnType<Awaited<ReturnType<ReturnType<StepFactory[T]>['fn']>>>
 >
 
@@ -136,7 +136,7 @@ export class StepFactory {
               body_raw: this.event.payload.content.trim(),
               body_text: this.event.payload.contentText ? this.event.payload.contentText.trim() : undefined,
               subject: this.event.payload.subject.trim(),
-              status: 'PROCESSING',
+              status: 'PENDING',
             },
             select: MESSAGE_SELECT,
           })
@@ -230,6 +230,7 @@ export class StepFactory {
                 messageId: createdMessage.id,
                 filename: attachment.filename,
                 mimeType: attachment.mimeType,
+                buffer: fileBuffer,
                 r2Key: r2Object.key,
               }
             }),
@@ -384,7 +385,7 @@ export class StepFactory {
     }
   }
 
-  processWebhook({ webhook, message }: { webhook: Webhook; message: Message }) {
+  processWebhook({ webhook, message, project }: { webhook: Webhook; message: Message; project: Project }) {
     return {
       description: `Process webhook ${webhook.method}: ${webhook.url}`,
       fn: () => {
@@ -392,97 +393,86 @@ export class StepFactory {
           const prisma = createPrismaClient(this.env.DATABASE_URL)
 
           const url = webhook.url.replace('{subject}', message.subject).replace('{handle}', message.handle ?? '')
-          webhook.url = encodeURI(url)
+          const encodedUrl = new URL(url).href
+          webhook.url = encodedUrl
 
-          // POST and PUT posts payload
-          if (webhook.method === 'POST' || webhook.method === 'PUT') {
-            const attachments = (
-              await Promise.all(
-                message.attachments.map(async (attachment) => {
-                  const r2Object = await this.env.ATTACHMENTS.get(attachment.r2_key)
-
-                  if (!r2Object) {
-                    return undefined
-                  }
-
-                  const buffer = await r2Object.arrayBuffer()
-
-                  return {
-                    filename: attachment.filename,
-                    mimeType: attachment.mime_type,
-                    content: buffer,
-                  }
-                }),
-              )
-            ).filter((attachment) => attachment !== undefined)
-
-            const payload = {
-              handle: message.handle,
-              from: message.from,
-              subject: message.subject,
-              body: {
-                raw: message.body_raw,
-                stripped: message.body_stripped,
-                summary: message.body_ai_summary,
+          // Use upsert to create or update the webhook log
+          const webhookLog = await prisma.webhookLog.upsert({
+            where: {
+              message_id_webhook_id: {
+                message_id: message.id,
+                webhook_id: webhook.id,
               },
-              attachments,
-            }
-
-            const signature = crypto
-              .createHmac('sha256', webhook.signing_key)
-              .update(JSON.stringify(payload))
-              .digest('hex')
-
-            const response = await fetch(webhook.url, {
+            },
+            create: {
+              status: 'PENDING',
+              message_id: message.id,
               method: webhook.method,
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Postilion-Signature': signature,
-              },
-              body: JSON.stringify(payload),
-            }).catch((error) => {
-              throw new Error(`Webhook request failed: ${error.message}`)
-            })
+              url: webhook.url,
+              webhook_id: webhook.id,
+            },
+            update: {
+              status: 'PENDING',
+              attempts: { increment: 1 },
+              error: null,
+            },
+            select: {
+              id: true,
+            },
+          })
 
-            if (!response.ok) {
-              throw new Error(`Webhook failed with status ${response.status}`)
+          const attachments = await getAttachments({ env: this.env, message })
+
+          const operation =
+            webhook.method === 'POST' || webhook.method === 'PUT'
+              ? () => {
+                  return executePostOrPut({
+                    webhook,
+                    message,
+                    attachments,
+                  })
+                }
+              : () => {
+                  return executeGetOrDelete({ webhook })
+                }
+
+          try {
+            if (Math.random() < 0.4) {
+              throw new Error('Test error')
             }
 
-            await prisma.webhookLog.create({
+            await operation()
+
+            await prisma.webhookLog.update({
+              where: { id: webhookLog.id },
               data: {
                 status: 'SUCCESS',
-                message_id: message.id,
-                url: webhook.url,
-                method: webhook.method,
               },
             })
-          }
 
-          if (webhook.method === 'GET' || webhook.method === 'DELETE') {
-            const signature = crypto.createHmac('sha256', webhook.signing_key).update(webhook.url).digest('hex')
-
-            const response = await fetch(webhook.url, {
-              method: webhook.method,
-              headers: {
-                'Content-Type': 'application/json',
-                'X-Postilion-Signature': signature,
-              },
-            }).catch((error) => {
-              throw new Error(`Webhook request failed: ${error.message}`)
+            await getFreshMessageAndBroadcast({
+              env: this.env,
+              prisma,
+              message,
+              project,
             })
-
-            if (!response.ok) {
-              throw new Error(`Webhook failed with status ${response.status}`)
-            }
-
-            await prisma.webhookLog.create({
+          } catch (error) {
+            await prisma.webhookLog.update({
+              where: { id: webhookLog.id },
               data: {
-                status: 'SUCCESS',
-                message_id: message.id,
-                url: webhook.url,
-                method: webhook.method,
+                status: 'FAILED',
+                error: error instanceof Error ? error.message : 'Unknown error',
               },
             })
+
+            await getFreshMessageAndBroadcast({
+              env: this.env,
+              prisma,
+              message,
+              project,
+            })
+
+            throw error // Re-throw to trigger workflow retry
           }
         }
       },

@@ -68,6 +68,8 @@ export const getMessageById = async (
           id: true,
           status: true,
           url: true,
+          attempts: true,
+          error: true,
         },
       },
       attachments: {

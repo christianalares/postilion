@@ -24,6 +24,7 @@ import {
   Settings,
   Sun,
   Trash2,
+  TriangleAlert,
   User,
   Webhook,
   XCircle,
@@ -100,6 +101,7 @@ const icons = {
   document: FileText,
   image: Image,
   dashboard: LayoutDashboard,
+  triangleAlert: TriangleAlert,
 }
 
 export type IconName = keyof typeof icons

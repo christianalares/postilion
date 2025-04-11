@@ -26,8 +26,6 @@ export const formatMessageStatus = (status: MESSAGE_STATUS_ENUM) => {
   switch (status) {
     case 'PENDING':
       return 'Pending'
-    case 'PROCESSING':
-      return 'Processing'
     case 'COMPLETED':
       return 'Completed'
     case 'FAILED':

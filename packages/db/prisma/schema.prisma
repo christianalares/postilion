@@ -16,7 +16,6 @@ enum TEAM_ROLE_ENUM {
 
 enum MESSAGE_STATUS_ENUM {
   PENDING
-  PROCESSING
   COMPLETED
   FAILED
 }
@@ -29,6 +28,7 @@ enum WEBHOOK_REQUEST_METHOD_ENUM {
 }
 
 enum WEBHOOK_LOG_STATUS_ENUM {
+  PENDING
   SUCCESS
   FAILED
 }
@@ -232,12 +232,17 @@ model Webhook {
 model WebhookLog {
   id         String                      @id @default(ulid())
   created_at DateTime                    @default(now())
+  updated_at DateTime?                   @updatedAt
   message_id String
   message    Message                     @relation(fields: [message_id], references: [id], onDelete: Cascade)
   status     WEBHOOK_LOG_STATUS_ENUM
   url        String
   method     WEBHOOK_REQUEST_METHOD_ENUM
+  error      String?
+  attempts   Int                         @default(1)
+  webhook_id String
 
+  @@unique([message_id, webhook_id])
   @@index([message_id])
   @@map("webhook_logs")
 }

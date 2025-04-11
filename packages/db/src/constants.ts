@@ -1,6 +1,6 @@
 import type { Prisma } from '../generated/client'
 
-export const MESSAGE_SELECT: Prisma.MessageSelect = {
+export const MESSAGE_SELECT = {
   id: true,
   from: true,
   subject: true,
@@ -19,4 +19,13 @@ export const MESSAGE_SELECT: Prisma.MessageSelect = {
       status: true,
     },
   },
-}
+  project: {
+    select: {
+      _count: {
+        select: {
+          webhooks: true,
+        },
+      },
+    },
+  },
+} satisfies Prisma.MessageSelect

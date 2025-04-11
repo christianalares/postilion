@@ -1,5 +1,4 @@
 import { WorkflowEntrypoint, type WorkflowEvent, type WorkflowStep } from 'cloudflare:workers'
-import { createPrismaClient } from '@postilion/db/edge'
 import { customAlphabet } from 'nanoid'
 import { StepFactory } from './steps/step-factory'
 
@@ -52,33 +51,23 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, WorkflowParams
     const { webhooks, message } = await step.do(getAssociatedWebhooksStep.description, getAssociatedWebhooksStep.fn())
 
     for (const webhook of webhooks) {
-      const processWebhookStep = stepFactory.processWebhook({ webhook, message })
-      await step
-        .do(
+      const processWebhookStep = stepFactory.processWebhook({ webhook, message, project })
+
+      try {
+        await step.do(
           processWebhookStep.description,
           {
             retries: {
-              limit: 3,
+              limit: 2, // The first attempt counts as 1, plus 2 retries == 3 attempts in total
               delay: this.env.DEV ? '2 seconds' : '30 seconds',
               backoff: 'exponential',
             },
           },
           processWebhookStep.fn(),
         )
-        .catch(async (error) => {
-          const prisma = createPrismaClient(this.env.DATABASE_URL)
-
-          await prisma.webhookLog.create({
-            data: {
-              status: 'FAILED',
-              message_id: message.id,
-              url: webhook.url,
-              method: webhook.method,
-            },
-          })
-
-          console.error(`Webhook ${webhook.url} failed after retries:`, error)
-        })
+      } catch (_error) {
+        // Do nothing, we don't want to fail the workflow if one webhook fails
+      }
     }
 
     const finalizeMessageStatusStep = stepFactory.finalizeMessageStatus({ createdMessage, webhooks, message, project })

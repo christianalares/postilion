@@ -49,7 +49,7 @@ const Message = ({ message }: MessageProps) => {
   const teamSlug = useTeamSlug()
 
   const successfulWebhooks = message.webhook_logs.filter((log) => log.status === 'SUCCESS').length
-  const totalWebhooks = message.webhook_logs.length
+  const totalWebhooks = message.project._count.webhooks
 
   const allWebhooksSuccessful = successfulWebhooks === totalWebhooks
 
@@ -65,8 +65,11 @@ const Message = ({ message }: MessageProps) => {
           {message.handle && <Badge label="Handle:">{message.handle}</Badge>}
           <Badge label="Created at:">{new Date(message.created_at).toLocaleString()}</Badge>
           {message.attachments.length > 0 && <Badge label="Attachments:">{message.attachments.length}</Badge>}
-          <Badge variant={allWebhooksSuccessful ? 'default' : 'destructive'} label="Webhooks sent:">
-            {successfulWebhooks} / {totalWebhooks}
+          <Badge
+            variant={message.status === 'PENDING' || allWebhooksSuccessful ? 'default' : 'destructive'}
+            label="Webhooks sent:"
+          >
+            {successfulWebhooks} / {message.project._count.webhooks}
           </Badge>
 
           <TooltipProvider>
@@ -98,8 +101,7 @@ type StatusIconProps = {
 const StatusIcon = ({ status }: StatusIconProps) => {
   const icons: Record<typeof status, React.ReactNode> = {
     COMPLETED: <Icon name="checkCircle" className="text-green-400 size-5" />,
-    PROCESSING: <Spinner className="text-orange-400 size-5" />,
-    PENDING: null,
+    PENDING: <Spinner className="text-orange-400 size-5" />,
     FAILED: <Icon name="xCircle" className="text-destructive size-5" />,
   }
 
