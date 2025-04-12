@@ -29,19 +29,14 @@ function getQueryClient() {
   return browserQueryClient
 }
 
-export function getUrl() {
-  if (process.env.NEXT_PUBLIC_URL) {
-    console.log('1 getUrl', process.env.NEXT_PUBLIC_URL)
-    return process.env.NEXT_PUBLIC_URL
-  }
+function getUrl() {
+  const base = (() => {
+    if (typeof window !== 'undefined') return ''
+    if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+    return 'http://localhost:3000'
+  })()
 
-  if (process.env.VERCEL_ENV === 'preview') {
-    console.log('2 getUrl', process.env.VERCEL_URL)
-    return `https://${process.env.VERCEL_URL}`
-  }
-
-  console.log('3 getUrl', 'http://localhost:3000')
-  return 'http://localhost:3000'
+  return `${base}/api/trpc`
 }
 
 export function TRPCReactProvider(
@@ -55,7 +50,7 @@ export function TRPCReactProvider(
     createTRPCClient<AppRouter>({
       links: [
         httpBatchLink({
-          url: `${getUrl()}/api/trpc`,
+          url: getUrl(),
           transformer: superjson,
         }),
       ],
