@@ -31,13 +31,16 @@ function getQueryClient() {
 
 export function getUrl() {
   if (process.env.NEXT_PUBLIC_URL) {
+    console.log('1 getUrl', process.env.NEXT_PUBLIC_URL)
     return process.env.NEXT_PUBLIC_URL
   }
 
-  if (process.env.VERCEL_ENV) {
+  if (process.env.VERCEL_ENV === 'preview') {
+    console.log('2 getUrl', process.env.VERCEL_URL)
     return `https://${process.env.VERCEL_URL}`
   }
 
+  console.log('3 getUrl', 'http://localhost:3000')
   return 'http://localhost:3000'
 }
 
