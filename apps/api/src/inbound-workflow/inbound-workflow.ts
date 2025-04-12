@@ -70,7 +70,7 @@ export class InboundEmailWorkflow extends WorkflowEntrypoint<Env, WorkflowParams
       }
     }
 
-    const finalizeMessageStatusStep = stepFactory.finalizeMessageStatus({ createdMessage, webhooks, message, project })
+    const finalizeMessageStatusStep = stepFactory.finalizeMessageStatus({ createdMessage, project })
     await step.do(finalizeMessageStatusStep.description, finalizeMessageStatusStep.fn())
   }
 }

@@ -15,12 +15,6 @@ export type ReturnOfMethod<T extends keyof StepFactory> = Awaited<
   ReturnType<Awaited<ReturnType<ReturnType<StepFactory[T]>['fn']>>>
 >
 
-type Project = ReturnOfMethod<'getProject'>
-type CreatedMessage = ReturnOfMethod<'createMessage'>
-type StrippedBody = ReturnOfMethod<'stripBody'>
-type Webhook = ReturnOfMethod<'getAssociatedWebhooks'>['webhooks'][number]
-type Message = ReturnOfMethod<'getAssociatedWebhooks'>['message']
-
 const generateShortId = () => {
   const createId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 8)
 
@@ -56,6 +50,11 @@ export class StepFactory {
                     select: {
                       id: true,
                       slug: true,
+                    },
+                  },
+                  _count: {
+                    select: {
+                      webhooks: true,
                     },
                   },
                 },
@@ -97,6 +96,11 @@ export class StepFactory {
                         slug: true,
                       },
                     },
+                    _count: {
+                      select: {
+                        webhooks: true,
+                      },
+                    },
                   },
                 },
               },
@@ -120,7 +124,7 @@ export class StepFactory {
     }
   }
 
-  createMessage({ project }: { project: Project }) {
+  createMessage({ project }: { project: ReturnOfMethod<'getProject'> }) {
     return {
       description: 'Create a new message in the database',
       fn: () => {
@@ -136,6 +140,7 @@ export class StepFactory {
               body_raw: this.event.payload.content.trim(),
               body_text: this.event.payload.contentText ? this.event.payload.contentText.trim() : undefined,
               subject: this.event.payload.subject.trim(),
+              total_webhooks_count: project._count.webhooks,
               status: 'PENDING',
             },
             select: MESSAGE_SELECT,
@@ -155,7 +160,7 @@ export class StepFactory {
     }
   }
 
-  stripBody({ createdMessage }: { createdMessage: CreatedMessage }) {
+  stripBody({ createdMessage }: { createdMessage: ReturnOfMethod<'createMessage'> }) {
     return {
       description: 'Get a stripped body of the email',
       fn: () => {
@@ -201,8 +206,8 @@ export class StepFactory {
     createdMessage,
     project,
   }: {
-    createdMessage: CreatedMessage
-    project: Project
+    createdMessage: ReturnOfMethod<'createMessage'>
+    project: ReturnOfMethod<'getProject'>
   }) {
     return {
       description: 'Process attachments',
@@ -278,9 +283,9 @@ export class StepFactory {
     createdMessage,
     project,
   }: {
-    strippedBody: StrippedBody
-    createdMessage: CreatedMessage
-    project: Project
+    strippedBody: ReturnOfMethod<'stripBody'>
+    createdMessage: ReturnOfMethod<'createMessage'>
+    project: ReturnOfMethod<'getProject'>
   }) {
     return {
       description: 'Generate a summary of the stripped email body',
@@ -337,7 +342,13 @@ export class StepFactory {
     }
   }
 
-  getAssociatedWebhooks({ project, createdMessage }: { project: Project; createdMessage: CreatedMessage }) {
+  getAssociatedWebhooks({
+    project,
+    createdMessage,
+  }: {
+    project: ReturnOfMethod<'getProject'>
+    createdMessage: ReturnOfMethod<'createMessage'>
+  }) {
     return {
       description: 'Get associated webhooks',
       fn: () => {
@@ -385,7 +396,15 @@ export class StepFactory {
     }
   }
 
-  processWebhook({ webhook, message, project }: { webhook: Webhook; message: Message; project: Project }) {
+  processWebhook({
+    webhook,
+    message,
+    project,
+  }: {
+    webhook: ReturnOfMethod<'getAssociatedWebhooks'>['webhooks'][number]
+    message: ReturnOfMethod<'getAssociatedWebhooks'>['message']
+    project: ReturnOfMethod<'getProject'>
+  }) {
     return {
       description: `Process webhook ${webhook.method}: ${webhook.url}`,
       fn: () => {
@@ -481,14 +500,10 @@ export class StepFactory {
 
   finalizeMessageStatus({
     createdMessage,
-    webhooks,
-    message,
     project,
   }: {
-    createdMessage: CreatedMessage
-    webhooks: Webhook[]
-    message: Message
-    project: Project
+    createdMessage: ReturnOfMethod<'createMessage'>
+    project: ReturnOfMethod<'getProject'>
   }) {
     return {
       description: 'Finalize message status',
@@ -496,27 +511,42 @@ export class StepFactory {
         return async () => {
           const prisma = createPrismaClient(this.env.DATABASE_URL)
 
-          // Count successful webhooks
-          const successfulWebhooks = await prisma.webhookLog.count({
-            where: {
-              message_id: createdMessage.id,
-              status: 'SUCCESS',
-            },
+          const updatedMessage = await prisma.$transaction(async (tx) => {
+            // Get the message with its total_webhooks_count
+            const message = await tx.message.findUnique({
+              where: { id: createdMessage.id },
+              select: {
+                total_webhooks_count: true,
+              },
+            })
+
+            if (!message) {
+              throw new Error('Message not found')
+            }
+
+            // Count successful webhooks
+            const successCount = await tx.webhookLog.count({
+              where: {
+                message_id: createdMessage.id,
+                status: 'SUCCESS',
+              },
+            })
+
+            // Update message status based on webhook success
+            const updatedMessage = await tx.message.update({
+              where: {
+                id: createdMessage.id,
+              },
+              data: {
+                status: successCount === message.total_webhooks_count ? 'COMPLETED' : 'FAILED',
+              },
+              select: MESSAGE_SELECT,
+            })
+
+            return updatedMessage
           })
 
-          // Compare with total number of webhooks that should have run
-          const allWebhooksSuccessful = successfulWebhooks === webhooks.length
-
-          const updatedMessage = await prisma.message.update({
-            where: {
-              id: message.id,
-            },
-            data: {
-              status: allWebhooksSuccessful ? 'COMPLETED' : 'FAILED',
-            },
-            select: MESSAGE_SELECT,
-          })
-
+          // Broadcast the status update
           const id = this.env.MESSAGE_STATUS.idFromName(`${project.team.slug}-${project.slug}`)
           const statusObj = this.env.MESSAGE_STATUS.get(id)
 

@@ -166,23 +166,24 @@ model Project {
 }
 
 model Message {
-  id              String              @id @default(ulid())
-  slug            String              @unique
-  created_at      DateTime            @default(now())
-  updated_at      DateTime?           @updatedAt
-  subject         String
-  from            String
-  body_raw        String
-  body_text       String?
-  body_stripped   String?
-  body_ai_summary String?
-  metadata        Json?
-  status          MESSAGE_STATUS_ENUM
-  project_id      String
-  project         Project             @relation(fields: [project_id], references: [id])
-  handle          String?
-  attachments     Attachment[]
-  webhook_logs    WebhookLog[]
+  id                   String              @id @default(ulid())
+  slug                 String              @unique
+  created_at           DateTime            @default(now())
+  updated_at           DateTime?           @updatedAt
+  subject              String
+  from                 String
+  body_raw             String
+  body_text            String?
+  body_stripped        String?
+  body_ai_summary      String?
+  metadata             Json?
+  status               MESSAGE_STATUS_ENUM
+  project_id           String
+  project              Project             @relation(fields: [project_id], references: [id])
+  handle               String?
+  attachments          Attachment[]
+  webhook_logs         WebhookLog[]
+  total_webhooks_count Int                 @default(0)
 
   @@index([project_id, slug])
   @@map("messages")

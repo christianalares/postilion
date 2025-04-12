@@ -8,6 +8,7 @@ export const MESSAGE_SELECT = {
   handle: true,
   status: true,
   body_ai_summary: true,
+  total_webhooks_count: true,
   attachments: {
     select: {
       id: true,
@@ -17,15 +18,16 @@ export const MESSAGE_SELECT = {
     select: {
       id: true,
       status: true,
+      webhook_id: true,
     },
   },
-  project: {
-    select: {
-      _count: {
-        select: {
-          webhooks: true,
-        },
-      },
-    },
-  },
+  // project: {
+  //   select: {
+  //     _count: {
+  //       select: {
+  //         webhooks: true,
+  //       },
+  //     },
+  //   },
+  // },
 } satisfies Prisma.MessageSelect

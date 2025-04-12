@@ -49,9 +49,7 @@ const Message = ({ message }: MessageProps) => {
   const teamSlug = useTeamSlug()
 
   const successfulWebhooks = message.webhook_logs.filter((log) => log.status === 'SUCCESS').length
-  const totalWebhooks = message.project._count.webhooks
-
-  const allWebhooksSuccessful = successfulWebhooks === totalWebhooks
+  const allWebhooksSuccessful = successfulWebhooks === message.total_webhooks_count
 
   return (
     <motion.li layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -69,7 +67,7 @@ const Message = ({ message }: MessageProps) => {
             variant={message.status === 'PENDING' || allWebhooksSuccessful ? 'default' : 'destructive'}
             label="Webhooks sent:"
           >
-            {successfulWebhooks} / {message.project._count.webhooks}
+            {successfulWebhooks} / {message.total_webhooks_count}
           </Badge>
 
           <TooltipProvider>
