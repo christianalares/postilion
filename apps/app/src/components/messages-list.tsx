@@ -20,8 +20,10 @@ export const MessagesList = () => {
     return (
       <div className="flex flex-col items-center justify-center h-full">
         <div className="border border-dashed p-16">
-          <h1 className="text-lg font-bold">There are no received messages yet</h1>
-          <p className="text-muted-foreground">When new messages are received, they will appear here in real-time.</p>
+          <h1 className="text-lg font-bold font-mono">There are no received messages yet</h1>
+          <p className="text-muted-foreground font-mono">
+            When new messages are received, they will appear here in real-time.
+          </p>
 
           <AnimatedStream className="mt-8" />
         </div>
