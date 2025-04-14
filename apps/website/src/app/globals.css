@@ -4,6 +4,20 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --animate-blur: blur 3s ease-in-out;
+
+  @keyframes blur {
+    0% {
+      filter: blur(100px);
+    }
+    100% {
+      filter: blur(0px);
+    }
+  }
+}
+
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);

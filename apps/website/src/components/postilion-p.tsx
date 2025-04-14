@@ -12,7 +12,7 @@ const Model = () => {
   const modelRef = useRef<THREE.Group>(null)
   const scale = useSpring(0, {
     stiffness: 1,
-    damping: 0.4,
+    damping: 0.6,
     mass: 0.3,
     restSpeed: 0.01,
   })
@@ -40,9 +40,11 @@ export const PostilionP = () => {
   return (
     <Canvas
       // className="-translate-x-1/3 cursor-grab"
+      // className="animate-blur"
       style={{
-        width: '600px',
-        height: '600px',
+        // filter: 'blur(10px)',
+        width: '100%',
+        height: '30dvh',
       }}
       camera={{
         position: [300, 0, 100],
