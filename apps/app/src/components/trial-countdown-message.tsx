@@ -1,6 +1,7 @@
 'use client'
 
 import { useTeamSlug } from '@/hooks/use-team-slug'
+import { cn } from '@/lib/utils'
 import { useTRPC } from '@/trpc/client'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { differenceInMilliseconds } from 'date-fns'
@@ -22,9 +23,20 @@ export const TrialCountdownMessage = () => {
       <div className="p-3 trial-countdown">
         <Link
           href={`/${teamSlug}/settings/billing`}
-          className="block text-xs text-center text-warning font-mono border border-warning bg-warning/10 p-2 opacity-70 hover:opacity-100 transition-opacity"
+          className={cn(
+            'block text-xs text-center font-mono border p-2 opacity-70 hover:opacity-100 transition-opacity',
+            daysLeft === 0
+              ? 'text-destructive bg-destructive/10 border-destructive'
+              : 'text-warning bg-warning/10 border-warning',
+          )}
         >
-          Free trial ends in <span className="font-bold">{daysLeft}</span> days
+          {daysLeft === 0 ? (
+            'Free trial has ended'
+          ) : (
+            <>
+              Free trial ends in <span className="font-bold">{daysLeft}</span> days
+            </>
+          )}
         </Link>
       </div>
     )

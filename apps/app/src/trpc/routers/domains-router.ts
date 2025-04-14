@@ -52,7 +52,10 @@ const getForTeam = authProcedure
 
     const domainsFromForward = await Promise.all(
       domains.map((domain) => ctx.forwardEmailClient.getDomain({ domain: domain.domain })),
-    )
+    ).catch((error) => {
+      console.error(error)
+      return []
+    })
 
     const finalResults = domains.map((domain, index) => {
       const domainFromForwardRaw = domainsFromForward[index]
