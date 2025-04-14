@@ -4,6 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
+		"db:reset-and-seed": "prisma db seed",
 		"db:studio": "prisma studio",
 		"db:push": "prisma db push",
 		"db:generate": "prisma generate --no-engine",

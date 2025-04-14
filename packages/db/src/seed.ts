@@ -163,31 +163,31 @@ async function main() {
   // biome-ignore lint/suspicious/noConsoleLog: <explanation>
   console.log(`✅ ${additionalProjects.length} additional projects created`)
 
-  // Create webhooks for each project
+  // Create webhooks only for test user's project
   const webhooks = await Promise.all(
     projects.map((project) => {
       const team = teams.find((t) => t.id === project.team_id)!
       const user = users.find((u) => u.id === team.members[0]!.user_id)!
 
-      // Use special webhook URL for test user's team
-      const url =
-        user.email === ENVS.TEST_USER_EMAIL ? ENVS.TEST_WEBHOOK_URL : `${faker.internet.url()}/{subject}/{handle}`
+      // Only create webhook for test user's team
+      if (user.email === ENVS.TEST_USER_EMAIL) {
+        return prisma.webhook.create({
+          data: {
+            id: ulid(),
+            url: ENVS.TEST_WEBHOOK_URL,
+            method: 'GET',
+            signing_key: faker.string.alphanumeric(32),
+            project_id: project.id,
+          },
+        })
+      }
 
-      return prisma.webhook.create({
-        data: {
-          id: ulid(),
-          url,
-          method:
-            user.email === ENVS.TEST_USER_EMAIL ? 'GET' : faker.helpers.arrayElement(['GET', 'POST', 'PUT', 'DELETE']),
-          signing_key: faker.string.alphanumeric(32),
-          project_id: project.id,
-        },
-      })
+      return null
     }),
-  )
+  ).then((results) => results.filter((webhook): webhook is NonNullable<typeof webhook> => webhook !== null))
 
   // biome-ignore lint/suspicious/noConsoleLog: <explanation>
-  console.log(`✅ ${webhooks.length} webhooks created`)
+  console.log(`✅ ${webhooks.length} webhook created`)
 
   // Create messages for each project
   const messages = await Promise.all(
@@ -214,24 +214,33 @@ async function main() {
   // biome-ignore lint/suspicious/noConsoleLog: <explanation>
   console.log(`✅ ${messages.length} messages created`)
 
-  // Create webhook logs for each message
+  // Create webhook logs only for test user's messages
   const webhookLogs = await Promise.all(
     messages.map((message) => {
-      const status = faker.helpers.arrayElement(['SUCCESS', 'FAILED'])
-      return prisma.webhookLog.create({
-        data: {
-          id: ulid(),
-          message_id: message.id,
-          webhook_id: webhooks.find((w) => w.project_id === message.project_id)!.id,
-          status,
-          url: faker.internet.url(),
-          method: faker.helpers.arrayElement(['GET', 'POST', 'PUT', 'DELETE']),
-          error: status === 'FAILED' ? faker.lorem.sentence() : null,
-          attempts: status === 'FAILED' ? 3 : 1,
-        },
-      })
+      const project = projects.find((p) => p.id === message.project_id)!
+      const team = teams.find((t) => t.id === project.team_id)!
+      const user = users.find((u) => u.id === team.members[0]!.user_id)!
+
+      // Only create webhook logs for test user's messages
+      if (user.email === ENVS.TEST_USER_EMAIL) {
+        const status = faker.helpers.arrayElement(['SUCCESS', 'FAILED'])
+        return prisma.webhookLog.create({
+          data: {
+            id: ulid(),
+            message_id: message.id,
+            webhook_id: webhooks.find((w) => w.project_id === message.project_id)!.id,
+            status,
+            url: ENVS.TEST_WEBHOOK_URL,
+            method: 'GET',
+            error: status === 'FAILED' ? faker.lorem.sentence() : null,
+            attempts: status === 'FAILED' ? 3 : 1,
+          },
+        })
+      }
+
+      return null
     }),
-  )
+  ).then((results) => results.filter((log): log is NonNullable<typeof log> => log !== null))
 
   // Update message status to FAILED if any webhook log failed
   await Promise.all(
@@ -250,13 +259,13 @@ async function main() {
   // biome-ignore lint/suspicious/noConsoleLog: <explanation>
   console.log(`✅ ${webhookLogs.length} webhook logs created`)
 
-  // Create domains for each team
+  // Create domains only for test user's project
   const domains = await Promise.all(
     teams.map(async (team) => {
       const user = users.find((u) => u.id === team.members[0]!.user_id)!
       const defaultProject = projects.find((p) => p.team_id === team.id && p.slug === 'default')!
 
-      // Use special domain for test user's team
+      // Only create domain for test user's team
       if (user.email === ENVS.TEST_USER_EMAIL) {
         return prisma.domain.create({
           data: {
@@ -271,22 +280,12 @@ async function main() {
         })
       }
 
-      // Create random domains for other teams
-      return prisma.domain.create({
-        data: {
-          id: ulid(),
-          domain: `${faker.word.noun()}.${faker.internet.domainSuffix()}`,
-          forwardemail_id: faker.string.alphanumeric(24),
-          team_id: team.id,
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
-      })
+      return null
     }),
-  )
+  ).then((results) => results.filter((domain): domain is NonNullable<typeof domain> => domain !== null))
 
   // biome-ignore lint/suspicious/noConsoleLog: <explanation>
-  console.log(`✅ ${domains.length} domains created`)
+  console.log(`✅ ${domains.length} domain created`)
 
   // Add test user to two additional teams
   const testUser = users[0]
