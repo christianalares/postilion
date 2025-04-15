@@ -119,7 +119,7 @@ const update = authProcedure
     }
 
     const updatedProject = await mutations.projects.updateProject(ctx.prisma, {
-      teamId: input.teamSlug,
+      teamId: team.id,
       projectSlug: input.projectSlug,
       data: {
         name: input.data.name,
