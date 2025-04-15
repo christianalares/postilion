@@ -66,31 +66,3 @@ export function TRPCReactProvider(
     </QueryClientProvider>
   )
 }
-
-// export function TRPCProvider(
-//   props: Readonly<{
-//     children: React.ReactNode
-//   }>,
-// ) {
-//   const queryClient = getQueryClient()
-
-//   const [trpcClient] = useState(() =>
-//     createTRPCClient<AppRouter>({
-//       links: [
-//         httpBatchLink({
-//           transformer: superjson,
-//           url: getUrl(),
-//         }),
-//       ],
-//     }),
-//   )
-
-//   return (
-//     <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-//       <QueryClientProvider client={queryClient}>
-//         {props.children}
-//         <ReactQueryDevtools />
-//       </QueryClientProvider>
-//     </TRPCProvider>
-//   );
-// }

@@ -19,6 +19,7 @@ export const MESSAGE_SELECT = {
       id: true,
       status: true,
       webhook_id: true,
+      attempts: true,
     },
   },
   // project: {

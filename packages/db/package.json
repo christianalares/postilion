@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"db:reset-and-seed": "prisma db seed",
+		"db:reset-and-seed:demo": "prisma db seed -- --demo",
 		"db:studio": "prisma studio",
 		"db:push": "prisma db push",
 		"db:generate": "prisma generate --no-engine",
@@ -38,6 +39,6 @@
 		"./constants": "./src/constants.ts"
 	},
 	"prisma": {
-		"seed": "tsx src/seed.ts"
+		"seed": "tsx src/seed/index.ts"
 	}
 }

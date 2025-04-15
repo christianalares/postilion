@@ -52,6 +52,7 @@ const Message = ({ message }: MessageProps) => {
 
   const successfulWebhooks = message.webhook_logs.filter((log) => log.status === 'SUCCESS').length
   const allWebhooksSuccessful = successfulWebhooks === message.total_webhooks_count
+  const hasRetries = message.webhook_logs.some((log) => log.attempts > 1)
 
   return (
     <motion.li layout initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
@@ -66,7 +67,15 @@ const Message = ({ message }: MessageProps) => {
           <Badge label="Created at:">{new Date(message.created_at).toLocaleString()}</Badge>
           {message.attachments.length > 0 && <Badge label="Attachments:">{message.attachments.length}</Badge>}
           <Badge
-            variant={message.status === 'PENDING' || allWebhooksSuccessful ? 'default' : 'destructive'}
+            variant={
+              message.status === 'PENDING'
+                ? 'default'
+                : hasRetries
+                  ? 'warning'
+                  : allWebhooksSuccessful
+                    ? 'default'
+                    : 'destructive'
+            }
             label="Webhooks sent:"
           >
             {successfulWebhooks} / {message.total_webhooks_count}

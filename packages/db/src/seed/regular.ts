@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { ulid } from 'ulid'
-import { prisma } from './client'
+import { prisma } from '../client'
 
 const ENVS = {
   DATABASE_URL: process.env.DATABASE_URL as string,
@@ -42,7 +42,7 @@ const clearDatabase = async () => {
   console.log('✅ Database cleared')
 }
 
-async function main() {
+export async function regularSeed() {
   await clearDatabase()
 
   // Create 10 users including test user
@@ -341,12 +341,3 @@ async function main() {
   // biome-ignore lint/suspicious/noConsoleLog: <explanation>
   console.log('--------------------------------')
 }
-
-main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
