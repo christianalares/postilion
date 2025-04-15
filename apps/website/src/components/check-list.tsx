@@ -4,7 +4,7 @@ import { Icon } from './ui/icon'
 
 const checkList = [
   'Real time monitoring',
-  'Automatic webhook retires',
+  'Automatic webhook retries',
   'AI powered summarization',
   'Connect your own domain',
 ]
