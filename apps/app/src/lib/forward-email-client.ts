@@ -83,7 +83,7 @@ const verifyDomainResponseSchema = z.union([
 type RequestArgs<TSchema extends z.ZodType> =
   | {
       endpoint: `/${string}`
-      method: 'POST'
+      method: 'POST' | 'PUT'
       body: Record<string, any>
       outputSchema: TSchema
     }
@@ -103,7 +103,7 @@ export class ForwardEmailClient {
   async request<TSchema extends z.ZodType>(args: RequestArgs<TSchema>): Promise<z.infer<TSchema>> {
     const response = await fetch(`${this.baseUrl}${args.endpoint}`, {
       method: args.method,
-      body: args.method === 'POST' ? JSON.stringify(args.body) : undefined,
+      body: args.method === 'POST' || args.method === 'PUT' ? JSON.stringify(args.body) : undefined,
       headers: {
         Authorization: `Basic ${Buffer.from(`${this.token}:`).toString('base64')}`,
         'Content-Type': 'application/json',
@@ -131,12 +131,48 @@ export class ForwardEmailClient {
   }
 
   async createDomain({ domain }: { domain: string }) {
-    return this.request({
+    const createdDomain = await this.request({
       outputSchema: createDomainResponseSchema,
       endpoint: '/domains',
       method: 'POST',
-      body: { domain },
+      body: {
+        domain,
+      },
     })
+
+    // Get all aliases
+    const aliases = await this.request({
+      outputSchema: z.array(
+        z.object({
+          id: z.string(),
+        }),
+      ),
+      endpoint: `/domains/${domain}/aliases`,
+      method: 'GET',
+    })
+
+    // Get the first default created one
+    const firstAlias = aliases[0]
+
+    if (!firstAlias) {
+      throw new Error('No aliases found')
+    }
+
+    // Update the alias to forward to the domain
+    await this.request({
+      outputSchema: z.array(
+        z.object({
+          id: z.string(),
+        }),
+      ),
+      endpoint: `/domains/${domain}/aliases/${firstAlias.id}`,
+      method: 'PUT',
+      body: {
+        recipients: 'postilion.ai',
+      },
+    })
+
+    return createdDomain
   }
 
   async getDomain({ domain }: { domain: string }) {

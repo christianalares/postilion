@@ -36,7 +36,7 @@ export const AddDomainModal = () => {
         queryClient.invalidateQueries(trpc.domains.getForTeam.queryFilter({ teamSlug }))
         popModal('addDomainModal')
         toast.success('Domain created successfully')
-        router.push(`/${teamSlug}/settings/domains/${createdDomain.domain}`)
+        router.push(`/${teamSlug}/domains/${createdDomain.domain}`)
       },
       onError: (error) => {
         toast.error('Failed to create domain', {
