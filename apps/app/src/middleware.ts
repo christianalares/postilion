@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth/get-session'
+import { getSessionCookie } from 'better-auth/cookies'
 import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
 import picomatch from 'picomatch'
@@ -9,11 +9,11 @@ export async function middleware(req: NextRequest) {
   const nextUrl = req.nextUrl
   const redirectTo = req.cookies.get('redirectTo')?.value
 
-  const session = await getSession()
+  const sessionCookie = getSessionCookie(req)
 
   const isOpenPath = OPEN_PATHS.some((pattern) => picomatch(pattern)(nextUrl.pathname))
 
-  if (!session && !isOpenPath) {
+  if (!sessionCookie && !isOpenPath) {
     const returnTo =
       req.nextUrl.pathname === '/'
         ? new URL('/login', req.url)
