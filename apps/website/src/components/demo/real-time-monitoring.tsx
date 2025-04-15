@@ -131,7 +131,7 @@ export const RealTimeMonitoring = ({ className }: Props) => {
   return (
     <div className={cn('relative', className)}>
       <div className="space-y-4 relative overflow-hidden">
-        <AnimatePresence mode="popLayout">
+        <AnimatePresence mode="popLayout" initial={false}>
           {messages.map((message) => (
             <motion.div
               key={message.key}

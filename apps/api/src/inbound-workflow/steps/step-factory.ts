@@ -456,10 +456,6 @@ export class StepFactory {
                 }
 
           try {
-            if (Math.random() < 0.4) {
-              throw new Error('Test error')
-            }
-
             await operation()
 
             await prisma.webhookLog.update({
