@@ -97,7 +97,10 @@ const getNewItems = (prevItems: typeof initialMessages) => {
   return newItems
 }
 
-export const RealTimeMonitoring = () => {
+type Props = {
+  className?: string
+}
+export const RealTimeMonitoring = ({ className }: Props) => {
   const [messages, setMessages] = useState(initialMessages)
 
   useEffect(() => {
@@ -126,21 +129,23 @@ export const RealTimeMonitoring = () => {
   }, [])
 
   return (
-    <div className="p-4">
-      <div className="space-y-4">
+    <div className={cn('relative', className)}>
+      <div className="space-y-4 relative overflow-hidden">
         <AnimatePresence mode="popLayout">
           {messages.map((message) => (
             <motion.div
               key={message.key}
               className="border p-4 bg-background"
               layout
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, y: -100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
               transition={{
-                duration: 0.3,
+                duration: 0.4,
+                ease: [0.4, 0, 0.2, 1],
                 layout: {
-                  duration: 0.3,
+                  duration: 0.4,
+                  ease: [0.4, 0, 0.2, 1],
                 },
               }}
             >
@@ -151,14 +156,12 @@ export const RealTimeMonitoring = () => {
                     className={cn('h-6 rounded-none', width, message.status === 'SUCCESS' && 'animate-none')}
                   />
                 ))}
-
                 {message.status === 'PENDING' ? (
                   <Spinner className="text-orange-400 size-5 ml-auto" />
                 ) : (
                   <Icon name="checkCircle" className="text-green-400 size-5 ml-auto" />
                 )}
               </div>
-
               <div className="mt-4 space-y-2">
                 {message.layout.lines.map((width, i) => (
                   <Skeleton
@@ -170,7 +173,9 @@ export const RealTimeMonitoring = () => {
             </motion.div>
           ))}
         </AnimatePresence>
+        {/* <div className="absolute z-10 w-full bottom-0 h-20 bg-red-100" /> */}
       </div>
+      <div className="absolute z-10 w-full bottom-0 h-32 bg-gradient-to-t from-background via-background/80 to-transparent" />
     </div>
   )
 }

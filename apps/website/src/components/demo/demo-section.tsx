@@ -8,9 +8,7 @@ export const DemoSection = () => {
         <p className="font-mono text-center">Monitor your messages as they are processed in real time</p>
       </div>
 
-      <div className="border mt-14">
-        <RealTimeMonitoring />
-      </div>
+      <RealTimeMonitoring className="mt-14" />
     </Container>
   )
 }

@@ -14,8 +14,10 @@ const Page = () => {
     <div>
       <P />
 
-      <h1 className="font-mono text-2xl sm:text-4xl mt-16 text-center text-balance leading-snug">
-        DX focused inbound email service at scale
+      <h1 className="font-mono text-2xl sm:text-4xl mt-16 text-center text-balance leading-relaxed">
+        The inbound webhook service
+        <br />
+        <span className="font-bold">for developers</span>
       </h1>
 
       <div className="mb-24">
