@@ -18,9 +18,9 @@ export const RoleSelect = ({ team, member }: Props) => {
   const editRoleMutation = useMutation(
     trpc.teams.editRole.mutationOptions({
       onMutate: (values) => {
-        const previousData = queryClient.getQueryData(trpc.teams.getBySlug.queryKey({ slug: team.slug }))
+        const previousData = queryClient.getQueryData(trpc.teams.getBySlug.queryKey({ teamSlug: team.slug }))
 
-        queryClient.setQueryData(trpc.teams.getBySlug.queryKey({ slug: team.slug }), (old) => {
+        queryClient.setQueryData(trpc.teams.getBySlug.queryKey({ teamSlug: team.slug }), (old) => {
           if (!old) {
             return old
           }
@@ -44,7 +44,7 @@ export const RoleSelect = ({ team, member }: Props) => {
         })
 
         // Revert the role to the previous value
-        queryClient.setQueryData(trpc.teams.getBySlug.queryKey({ slug: team.slug }), context?.previousData)
+        queryClient.setQueryData(trpc.teams.getBySlug.queryKey({ teamSlug: team.slug }), context?.previousData)
       },
     }),
   )

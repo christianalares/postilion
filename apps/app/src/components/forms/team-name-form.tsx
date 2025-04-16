@@ -21,7 +21,7 @@ export const TeamNameForm = () => {
   const teamSlug = useTeamSlug()
   const queryClient = useQueryClient()
 
-  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ teamSlug }))
 
   const updateTeamMutation = useMutation(
     trpc.teams.update.mutationOptions({
@@ -45,7 +45,7 @@ export const TeamNameForm = () => {
 
   const handleSubmit = form.handleSubmit(async (data) => {
     updateTeamMutation.mutate({
-      slug: teamSlug,
+      teamSlug,
       data: {
         name: data.teamName,
       },

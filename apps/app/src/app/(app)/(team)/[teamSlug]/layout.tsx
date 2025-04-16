@@ -19,7 +19,7 @@ const TeamLayout = async ({ children, params }: Props) => {
   const { teamSlug } = await params
 
   prefetch(trpc.users.me.queryOptions())
-  prefetch(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  prefetch(trpc.teams.getBySlug.queryOptions({ teamSlug }))
   prefetch(trpc.teams.getForUser.queryOptions())
 
   return (

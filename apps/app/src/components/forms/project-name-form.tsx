@@ -30,7 +30,7 @@ export const ProjectNameForm = () => {
       onSuccess: () => {
         toast.success('Project name updated')
         queryClient.invalidateQueries(trpc.projects.getBySlug.queryFilter({ teamSlug, projectSlug }))
-        queryClient.invalidateQueries(trpc.projects.getForTeam.queryFilter({ slug: teamSlug }))
+        queryClient.invalidateQueries(trpc.projects.getForTeam.queryFilter({ teamSlug }))
       },
       onError: (error) => {
         toast.error('Error updating project name', {

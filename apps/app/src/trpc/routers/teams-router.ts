@@ -5,7 +5,7 @@ import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
-import { hasTeamRole, isMemberOfTeam } from '../middlewares/team'
+import { isTeamMember, isTeamOwner } from '../middlewares/team'
 
 const checkTrialEnded = authProcedure
   .input(
@@ -13,6 +13,7 @@ const checkTrialEnded = authProcedure
       teamSlug: z.string(),
     }),
   )
+  .use(isTeamMember)
   .query(async ({ ctx, input }) => {
     const team = await queries.teams.checkTrialEnded(ctx.prisma, {
       teamSlug: input.teamSlug,
@@ -31,14 +32,14 @@ const checkTrialEnded = authProcedure
 const getBySlug = authProcedure
   .input(
     z.object({
-      slug: z.string(),
+      teamSlug: z.string(),
     }),
   )
-  .use(isMemberOfTeam)
+  .use(isTeamMember)
   .query(async ({ input, ctx }) => {
     const team = await queries.teams
       .getBySlug(ctx.prisma, {
-        slug: input.slug,
+        slug: input.teamSlug,
       })
       .catch(() => {
         throw new TRPCError({
@@ -60,7 +61,7 @@ const getBySlug = authProcedure
 const update = authProcedure
   .input(
     z.object({
-      slug: z.string(),
+      teamSlug: z.string(),
       data: z
         .object({
           name: z.string(),
@@ -68,11 +69,11 @@ const update = authProcedure
         .partial(),
     }),
   )
-  .use(hasTeamRole('OWNER'))
+  .use(isTeamOwner)
   .mutation(async ({ ctx, input }) => {
     const updatedTeam = await mutations.teams
       .updateTeam(ctx.prisma, {
-        teamSlug: input.slug,
+        teamSlug: input.teamSlug,
         data: {
           name: input.data.name,
         },
@@ -141,41 +142,12 @@ const leave = authProcedure
       teamSlug: z.string(),
     }),
   )
-  .mutation(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team
-      .findUnique({
-        where: {
-          slug: input.teamSlug,
-        },
-        include: {
-          members: true,
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to leave team',
-        })
-      })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
-    const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userOnTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    // We have already checked that the user is on the team, so we can safely check if they are the last member
-    const isLastMember = team.members.length === 1
+  .use(isTeamMember)
+  .mutation(async ({ ctx }) => {
+    // We have already checked that the user is on the team in the middleware
+    // so we can safely check if it is only one member left, because if it is,
+    // the user is that member
+    const isLastMember = ctx.team.members.length === 1
 
     if (isLastMember) {
       throw new TRPCError({
@@ -186,7 +158,7 @@ const leave = authProcedure
 
     const leftTeam = await mutations.teams.leaveTeam(ctx.prisma, {
       userId: ctx.user.id,
-      teamId: team.id,
+      teamId: ctx.team.id,
     })
 
     return leftTeam
@@ -200,52 +172,16 @@ const editRole = authProcedure
       role: z.nativeEnum(ENUMS.TEAM_ROLE_ENUM),
     }),
   )
+  .use(isTeamOwner)
   .mutation(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team
-      .findUnique({
-        where: { slug: input.teamSlug },
-        include: {
-          members: true,
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to edit role',
-        })
-      })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
-    const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userOnTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (userOnTeam.role !== 'OWNER') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not an owner of this team',
-      })
-    }
-
     const updatedUserOnTeam = await mutations.teams.editRole(ctx.prisma, {
-      teamId: team.id,
+      teamId: ctx.team.id,
       userId: input.userId,
       role: input.role,
     })
 
     ctx.analyticsClient.track('team_member_role_updated', {
-      team_id: team.id,
+      team_id: ctx.team.id,
       user_id: input.userId,
       role: input.role,
     })

@@ -3,15 +3,12 @@ import type { PrismaClient } from '../client'
 export const getProjectsForTeam = async (
   prisma: PrismaClient,
   input: {
-    teamSlug: string
-    userId: string
+    teamId: string
   },
 ) => {
   const projectsForTeam = await prisma.project.findMany({
     where: {
-      team: {
-        slug: input.teamSlug,
-      },
+      team_id: input.teamId,
     },
     select: {
       id: true,
@@ -36,22 +33,13 @@ export const getProjectsForTeam = async (
 export const getProjectBySlug = async (
   prisma: PrismaClient,
   input: {
-    teamSlug: string
+    teamId: string
     projectSlug: string
-    userId: string
   },
 ) => {
   const project = await prisma.project.findFirst({
     where: {
-      team: {
-        slug: input.teamSlug,
-        // Make sure the user is a member of the team that the project belongs to
-        members: {
-          some: {
-            user_id: input.userId,
-          },
-        },
-      },
+      team_id: input.teamId,
       slug: input.projectSlug,
     },
     select: {

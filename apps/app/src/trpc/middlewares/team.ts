@@ -1,13 +1,12 @@
-import type { TEAM_ROLE_ENUM } from '@postilion/db'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { t } from '../init'
 
 const teamSlugSchema = z.object({
-  slug: z.string(),
+  teamSlug: z.string(),
 })
 
-export const isMemberOfTeam = t.middleware(async ({ ctx, input, next }) => {
+export const isTeamMember = t.middleware(async ({ ctx, input, next }) => {
   if (!ctx.user) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
@@ -15,23 +14,20 @@ export const isMemberOfTeam = t.middleware(async ({ ctx, input, next }) => {
     })
   }
 
-  const parsedInput = teamSlugSchema.safeParse(input)
+  const user = ctx.user
 
-  if (!parsedInput.success) {
-    throw new TRPCError({
-      code: 'BAD_REQUEST',
-      message: 'Invalid team id',
-    })
-  }
+  const { teamSlug } = teamSlugSchema.parse(input)
 
   const team = await ctx.prisma.team.findFirst({
     where: {
-      slug: parsedInput.data.slug,
+      slug: teamSlug,
     },
-    include: {
+    select: {
+      id: true,
+      subscription_id: true,
       members: {
-        include: {
-          user: true,
+        select: {
+          user_id: true,
         },
       },
     },
@@ -44,72 +40,75 @@ export const isMemberOfTeam = t.middleware(async ({ ctx, input, next }) => {
     })
   }
 
-  if (!team.members.some((member) => member.user_id === ctx.user?.id)) {
+  const memberOnTeam = team.members.find((member) => member.user_id === user.id)
+
+  if (!memberOnTeam) {
     throw new TRPCError({
       code: 'FORBIDDEN',
       message: 'You are not a member of this team',
     })
   }
 
-  return next()
+  return next({
+    ctx: {
+      ...ctx,
+      user,
+      team,
+    },
+  })
 })
 
-export const hasTeamRole = (role: TEAM_ROLE_ENUM) =>
-  t.middleware(async ({ ctx, input, next }) => {
-    if (!ctx.user) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'You must be logged in to access this resource',
-      })
-    }
+export const isTeamOwner = t.middleware(async ({ ctx, input, next }) => {
+  if (!ctx.user) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'You must be logged in to access this resource',
+    })
+  }
 
-    const parsedInput = teamSlugSchema.safeParse(input)
+  const user = ctx.user
 
-    if (!parsedInput.success) {
-      throw new TRPCError({
-        code: 'BAD_REQUEST',
-        message: 'Invalid team id',
-      })
-    }
+  const { teamSlug } = teamSlugSchema.parse(input)
 
-    const team = await ctx.prisma.team
-      .findFirst({
-        where: {
-          slug: parsedInput.data.slug,
+  const team = await ctx.prisma.team.findFirst({
+    where: {
+      slug: teamSlug,
+    },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      subscription_id: true,
+      members: {
+        select: {
+          role: true,
+          user_id: true,
         },
-        include: {
-          members: true,
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to check if user role',
-        })
-      })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
-    const memberInTeam = team.members.find((member) => member.user_id === ctx.user?.id)
-
-    if (!memberInTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (memberInTeam.role !== role) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You do not have permission to do that',
-      })
-    }
-
-    return next()
+      },
+    },
   })
+
+  if (!team) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Team not found',
+    })
+  }
+
+  const memberOnTeam = team.members.find((member) => member.user_id === user.id)
+
+  if (memberOnTeam?.role !== 'OWNER') {
+    throw new TRPCError({
+      code: 'FORBIDDEN',
+      message: 'You are not an owner of this team',
+    })
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      user,
+      team,
+    },
+  })
+})

@@ -12,7 +12,7 @@ type Params = Promise<{
 const TeamPage = async ({ params }: { params: Params }) => {
   const { teamSlug } = await params
 
-  prefetch(trpc.projects.getForTeam.queryOptions({ slug: teamSlug }))
+  prefetch(trpc.projects.getForTeam.queryOptions({ teamSlug }))
 
   return (
     <HydrateClient>

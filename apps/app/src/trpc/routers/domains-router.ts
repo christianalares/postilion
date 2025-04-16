@@ -3,6 +3,7 @@ import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
+import { isTeamMember, isTeamOwner } from '../middlewares/team'
 
 const getForTeam = authProcedure
   .input(
@@ -10,38 +11,11 @@ const getForTeam = authProcedure
       teamSlug: z.string(),
     }),
   )
-  .query(async ({ ctx, input }) => {
-    const userOnTeam = await ctx.prisma.userOnTeam
-      .findFirst({
-        where: {
-          team: {
-            slug: input.teamSlug,
-          },
-          user_id: ctx.user.id,
-        },
-        include: {
-          team: true,
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Could not fetch user on team',
-        })
-      })
-
-    if (!userOnTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    const { team } = userOnTeam
-
+  .use(isTeamMember)
+  .query(async ({ ctx }) => {
     const domains = await queries.domains
       .getByTeamId(ctx.prisma, {
-        teamId: team.id,
+        teamId: ctx.team.id,
       })
       .catch(() => {
         throw new TRPCError({
@@ -81,6 +55,7 @@ const getByDomain = authProcedure
       domain: z.string(),
     }),
   )
+  .use(isTeamMember)
   .query(async ({ ctx, input }) => {
     const domain = await queries.domains
       .getByDomainName(ctx.prisma, {
@@ -124,6 +99,7 @@ const verify = authProcedure
       domain: z.string(),
     }),
   )
+  .use(isTeamMember)
   .mutation(async ({ ctx, input }) => {
     const domain = await queries.domains
       .getByDomainName(ctx.prisma, {
@@ -167,50 +143,18 @@ const create = authProcedure
       teamSlug: z.string(),
     }),
   )
+  .use(isTeamOwner)
   .mutation(async ({ ctx, input }) => {
-    const userOnTeam = await ctx.prisma.userOnTeam
-      .findFirst({
-        where: {
-          team: {
-            slug: input.teamSlug,
-          },
-          user_id: ctx.user.id,
-        },
-        include: {
-          team: true,
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Could not fetch user on team',
-        })
-      })
-
-    if (!userOnTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (userOnTeam.role !== 'OWNER') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not an owner of this team',
-      })
-    }
-
     const createdDomainOnForwardEmail = await ctx.forwardEmailClient.createDomain({ domain: input.domain })
 
     const createdDomain = await mutations.domains
       .createDomain(ctx.prisma, {
-        teamId: userOnTeam.team_id,
+        teamId: ctx.team.id,
         domainName: input.domain,
         forwardemailId: createdDomainOnForwardEmail.id,
       })
       .catch(() => {
-        // TODO: Rollback the domain on forward email
+        // TODO: Rollback the domain (delete it) on forward email
 
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
@@ -221,8 +165,8 @@ const create = authProcedure
     ctx.analyticsClient.track('domain_created', {
       domain_id: createdDomain.id,
       domain_name: createdDomain.domain,
-      team_id: userOnTeam.team_id,
-      team_name: userOnTeam.team.name,
+      team_id: ctx.team.id,
+      team_name: ctx.team.name,
     })
 
     return createdDomain

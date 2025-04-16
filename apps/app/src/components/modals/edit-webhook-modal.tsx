@@ -59,6 +59,7 @@ export const EditWebhookModal = ({ webhook }: Props) => {
         <WebhookForm
           onSubmit={(values) => {
             updateWebhookMutation.mutate({
+              teamSlug,
               id: webhook.id,
               data: {
                 url: values.url.trim(),

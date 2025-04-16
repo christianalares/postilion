@@ -1,3 +1,4 @@
+export type { PrismaPromise } from '../generated/client'
 import { createPrismaClient } from './client-edge'
 
 const globalForPrisma = global as unknown as { prisma: ReturnType<typeof createPrismaClient> }

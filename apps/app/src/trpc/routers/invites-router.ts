@@ -6,6 +6,7 @@ import { TRPCError } from '@trpc/server'
 import { after } from 'next/server'
 import { z } from 'zod'
 import { authProcedure, baseProcedure, createTRPCRouter } from '../init'
+import { isTeamMember, isTeamOwner } from '../middlewares/team'
 
 const create = authProcedure
   .input(
@@ -15,52 +16,38 @@ const create = authProcedure
       role: z.nativeEnum(TEAM_ROLE_ENUM),
     }),
   )
+  .use(isTeamOwner)
   .mutation(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team
-      .findUnique({
-        where: {
-          slug: input.teamSlug,
-        },
-        include: {
-          members: {
-            include: {
-              user: true,
+    const teamData = await ctx.prisma.team.findUnique({
+      where: {
+        id: ctx.team.id,
+      },
+      select: {
+        members: {
+          select: {
+            user: {
+              select: {
+                email: true,
+              },
             },
           },
-          invites: true,
         },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Team not found',
-        })
-      })
+        invites: {
+          select: {
+            email: true,
+          },
+        },
+      },
+    })
 
-    if (!team) {
+    if (!teamData) {
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Team not found',
       })
     }
 
-    const userOnTeam = team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userOnTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (userOnTeam.role !== 'OWNER') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not an owner of this team',
-      })
-    }
-
-    const existingInvite = team.invites.some((invite) => invite.email === input.email)
+    const existingInvite = teamData.invites.some((invite) => invite.email === input.email)
 
     if (existingInvite) {
       throw new TRPCError({
@@ -69,7 +56,7 @@ const create = authProcedure
       })
     }
 
-    const existingMember = team.members.some((member) => member.user.email === input.email)
+    const existingMember = teamData.members.some((member) => member.user.email === input.email)
 
     if (existingMember) {
       throw new TRPCError({
@@ -83,7 +70,7 @@ const create = authProcedure
         code: createShortId(),
         email: input.email,
         role: input.role,
-        teamId: team.id,
+        teamId: ctx.team.id,
         createdByUserId: ctx.user.id,
       })
       .catch(() => {
@@ -97,8 +84,8 @@ const create = authProcedure
       invite_id: createdInvite.id,
       invite_email: createdInvite.email,
       invite_role: createdInvite.role,
-      team_id: team.id,
-      team_name: team.name,
+      team_id: ctx.team.id,
+      team_name: ctx.team.name,
     })
 
     after(
@@ -109,7 +96,7 @@ const create = authProcedure
           code: createdInvite.code,
           email: input.email,
           team: {
-            name: team.name,
+            name: ctx.team.name,
           },
           invitedBy: {
             name: ctx.user.name,
@@ -129,33 +116,11 @@ const getForTeam = authProcedure
       teamSlug: z.string(),
     }),
   )
-  .query(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team
-      .findUnique({
-        where: {
-          slug: input.teamSlug,
-        },
-        include: {
-          members: true,
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Team not found',
-        })
-      })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
+  .use(isTeamMember)
+  .query(async ({ ctx }) => {
     const invites = await queries.invites
       .getByTeamId(ctx.prisma, {
-        teamId: team.id,
+        teamId: ctx.team.id,
       })
       .catch(() => {
         throw new TRPCError({
@@ -170,21 +135,16 @@ const getForTeam = authProcedure
 const cancel = authProcedure
   .input(
     z.object({
+      teamSlug: z.string(),
       inviteId: z.string(),
     }),
   )
+  .use(isTeamOwner)
   .mutation(async ({ ctx, input }) => {
     const invite = await ctx.prisma.teamInvite
       .findUnique({
         where: {
           id: input.inviteId,
-        },
-        include: {
-          team: {
-            include: {
-              members: true,
-            },
-          },
         },
       })
       .catch(() => {
@@ -198,22 +158,6 @@ const cancel = authProcedure
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Invite not found',
-      })
-    }
-
-    const userOnTeam = invite.team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userOnTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (userOnTeam.role !== 'OWNER') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not an owner of this team',
       })
     }
 

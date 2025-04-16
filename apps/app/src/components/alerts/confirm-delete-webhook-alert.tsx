@@ -44,7 +44,7 @@ export const ConfirmDeleteWebhookAlert = ({ webhookId }: Props) => {
         <Button
           loading={deleteWebhookMutation.isPending}
           variant="destructive"
-          onClick={() => deleteWebhookMutation.mutate({ id: webhookId })}
+          onClick={() => deleteWebhookMutation.mutate({ teamSlug, id: webhookId })}
         >
           Delete
         </Button>
