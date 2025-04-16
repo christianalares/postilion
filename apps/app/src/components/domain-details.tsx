@@ -57,6 +57,7 @@ export const DomainDetails = () => {
               size="sm"
               onClick={() => {
                 verifyMutation.mutate({
+                  teamSlug,
                   domain: domain.domain,
                 })
               }}

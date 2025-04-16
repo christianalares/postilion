@@ -97,6 +97,7 @@ const getByDomain = authProcedure
 const verify = authProcedure
   .input(
     z.object({
+      teamSlug: z.string(),
       domain: z.string(),
     }),
   )
