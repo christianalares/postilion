@@ -8,9 +8,8 @@ const AuthorizedPage = async () => {
     headers: await headers(),
   })
 
-  // This should never happen as it's already doing this in the middleware so it's more for type safety
   if (!session) {
-    redirect('/sign-in')
+    redirect('/login')
   }
 
   const firstFoundTeam = await prisma.team.findFirst({

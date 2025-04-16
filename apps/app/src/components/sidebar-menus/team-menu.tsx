@@ -2,11 +2,22 @@
 
 import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useSelectedLayoutSegments } from 'next/navigation'
+import { popSheet } from '../sheets'
 import { Menu } from './menu-items'
 
-export const TeamMenu = () => {
+type Props = {
+  mobile?: boolean
+}
+
+export const TeamMenu = ({ mobile }: Props) => {
   const teamSlug = useTeamSlug()
   const segments = useSelectedLayoutSegments()
+
+  const onClick = () => {
+    if (mobile) {
+      popSheet('mobileMenuSheet')
+    }
+  }
 
   return (
     <Menu
@@ -16,18 +27,21 @@ export const TeamMenu = () => {
           href: `/${teamSlug}`,
           icon: 'home',
           label: 'Projects',
+          onClick,
         },
         {
           isActive: segments[0] === 'domains',
           href: `/${teamSlug}/domains`,
           icon: 'globe',
           label: 'Domains',
+          onClick,
         },
         {
           isActive: segments[0] === 'settings',
           href: `/${teamSlug}/settings`,
           icon: 'settings',
           label: 'Settings',
+          onClick,
         },
       ]}
     />

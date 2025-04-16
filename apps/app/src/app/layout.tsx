@@ -6,7 +6,7 @@ import { TRPCReactProvider } from '@/trpc/client'
 import { AnalyticsProvider } from '@postilion/analytics/provider'
 import type { Metadata } from 'next'
 import './globals.css'
-
+import { SheetProvider } from '@/components/sheets'
 // Allow custom CSS properties in React
 declare module 'react' {
   interface CSSProperties {
@@ -38,6 +38,7 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             {children}
 
+            <SheetProvider />
             <ModalProvider />
             <AlertProvider />
 

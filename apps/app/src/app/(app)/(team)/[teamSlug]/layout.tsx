@@ -28,18 +28,19 @@ const TeamLayout = async ({ children, params }: Props) => {
 
       <HydrateClient>
         <div className="grid grid-rows-[auto_1fr] h-full">
-          <Header>
+          <Header layout="team">
             <div className="flex gap-2 items-center">
               <Suspense fallback={<TeamsDropdownSkeleton />}>
                 <TeamsDropdown />
               </Suspense>
             </div>
           </Header>
+
           <div className="flex">
-            <Sidebar>
+            <Sidebar className="hidden sm:block">
               <TeamMenu />
             </Sidebar>
-            <main className="flex-1 p-8">{children}</main>
+            <main className="flex-1">{children}</main>
           </div>
         </div>
       </HydrateClient>

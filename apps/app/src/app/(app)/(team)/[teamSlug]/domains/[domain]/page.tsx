@@ -4,12 +4,13 @@ import { Suspense } from 'react'
 
 type Params = Promise<{
   domain: string
+  teamSlug: string
 }>
 
 const DomainPage = async ({ params }: { params: Params }) => {
-  const { domain } = await params
+  const { domain, teamSlug } = await params
 
-  prefetch(trpc.domains.getByDomain.queryOptions({ domain }))
+  prefetch(trpc.domains.getByDomain.queryOptions({ teamSlug, domain }))
 
   return (
     <HydrateClient>

@@ -39,7 +39,7 @@ export const WebhooksList = () => {
             </TableCell>
             <TableCell>
               <div className="flex items-center gap-2">
-                <p className="font-mono text-sm">{webhook.url}</p>
+                <p className="font-mono text-sm whitespace-normal">{webhook.url}</p>
                 <CopyToClipboardButton text={webhook.url} />
               </div>
             </TableCell>

@@ -15,14 +15,15 @@ const TeamSettingsPage = async ({ params }: { params: Params }) => {
 
   return (
     <HydrateClient>
-      <div className="max-w-4xl space-y-8">
-        <Suspense fallback={<TeamNameFormSkeleton />}>
-          <TeamNameForm />
-        </Suspense>
-
-        <Suspense fallback="Loading...">
-          <TeamManagement />
-        </Suspense>
+      <div className="p-4">
+        <div className="max-w-4xl space-y-8">
+          <Suspense fallback={<TeamNameFormSkeleton />}>
+            <TeamNameForm />
+          </Suspense>
+          <Suspense fallback="Loading...">
+            <TeamManagement />
+          </Suspense>
+        </div>
       </div>
     </HydrateClient>
   )

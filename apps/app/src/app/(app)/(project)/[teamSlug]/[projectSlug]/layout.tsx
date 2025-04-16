@@ -29,7 +29,7 @@ const ProjectLayout = async ({ children, params }: Props) => {
   return (
     <HydrateClient>
       <div className="grid grid-rows-[auto_1fr] h-full">
-        <Header>
+        <Header layout="project">
           <div className="flex gap-2 items-center">
             <Suspense fallback={<TeamsDropdownSkeleton />}>
               <TeamsDropdown />
@@ -40,11 +40,12 @@ const ProjectLayout = async ({ children, params }: Props) => {
             </Suspense>
           </div>
         </Header>
+
         <div className="flex">
-          <Sidebar>
+          <Sidebar className="hidden sm:block">
             <ProjectMenu />
           </Sidebar>
-          <main className="flex-1 p-8">{children}</main>
+          <main className="flex-1">{children}</main>
         </div>
       </div>
     </HydrateClient>
