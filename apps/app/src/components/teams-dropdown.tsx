@@ -29,9 +29,10 @@ export const TeamsDropdown = () => {
 
   return (
     <div className="flex items-center gap-1">
-      <Link href={`/${team.slug}`} className="text-sm font-medium hover:underline underline-offset-4">
+      <Link href={`/${team.slug}`} className="text-sm font-medium hover:underline underline-offset-4 line-clamp-1">
         {team.name}
       </Link>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">

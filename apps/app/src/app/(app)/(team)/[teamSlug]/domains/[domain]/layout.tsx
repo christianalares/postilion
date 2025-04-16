@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/page-header'
 import { Icon } from '@/components/ui/icon'
 import Link from 'next/link'
 
@@ -15,12 +16,19 @@ const DomainSettingsLayout = async ({ children, params }: Props) => {
 
   return (
     <div>
-      <Link href={`/${teamSlug}/domains`} className="inline-flex items-center gap-2 group text-muted-foreground">
-        <Icon name="arrowLeft" className="group-hover:-translate-x-1 transition-transform duration-500" />
-        Back to domains
-      </Link>
+      <PageHeader
+        heading={
+          <Link
+            href={`/${teamSlug}/domains`}
+            className="text-base inline-flex items-center gap-2 group text-muted-foreground"
+          >
+            <Icon name="arrowLeft" className="group-hover:-translate-x-1 transition-transform duration-500" />
+            Back to domains
+          </Link>
+        }
+      />
 
-      <div className="mt-8">{children}</div>
+      <div className="p-4">{children}</div>
     </div>
   )
 }

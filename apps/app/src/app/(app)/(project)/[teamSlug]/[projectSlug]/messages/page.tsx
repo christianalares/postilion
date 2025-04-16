@@ -18,9 +18,11 @@ const ProjectPage = async ({ params }: Props) => {
 
   return (
     <HydrateClient>
-      <Suspense fallback={<div>Loading...</div>}>
-        <MessagesList />
-      </Suspense>
+      <div className="p-4 h-full">
+        <Suspense fallback={<div>Loading...</div>}>
+          <MessagesList />
+        </Suspense>
+      </div>
     </HydrateClient>
   )
 }

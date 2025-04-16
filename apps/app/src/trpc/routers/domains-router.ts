@@ -52,6 +52,7 @@ const getForTeam = authProcedure
 const getByDomain = authProcedure
   .input(
     z.object({
+      teamSlug: z.string(),
       domain: z.string(),
     }),
   )

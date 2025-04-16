@@ -18,10 +18,12 @@ const BillingSettingsPage = async ({ params }: Props) => {
 
   return (
     <HydrateClient>
-      <div className="max-w-4xl">
-        <Suspense fallback={<ProductsListSkeleton />}>
-          <ProductsList />
-        </Suspense>
+      <div className="p-4">
+        <div className="max-w-4xl">
+          <Suspense fallback={<ProductsListSkeleton />}>
+            <ProductsList />
+          </Suspense>
+        </div>
       </div>
     </HydrateClient>
   )

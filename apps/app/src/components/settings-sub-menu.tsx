@@ -10,7 +10,7 @@ export const SettingsSubMenu = () => {
   const segment = useSelectedLayoutSegment()
 
   return (
-    <nav>
+    <nav className="p-4">
       <ul className="flex items-center gap-4">
         <MenuItem isActive={segment === null} href={`/${teamSlug}/settings`} label="General" />
         <MenuItem isActive={segment === 'billing'} href={`/${teamSlug}/settings/billing`} label="Billing" />

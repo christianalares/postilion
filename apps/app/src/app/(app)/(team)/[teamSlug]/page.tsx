@@ -17,9 +17,12 @@ const TeamPage = async ({ params }: { params: Params }) => {
   return (
     <HydrateClient>
       <ProjectsHeader />
-      <Suspense fallback={<ProjectsListSkeleton />}>
-        <ProjectsList />
-      </Suspense>
+
+      <div className="p-4">
+        <Suspense fallback={<ProjectsListSkeleton />}>
+          <ProjectsList />
+        </Suspense>
+      </div>
     </HydrateClient>
   )
 }

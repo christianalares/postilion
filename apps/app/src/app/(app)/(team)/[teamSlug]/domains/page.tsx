@@ -14,11 +14,14 @@ const TeamSettingsDomainsPage = async ({ params }: { params: Params }) => {
 
   return (
     <HydrateClient>
-      {/* TODO: Skeleton */}
       <DomainHeader />
-      <Suspense fallback={<div>Loading...</div>}>
-        <DomainsList />
-      </Suspense>
+
+      <div className="p-4">
+        {/* TODO: Skeleton */}
+        <Suspense fallback={<div>Loading...</div>}>
+          <DomainsList />
+        </Suspense>
+      </div>
     </HydrateClient>
   )
 }

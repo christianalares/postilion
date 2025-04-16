@@ -15,6 +15,7 @@ import {
   LayoutDashboard,
   Loader2,
   type LucideProps,
+  Menu,
   MessageCircle,
   Monitor,
   Moon,
@@ -102,6 +103,7 @@ const icons = {
   image: Image,
   dashboard: LayoutDashboard,
   triangleAlert: TriangleAlert,
+  menu: Menu,
 }
 
 export type IconName = keyof typeof icons

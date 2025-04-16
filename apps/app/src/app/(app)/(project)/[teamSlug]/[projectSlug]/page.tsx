@@ -20,7 +20,7 @@ const ProjectPage = async ({ params }: Props) => {
 
   return (
     <HydrateClient>
-      <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 p-4">
         <Suspense fallback={<MessagesChartSkeleton />}>
           <MessagesChart />
         </Suspense>

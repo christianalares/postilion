@@ -12,8 +12,8 @@ type Props = {
 
 export const PageHeader = ({ heading, cta }: Props) => {
   return (
-    <div className="flex justify-between items-center h-12 mb-6 pb-4 border-b">
-      <h1 className="text-xl font-mono">{heading}</h1>
+    <div className="flex justify-between items-center border-b px-4 h-16">
+      {typeof heading === 'string' ? <h1 className="text-xl font-mono">{heading}</h1> : heading}
       {!!cta && (
         <Button size="sm" onClick={cta.onClick}>
           {cta.icon && <Icon name={cta.icon} className="size-4" />}

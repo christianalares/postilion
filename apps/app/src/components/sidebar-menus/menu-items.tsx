@@ -10,6 +10,7 @@ type MenuItem = {
   href: LinkProps['href']
   icon: IconName
   label: string
+  onClick?: LinkProps['onClick']
 }
 
 type Props = {
@@ -21,8 +22,10 @@ export const Menu = ({ items }: Props) => {
     <nav>
       <ul>
         {items.map((item) => (
-          <li key={item.href.toString()} className="border-b group-has-[.trial-countdown]:first:border-t">
+          // group-has-[.trial-countdown]:first:border-t
+          <li key={item.href.toString()} className="border-b">
             <Link
+              onClick={item.onClick}
               href={item.href}
               className={cn('flex items-center hover:bg-muted/50 transition-colors gap-2 py-3 px-6 relative')}
             >

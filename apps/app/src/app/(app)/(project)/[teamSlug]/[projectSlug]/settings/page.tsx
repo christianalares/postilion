@@ -25,20 +25,20 @@ const ProjectSettingsPage = async ({ params }: Props) => {
     <HydrateClient>
       <ProjectSettingsHeader />
 
-      <div className="max-w-4xl space-y-8">
-        <Suspense fallback={<ProjectNameFormSkeleton />}>
-          <ProjectNameForm />
-        </Suspense>
-
-        <Suspense fallback={<ConnectedDomainFormSkeleton />}>
-          <ConnectedDomainForm />
-        </Suspense>
-
-        {projectSlug !== 'default' && (
-          <Suspense fallback={<DeleteProjectFormSkeleton />}>
-            <DeleteProjectForm />
+      <div className="p-4">
+        <div className="max-w-4xl space-y-8">
+          <Suspense fallback={<ProjectNameFormSkeleton />}>
+            <ProjectNameForm />
           </Suspense>
-        )}
+          <Suspense fallback={<ConnectedDomainFormSkeleton />}>
+            <ConnectedDomainForm />
+          </Suspense>
+          {projectSlug !== 'default' && (
+            <Suspense fallback={<DeleteProjectFormSkeleton />}>
+              <DeleteProjectForm />
+            </Suspense>
+          )}
+        </div>
       </div>
     </HydrateClient>
   )

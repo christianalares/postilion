@@ -11,16 +11,18 @@ import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 
+import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { useMutation } from '@tanstack/react-query'
 import { useQueryClient } from '@tanstack/react-query'
 
 export const DomainDetails = () => {
+  const teamSlug = useTeamSlug()
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const domainParam = useDomain()
 
-  const { data: domain } = useSuspenseQuery(trpc.domains.getByDomain.queryOptions({ domain: domainParam }))
+  const { data: domain } = useSuspenseQuery(trpc.domains.getByDomain.queryOptions({ teamSlug, domain: domainParam }))
   const verifyMutation = useMutation(
     trpc.domains.verify.mutationOptions({
       onSuccess: ({ success }) => {
@@ -128,7 +130,7 @@ export const DomainDetails = () => {
 
             <TableCell className="font-mono">
               <div className="flex items-center gap-2">
-                {`forward-email-site-verification=${domain.verification_record}`}
+                <p className="whitespace-normal">{`forward-email-site-verification=${domain.verification_record}`}</p>
                 <CopyToClipboardButton text={`forward-email-site-verification=${domain.verification_record}`} />
               </div>
             </TableCell>
@@ -186,6 +188,28 @@ export const DomainDetailsSkeleton = () => {
         </TableHeader>
 
         <TableBody>
+          <TableRow>
+            <TableCell className="h-11">
+              <Skeleton className="w-full h-3" />
+            </TableCell>
+
+            <TableCell className="h-11">
+              <Skeleton className="w-full h-3" />
+            </TableCell>
+
+            <TableCell className="h-11">
+              <Skeleton className="w-full h-3" />
+            </TableCell>
+
+            <TableCell className="h-11">
+              <Skeleton className="w-[337px] h-3" />
+            </TableCell>
+
+            <TableCell className="h-11">
+              <Skeleton className="w-full h-3" />
+            </TableCell>
+          </TableRow>
+
           <TableRow>
             <TableCell className="h-11">
               <Skeleton className="w-full h-3" />

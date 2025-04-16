@@ -6,7 +6,7 @@ type Props = {
 
 const TeamSettingsLayout = ({ children }: Props) => {
   return (
-    <div className="space-y-6">
+    <div>
       <SettingsSubMenu />
       {children}
     </div>

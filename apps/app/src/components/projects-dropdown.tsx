@@ -30,7 +30,10 @@ export const ProjectsDropdown = () => {
 
   return (
     <div className="flex items-center gap-1">
-      <Link href={`/${team.slug}/${project.slug}`} className="text-sm font-medium hover:underline underline-offset-4">
+      <Link
+        href={`/${team.slug}/${project.slug}`}
+        className="text-sm font-medium hover:underline underline-offset-4 line-clamp-1"
+      >
         {project.name}
       </Link>
 
