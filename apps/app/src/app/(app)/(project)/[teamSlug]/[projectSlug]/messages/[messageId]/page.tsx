@@ -4,12 +4,13 @@ import { Suspense } from 'react'
 
 type Params = Promise<{
   messageId: string
+  teamSlug: string
 }>
 
 const MessagePage = async ({ params }: { params: Params }) => {
-  const { messageId } = await params
+  const { messageId, teamSlug } = await params
 
-  prefetch(trpc.messages.getById.queryOptions({ messageId }))
+  prefetch(trpc.messages.getById.queryOptions({ teamSlug, messageId }))
 
   return (
     <HydrateClient>

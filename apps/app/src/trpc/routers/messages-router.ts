@@ -24,6 +24,7 @@ const getForProject = authProcedure
 const getById = authProcedure
   .input(
     z.object({
+      teamSlug: z.string(),
       messageId: z.string(),
     }),
   )

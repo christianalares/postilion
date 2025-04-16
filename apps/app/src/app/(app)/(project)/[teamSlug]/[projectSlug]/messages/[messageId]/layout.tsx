@@ -1,3 +1,4 @@
+import { PageHeader } from '@/components/page-header'
 import { Icon } from '@/components/ui/icon'
 import Link from 'next/link'
 
@@ -15,15 +16,19 @@ const MessageLayout = async ({ children, params }: Props) => {
 
   return (
     <div>
-      <Link href={`/${teamSlug}/${projectSlug}/messages`} className="inline-flex items-center gap-2 group">
-        <Icon
-          name="arrowLeft"
-          className="text-foreground group-hover:-translate-x-1 transition-transform duration-500"
-        />
-        <span className="text-muted-foreground">Back to messages</span>
-      </Link>
+      <PageHeader
+        heading={
+          <Link href={`/${teamSlug}/${projectSlug}/messages`} className="inline-flex items-center gap-2 group">
+            <Icon
+              name="arrowLeft"
+              className="text-foreground group-hover:-translate-x-1 transition-transform duration-500"
+            />
+            <span className="text-muted-foreground">Back to messages</span>
+          </Link>
+        }
+      />
 
-      <div className="mt-8">{children}</div>
+      <div className="p-4">{children}</div>
     </div>
   )
 }

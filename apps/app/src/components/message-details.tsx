@@ -6,13 +6,15 @@ import { Badge, badgeLabelVariants } from './ui/badge'
 import { Icon } from './ui/icon'
 import { Skeleton } from './ui/skeleton'
 
+import { useTeamSlug } from '@/hooks/use-team-slug'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
 export const MessageDetails = () => {
+  const teamSlug = useTeamSlug()
   const trpc = useTRPC()
   const messageId = useMessageId()
 
-  const { data: message } = useSuspenseQuery(trpc.messages.getById.queryOptions({ messageId }))
+  const { data: message } = useSuspenseQuery(trpc.messages.getById.queryOptions({ teamSlug, messageId }))
 
   return (
     <article>
