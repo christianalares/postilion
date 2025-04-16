@@ -24,7 +24,7 @@ export const TeamsDropdown = () => {
 
   const queryClient = useQueryClient()
 
-  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ teamSlug }))
   const { data: teams } = useSuspenseQuery(trpc.teams.getForUser.queryOptions())
 
   return (
@@ -50,7 +50,7 @@ export const TeamsDropdown = () => {
                   href={`/${team.slug}`}
                   className="flex items-center justify-between gap-2"
                   onClick={() => {
-                    queryClient.invalidateQueries(trpc.teams.getBySlug.queryFilter({ slug: team.slug }))
+                    queryClient.invalidateQueries(trpc.teams.getBySlug.queryFilter({ teamSlug: team.slug }))
                   }}
                 >
                   {team.name}

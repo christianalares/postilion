@@ -9,8 +9,8 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 
 export const ProjectsList = () => {
   const trpc = useTRPC()
-  const teamsSlug = useTeamSlug()
-  const { data: projects } = useSuspenseQuery(trpc.projects.getForTeam.queryOptions({ slug: teamsSlug }))
+  const teamSlug = useTeamSlug()
+  const { data: projects } = useSuspenseQuery(trpc.projects.getForTeam.queryOptions({ teamSlug }))
 
   return (
     <ul className="flex flex-wrap gap-4">
@@ -18,7 +18,7 @@ export const ProjectsList = () => {
         <li key={project.id}>
           <Link
             className="px-8 h-28 flex flex-col justify-center border hover:border-accent-foreground/30"
-            href={`/${teamsSlug}/${project.slug}`}
+            href={`/${teamSlug}/${project.slug}`}
           >
             <span className="font-mono">{project.name}</span>
 

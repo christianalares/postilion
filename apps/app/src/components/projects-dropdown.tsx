@@ -23,10 +23,10 @@ export const ProjectsDropdown = () => {
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
 
-  const { data: projects } = useSuspenseQuery(trpc.projects.getForTeam.queryOptions({ slug: teamSlug }))
+  const { data: projects } = useSuspenseQuery(trpc.projects.getForTeam.queryOptions({ teamSlug }))
   const { data: project } = useSuspenseQuery(trpc.projects.getBySlug.queryOptions({ teamSlug, projectSlug }))
 
-  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ teamSlug }))
 
   return (
     <div className="flex items-center gap-1">

@@ -50,7 +50,7 @@ export const AccountTeamsDropdown = () => {
                   href={`/${team.slug}`}
                   className="flex items-center justify-between gap-2"
                   onClick={() => {
-                    queryClient.invalidateQueries(trpc.teams.getBySlug.queryFilter({ slug: team.slug }))
+                    queryClient.invalidateQueries(trpc.teams.getBySlug.queryFilter({ teamSlug: team.slug }))
                   }}
                 >
                   {team.name}

@@ -26,7 +26,6 @@ const ProjectPage = async ({ params }: Props) => {
         </Suspense>
 
         <Suspense fallback={<DashboardInfoSkeleton />}>
-          {/* <DashboardInfoSkeleton /> */}
           <DashboardInfo />
         </Suspense>
       </div>

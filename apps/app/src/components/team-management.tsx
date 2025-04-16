@@ -15,7 +15,7 @@ export const TeamManagement = () => {
   const teamSlug = useTeamSlug()
 
   const { data: me } = useQuery(trpc.users.me.queryOptions())
-  const { data: team } = useQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  const { data: team } = useQuery(trpc.teams.getBySlug.queryOptions({ teamSlug }))
 
   const isOwner = team?.members.some((member) => member.user_id === me?.id && member.role === 'OWNER')
 

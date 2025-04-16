@@ -4,6 +4,7 @@ import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
+import { isTeamMember } from '../middlewares/team'
 
 export const generateSigningKey = () => {
   return crypto.randomBytes(32).toString('hex')
@@ -18,19 +19,13 @@ const create = authProcedure
       method: z.enum(['GET', 'POST', 'PUT', 'DELETE']),
     }),
   )
+  .use(isTeamMember)
   .mutation(async ({ ctx, input }) => {
     const project = await ctx.prisma.project
       .findFirst({
         where: {
           team: { slug: input.teamSlug },
           slug: input.projectSlug,
-        },
-        include: {
-          team: {
-            include: {
-              members: true,
-            },
-          },
         },
       })
       .catch(() => {
@@ -44,15 +39,6 @@ const create = authProcedure
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Project not found',
-      })
-    }
-
-    const userInTeam = project.team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userInTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
       })
     }
 
@@ -81,19 +67,13 @@ const getForProject = authProcedure
       projectSlug: z.string(),
     }),
   )
+  .use(isTeamMember)
   .query(async ({ ctx, input }) => {
     const project = await ctx.prisma.project
       .findFirst({
         where: {
           team: { slug: input.teamSlug },
           slug: input.projectSlug,
-        },
-        include: {
-          team: {
-            include: {
-              members: true,
-            },
-          },
         },
       })
       .catch(() => {
@@ -110,15 +90,6 @@ const getForProject = authProcedure
       })
     }
 
-    const userInTeam = project.team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userInTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
     const webhooks = await queries.webhooks.getForProject(ctx.prisma, {
       projectId: project.id,
     })
@@ -129,6 +100,7 @@ const getForProject = authProcedure
 const update = authProcedure
   .input(
     z.object({
+      teamSlug: z.string(),
       id: z.string(),
       data: z
         .object({
@@ -138,27 +110,18 @@ const update = authProcedure
         .partial(),
     }),
   )
+  .use(isTeamMember)
   .mutation(async ({ ctx, input }) => {
     const webhook = await ctx.prisma.webhook
       .findUnique({
         where: {
           id: input.id,
+          project: {
+            team_id: ctx.team.id,
+          },
         },
         select: {
           id: true,
-          project: {
-            select: {
-              team: {
-                select: {
-                  members: {
-                    select: {
-                      user_id: true,
-                    },
-                  },
-                },
-              },
-            },
-          },
         },
       })
       .catch(() => {
@@ -172,15 +135,6 @@ const update = authProcedure
       throw new TRPCError({
         code: 'NOT_FOUND',
         message: 'Webhook not found',
-      })
-    }
-
-    const userInTeam = webhook.project.team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userInTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
       })
     }
 
@@ -210,65 +164,54 @@ const update = authProcedure
     return updatedWebhook
   })
 
-const _delete = authProcedure.input(z.object({ id: z.string() })).mutation(async ({ ctx, input }) => {
-  const webhook = await ctx.prisma.webhook
-    .findUnique({
-      where: {
-        id: input.id,
-      },
-      select: {
-        id: true,
-        project: {
-          select: {
-            team: {
-              select: {
-                members: {
-                  select: {
-                    user_id: true,
-                  },
-                },
-              },
-            },
+const _delete = authProcedure
+  .input(
+    z.object({
+      teamSlug: z.string(),
+      id: z.string(),
+    }),
+  )
+  .use(isTeamMember)
+  .mutation(async ({ ctx, input }) => {
+    const webhook = await ctx.prisma.webhook
+      .findUnique({
+        where: {
+          id: input.id,
+          project: {
+            team_id: ctx.team.id,
           },
         },
-      },
-    })
-    .catch(() => {
-      throw new TRPCError({
-        code: 'INTERNAL_SERVER_ERROR',
-        message: 'Failed to get webhook',
+        select: {
+          id: true,
+        },
       })
+      .catch(() => {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to get webhook',
+        })
+      })
+
+    if (!webhook) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Webhook not found',
+      })
+    }
+
+    const deletedWebhook = await mutations.webhooks.deleteWekhook(ctx.prisma, {
+      id: webhook.id,
     })
 
-  if (!webhook) {
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: 'Webhook not found',
+    ctx.analyticsClient.track('webhook_deleted', {
+      webhook_id: deletedWebhook.id,
+      webhook_url: deletedWebhook.url,
+      webhook_method: deletedWebhook.method,
+      project_id: deletedWebhook.project_id,
     })
-  }
 
-  const userInTeam = webhook.project.team.members.find((member) => member.user_id === ctx.user.id)
-
-  if (!userInTeam) {
-    throw new TRPCError({
-      code: 'FORBIDDEN',
-      message: 'You are not a member of this team',
-    })
-  }
-
-  const deletedWebhook = await mutations.webhooks.deleteWekhook(ctx.prisma, {
-    id: webhook.id,
+    return deletedWebhook
   })
-
-  ctx.analyticsClient.track('webhook_deleted', {
-    webhook_id: deletedWebhook.id,
-    webhook_url: deletedWebhook.url,
-    webhook_method: deletedWebhook.method,
-    project_id: deletedWebhook.project_id,
-  })
-
-  return deletedWebhook
-})
 
 export const webhooksRouter = createTRPCRouter({
   create,

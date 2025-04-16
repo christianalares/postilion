@@ -48,6 +48,7 @@ export const InvitedMemberDropdown = ({ invite }: Props) => {
           variant="destructive"
           onSelect={() => {
             cancelInviteMutation.mutate({
+              teamSlug,
               inviteId: invite.id,
             })
           }}

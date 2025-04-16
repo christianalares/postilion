@@ -10,7 +10,7 @@ type Params = Promise<{
 const TeamSettingsPage = async ({ params }: { params: Params }) => {
   const { teamSlug } = await params
 
-  prefetch(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  prefetch(trpc.teams.getBySlug.queryOptions({ teamSlug }))
   prefetch(trpc.invites.getForTeam.queryOptions({ teamSlug }))
 
   return (

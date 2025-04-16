@@ -2,6 +2,7 @@ import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
+import { isTeamMember } from '../middlewares/team'
 
 const getStats = authProcedure
   .input(
@@ -11,25 +12,10 @@ const getStats = authProcedure
       by: z.enum(['DAILY', 'WEEKLY', 'MONTHLY']),
     }),
   )
+  .use(isTeamMember)
   .query(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team.findUnique({
-      where: {
-        slug: input.teamSlug,
-      },
-      select: {
-        id: true,
-      },
-    })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
     const stats = await queries.dashboard.getStats(ctx.prisma, {
-      teamId: team.id,
+      teamId: ctx.team.id,
       projectSlug: input.projectSlug,
       by: input.by,
     })
@@ -44,26 +30,11 @@ const getInfo = authProcedure
       projectSlug: z.string(),
     }),
   )
+  .use(isTeamMember)
   .query(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team.findUnique({
-      where: {
-        slug: input.teamSlug,
-      },
-      select: {
-        id: true,
-      },
-    })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
     const project = await queries.dashboard
       .getInfo(ctx.prisma, {
-        teamId: team.id,
+        teamId: ctx.team.id,
         projectSlug: input.projectSlug,
       })
       .catch((error) => {

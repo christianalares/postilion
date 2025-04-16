@@ -4,24 +4,15 @@ import { MESSAGE_SELECT } from '../constants'
 export const getMessagesForProject = async (
   prisma: PrismaClient,
   input: {
+    teamId: string
     projectSlug: string
-    teamSlug: string
-    userId: string
   },
 ) => {
   const messages = await prisma.message.findMany({
     where: {
       project: {
         slug: input.projectSlug,
-        team: {
-          slug: input.teamSlug,
-          // Make sure the user is a member of the team that the project belongs to
-          members: {
-            some: {
-              user_id: input.userId,
-            },
-          },
-        },
+        team_id: input.teamId,
       },
     },
     select: MESSAGE_SELECT,
@@ -37,22 +28,11 @@ export const getMessageById = async (
   prisma: PrismaClient,
   input: {
     id: string
-    userId: string
   },
 ) => {
   const message = await prisma.message.findUnique({
     where: {
       id: input.id,
-      project: {
-        team: {
-          // Make sure the user is a member of the team that the project belongs to
-          members: {
-            some: {
-              user_id: input.userId,
-            },
-          },
-        },
-      },
     },
     select: {
       id: true,

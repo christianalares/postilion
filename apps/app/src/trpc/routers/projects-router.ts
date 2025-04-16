@@ -4,18 +4,19 @@ import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
+import { isTeamMember, isTeamOwner } from '../middlewares/team'
 
 const getForTeam = authProcedure
   .input(
     z.object({
-      slug: z.string(),
+      teamSlug: z.string(),
     }),
   )
-  .query(async ({ ctx, input }) => {
+  .use(isTeamMember)
+  .query(async ({ ctx }) => {
     const projects = await queries.projects
       .getProjectsForTeam(ctx.prisma, {
-        teamSlug: input.slug,
-        userId: ctx.user.id,
+        teamId: ctx.team.id,
       })
       .catch(() => {
         throw new TRPCError({
@@ -23,14 +24,6 @@ const getForTeam = authProcedure
           message: 'Error fetching projects',
         })
       })
-
-    // The member has to be a member of the team for all projects
-    if (!projects.every((project) => project.team.members.some((member) => member.user_id === ctx.user.id))) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
 
     return projects
   })
@@ -42,11 +35,11 @@ const getBySlug = authProcedure
       projectSlug: z.string(),
     }),
   )
+  .use(isTeamMember)
   .query(async ({ ctx, input }) => {
     const project = await queries.projects.getProjectBySlug(ctx.prisma, {
-      teamSlug: input.teamSlug,
+      teamId: ctx.team.id,
       projectSlug: input.projectSlug,
-      userId: ctx.user.id,
     })
 
     if (!project) {
@@ -72,54 +65,10 @@ const update = authProcedure
         .partial(),
     }),
   )
+  .use(isTeamOwner)
   .mutation(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team
-      .findUnique({
-        where: {
-          slug: input.teamSlug,
-        },
-        select: {
-          id: true,
-          members: {
-            select: {
-              user_id: true,
-              role: true,
-            },
-          },
-        },
-      })
-      .catch(() => {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: 'Error fetching team',
-        })
-      })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
-    const userInTeam = team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userInTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (userInTeam.role !== 'OWNER') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not an owner of this team',
-      })
-    }
-
     const updatedProject = await mutations.projects.updateProject(ctx.prisma, {
-      teamId: team.id,
+      teamId: ctx.team.id,
       projectSlug: input.projectSlug,
       data: {
         name: input.data.name,
@@ -143,40 +92,8 @@ const create = authProcedure
       name: z.string(),
     }),
   )
+  .use(isTeamOwner)
   .mutation(async ({ ctx, input }) => {
-    const team = await ctx.prisma.team.findUnique({
-      where: {
-        slug: input.teamSlug,
-      },
-      select: {
-        id: true,
-        members: true,
-      },
-    })
-
-    if (!team) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Team not found',
-      })
-    }
-
-    const userInTeam = team.members.find((member) => member.user_id === ctx.user.id)
-
-    if (!userInTeam) {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: 'You are not a member of this team',
-      })
-    }
-
-    if (userInTeam.role !== 'OWNER') {
-      throw new TRPCError({
-        code: 'FORBIDDEN',
-        message: "You don't have permission to create projects in this team",
-      })
-    }
-
     const shortId = createShortId()
 
     const createdProject = await mutations.projects.createProject(ctx.prisma, {
@@ -184,7 +101,7 @@ const create = authProcedure
       slug: `${createSlug(input.name)}-${shortId}`,
       shortId: shortId,
       createdByUserId: ctx.user.id,
-      teamId: team.id,
+      teamId: ctx.team.id,
     })
 
     ctx.analyticsClient.track('project_created', {

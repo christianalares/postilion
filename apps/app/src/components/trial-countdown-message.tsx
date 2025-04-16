@@ -11,7 +11,7 @@ export const TrialCountdownMessage = () => {
   const trpc = useTRPC()
   const teamSlug = useTeamSlug()
 
-  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ teamSlug }))
 
   if (!team.subscription_id && team.end_free_trial) {
     const daysLeft = Math.max(

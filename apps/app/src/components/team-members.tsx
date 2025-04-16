@@ -12,7 +12,7 @@ export const TeamMembers = () => {
   const trpc = useTRPC()
   const teamSlug = useTeamSlug()
 
-  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ slug: teamSlug }))
+  const { data: team } = useSuspenseQuery(trpc.teams.getBySlug.queryOptions({ teamSlug }))
   const { data: me } = useSuspenseQuery(trpc.users.me.queryOptions())
 
   const youAreOwner = team.members.some((member) => member.user_id === me.id && member.role === 'OWNER')
