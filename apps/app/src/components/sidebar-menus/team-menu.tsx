@@ -1,47 +1,33 @@
 'use client'
 
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { useSelectedLayoutSegments } from 'next/navigation'
-import { popSheet } from '../sheets'
+import { usePathname } from 'next/navigation'
 import { Menu } from './menu-items'
 
-type Props = {
-  mobile?: boolean
-}
-
-export const TeamMenu = ({ mobile }: Props) => {
+export const TeamMenu = () => {
   const teamSlug = useTeamSlug()
-  const segments = useSelectedLayoutSegments()
-
-  const onClick = () => {
-    if (mobile) {
-      popSheet('mobileMenuSheet')
-    }
-  }
+  const pathname = usePathname()
 
   return (
     <Menu
       items={[
         {
-          isActive: segments.length === 0,
+          isActive: pathname === `/${teamSlug}`,
           href: `/${teamSlug}`,
           icon: 'home',
           label: 'Projects',
-          onClick,
         },
         {
-          isActive: segments[0] === 'domains',
+          isActive: pathname.startsWith(`/${teamSlug}/domains`),
           href: `/${teamSlug}/domains`,
           icon: 'globe',
           label: 'Domains',
-          onClick,
         },
         {
-          isActive: segments[0] === 'settings',
+          isActive: pathname.startsWith(`/${teamSlug}/settings`),
           href: `/${teamSlug}/settings`,
           icon: 'settings',
           label: 'Settings',
-          onClick,
         },
       ]}
     />

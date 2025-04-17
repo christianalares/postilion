@@ -25,8 +25,8 @@ export const MobileMenuSheet = ({ type }: Props) => {
       <div>
         <TrialCountdownMessage mobile />
 
-        {type === 'team' && <TeamMenu mobile />}
-        {type === 'project' && <ProjectMenu mobile />}
+        {type === 'team' && <TeamMenu />}
+        {type === 'project' && <ProjectMenu />}
       </div>
     </Sheet>
   )

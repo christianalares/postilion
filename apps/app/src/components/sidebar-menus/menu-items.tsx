@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { motion } from 'motion/react'
 import Link, { type LinkProps } from 'next/link'
+import { popSheet } from '../sheets'
 import { Icon, type IconName } from '../ui/icon'
 
 type MenuItem = {
@@ -10,7 +11,6 @@ type MenuItem = {
   href: LinkProps['href']
   icon: IconName
   label: string
-  onClick?: LinkProps['onClick']
 }
 
 type Props = {
@@ -18,6 +18,9 @@ type Props = {
 }
 
 export const Menu = ({ items }: Props) => {
+  const onClick = () => {
+    popSheet('mobileMenuSheet')
+  }
   return (
     <nav>
       <ul>
@@ -25,7 +28,7 @@ export const Menu = ({ items }: Props) => {
           // group-has-[.trial-countdown]:first:border-t
           <li key={item.href.toString()} className="border-b">
             <Link
-              onClick={item.onClick}
+              onClick={onClick}
               href={item.href}
               className={cn('flex items-center hover:bg-muted/50 transition-colors gap-2 py-3 px-6 relative')}
             >

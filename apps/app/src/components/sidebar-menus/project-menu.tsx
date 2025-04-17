@@ -2,55 +2,40 @@
 
 import { useProjectSlug } from '@/hooks/use-project-slug'
 import { useTeamSlug } from '@/hooks/use-team-slug'
-import { useSelectedLayoutSegment } from 'next/navigation'
-import { popSheet } from '../sheets'
+import { usePathname } from 'next/navigation'
 import { Menu } from './menu-items'
 
-type Props = {
-  mobile?: boolean
-}
-
-export const ProjectMenu = ({ mobile }: Props) => {
+export const ProjectMenu = () => {
   const teamSlug = useTeamSlug()
   const projectSlug = useProjectSlug()
-  const segment = useSelectedLayoutSegment()
-
-  const onClick = () => {
-    if (mobile) {
-      popSheet('mobileMenuSheet')
-    }
-  }
+  const pathname = usePathname()
 
   return (
     <Menu
       items={[
         {
-          isActive: segment === null,
+          isActive: pathname === `/${teamSlug}/${projectSlug}`,
           href: `/${teamSlug}/${projectSlug}`,
           icon: 'dashboard',
           label: 'Dashboard',
-          onClick,
         },
         {
-          isActive: segment === 'messages',
+          isActive: pathname.startsWith(`/${teamSlug}/${projectSlug}/messages`),
           href: `/${teamSlug}/${projectSlug}/messages`,
           icon: 'message',
           label: 'Messages',
-          onClick,
         },
         {
-          isActive: segment === 'webhooks',
+          isActive: pathname === `/${teamSlug}/${projectSlug}/webhooks`,
           href: `/${teamSlug}/${projectSlug}/webhooks`,
           icon: 'webhook',
           label: 'Webhooks',
-          onClick,
         },
         {
-          isActive: segment === 'settings',
+          isActive: pathname === `/${teamSlug}/${projectSlug}/settings`,
           href: `/${teamSlug}/${projectSlug}/settings`,
           icon: 'settings',
           label: 'Settings',
-          onClick,
         },
       ]}
     />
