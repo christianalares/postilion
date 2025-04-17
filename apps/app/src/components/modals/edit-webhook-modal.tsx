@@ -64,6 +64,7 @@ export const EditWebhookModal = ({ webhook }: Props) => {
               data: {
                 url: values.url.trim(),
                 method: values.method,
+                secret: values.secret,
               },
             })
           }}
@@ -71,6 +72,7 @@ export const EditWebhookModal = ({ webhook }: Props) => {
           defaultValues={{
             method: webhook.method,
             url: webhook.url,
+            secret: webhook.signing_key,
           }}
           ctaText="Save"
         />

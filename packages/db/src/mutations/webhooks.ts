@@ -6,7 +6,7 @@ export const createWebhook = async (
     projectId: string
     url: string
     method: 'GET' | 'POST' | 'PUT' | 'DELETE'
-    signingKey: string
+    secret: string
   },
 ) => {
   const webhook = await prisma.webhook.create({
@@ -14,12 +14,13 @@ export const createWebhook = async (
       project_id: input.projectId,
       url: input.url,
       method: input.method,
-      signing_key: input.signingKey,
+      signing_key: input.secret,
     },
     select: {
       id: true,
       url: true,
       method: true,
+      signing_key: true,
     },
   })
 
@@ -33,6 +34,7 @@ export const updateWebhook = async (
     data: Partial<{
       url: string
       method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+      secret: string
     }>
   },
 ) => {
@@ -43,12 +45,14 @@ export const updateWebhook = async (
     data: {
       url: input.data.url,
       method: input.data.method,
+      signing_key: input.data.secret,
     },
     select: {
       id: true,
       url: true,
       method: true,
       project_id: true,
+      signing_key: true,
     },
   })
 

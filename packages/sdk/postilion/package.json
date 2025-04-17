@@ -1,0 +1,22 @@
+{
+	"name": "@postilion/sdk",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "tsc --build",
+		"lint": "biome check .",
+		"format": "biome format .",
+		"check:types": "tsc --noEmit"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@postilion/typescript-config": "workspace:*"
+	},
+	"exports": {
+		".": "./src/index.ts"
+	},
+	"prisma": {
+		"seed": "tsx src/seed/index.ts"
+	}
+}

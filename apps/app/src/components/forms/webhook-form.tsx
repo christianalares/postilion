@@ -1,3 +1,5 @@
+'use client'
+
 import { useZodForm } from '@/hooks/use-zod-form'
 import { ENUMS } from '@postilion/db/enums'
 import { Controller, type DefaultValues } from 'react-hook-form'
@@ -9,9 +11,19 @@ import { Icon } from '../ui/icon'
 import { Input } from '../ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
+function generateSecret() {
+  const array = new Uint8Array(16)
+  window.crypto.getRandomValues(array)
+  return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('')
+}
+
 const formSchema = z.object({
   url: z.string().url(),
   method: z.nativeEnum(ENUMS.WEBHOOK_REQUEST_METHOD_ENUM),
+  secret: z
+    .string()
+    .length(32, 'Secret must be 32 hexadecimal characters')
+    .regex(/^[a-fA-F0-9]+$/, 'Secret must be hexadecimal characters only'),
 })
 
 type Props = {
@@ -34,7 +46,11 @@ export const WebhookForm = ({ onSubmit, isLoading, defaultValues, ctaText }: Pro
         <span>URL</span>
 
         <div className="flex items-center gap-2">
-          <Input placeholder="https://example.com/webhook/{handle}?subject={subject}" {...form.register('url')} />
+          <Input
+            className="flex-1"
+            placeholder="https://example.com/webhook/{handle}?subject={subject}"
+            {...form.register('url')}
+          />
 
           <Controller
             control={form.control}
@@ -42,7 +58,7 @@ export const WebhookForm = ({ onSubmit, isLoading, defaultValues, ctaText }: Pro
             render={({ field }) => {
               return (
                 <Select value={field.value} onValueChange={(value) => field.onChange(value)}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-32">
                     <SelectValue placeholder="Request method" />
                   </SelectTrigger>
 
@@ -69,7 +85,30 @@ export const WebhookForm = ({ onSubmit, isLoading, defaultValues, ctaText }: Pro
         </p>
       )}
 
-      <div className="flex justify-end gap-2 mt-4">
+      <label className="flex flex-col gap-2 mt-4">
+        <span>Secret</span>
+
+        <div className="flex items-center gap-2">
+          <Input className="flex-1" {...form.register('secret')} />
+          <Button
+            type="button"
+            className="w-32"
+            variant="outline"
+            onClick={() =>
+              form.setValue('secret', generateSecret(), {
+                // Make sure that the error goes away when user clicks the button
+                shouldValidate: !!form.formState.errors.secret,
+              })
+            }
+          >
+            Generate
+          </Button>
+        </div>
+      </label>
+
+      <ErrorMessage message={form.formState.errors.secret?.message} />
+
+      <div className="flex justify-end gap-2 mt-8">
         <Button
           variant="outline"
           type="button"

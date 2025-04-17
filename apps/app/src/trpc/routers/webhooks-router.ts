@@ -1,14 +1,9 @@
-import crypto from 'node:crypto'
 import { mutations } from '@postilion/db/mutations'
 import { queries } from '@postilion/db/queries'
 import { TRPCError } from '@trpc/server'
 import { z } from 'zod'
 import { authProcedure, createTRPCRouter } from '../init'
 import { isTeamMember } from '../middlewares/team'
-
-export const generateSigningKey = () => {
-  return crypto.randomBytes(32).toString('hex')
-}
 
 const create = authProcedure
   .input(
@@ -17,6 +12,10 @@ const create = authProcedure
       projectSlug: z.string(),
       url: z.string().url(),
       method: z.enum(['GET', 'POST', 'PUT', 'DELETE']),
+      secret: z
+        .string()
+        .length(32, 'Secret must be 32 hexadecimal characters')
+        .regex(/^[a-fA-F0-9]+$/, 'Secret must be hexadecimal characters only'),
     }),
   )
   .use(isTeamMember)
@@ -46,7 +45,7 @@ const create = authProcedure
       projectId: project.id,
       url: input.url,
       method: input.method,
-      signingKey: generateSigningKey(),
+      secret: input.secret,
     })
 
     ctx.analyticsClient.track('webhook_created', {
@@ -106,6 +105,10 @@ const update = authProcedure
         .object({
           url: z.string().url(),
           method: z.enum(['GET', 'POST', 'PUT', 'DELETE']),
+          secret: z
+            .string()
+            .length(32, 'Secret must be 32 hexadecimal characters')
+            .regex(/^[a-fA-F0-9]+$/, 'Secret must be hexadecimal characters only'),
         })
         .partial(),
     }),
@@ -144,6 +147,7 @@ const update = authProcedure
         data: {
           url: input.data.url,
           method: input.data.method,
+          secret: input.data.secret,
         },
       })
 

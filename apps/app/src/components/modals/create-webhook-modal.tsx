@@ -58,6 +58,7 @@ export const CreateWebhookModal = () => {
               projectSlug,
               url: values.url.trim(),
               method: values.method,
+              secret: values.secret,
             })
           }}
           isLoading={createWebhookMutation.isPending}

@@ -27,14 +27,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full" suppressHydrationWarning>
       <body className="h-full">
-        <AnalyticsProvider
-          clientId={process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!}
-          clientSecret={process.env.OPENPANEL_CLIENT_SECRET!}
-          apiUrl="/api/openpanel"
-          disabled={process.env.NODE_ENV !== 'production'}
-        />
-
         <TRPCReactProvider>
+          <AnalyticsProvider
+            clientId={process.env.NEXT_PUBLIC_OPENPANEL_CLIENT_ID!}
+            clientSecret={process.env.OPENPANEL_CLIENT_SECRET!}
+            apiUrl="/api/openpanel"
+            disabled={process.env.NODE_ENV !== 'production'}
+          />
+
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             {children}
 

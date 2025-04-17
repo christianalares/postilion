@@ -28,7 +28,9 @@ export const executePostOrPut = async ({
     })),
   }
 
-  const signature = crypto.createHmac('sha256', webhook.signing_key).update(JSON.stringify(payload)).digest('hex')
+  const stringifiedPayload = JSON.stringify(payload)
+
+  const signature = crypto.createHmac('sha256', webhook.signing_key).update(stringifiedPayload).digest('hex')
 
   const response = await fetch(webhook.url, {
     method: webhook.method,
@@ -36,7 +38,7 @@ export const executePostOrPut = async ({
       'Content-Type': 'application/json',
       'X-Postilion-Signature': signature,
     },
-    body: JSON.stringify(payload),
+    body: stringifiedPayload,
   }).catch((error) => {
     throw new Error(`Webhook request failed: ${error.message}`)
   })
