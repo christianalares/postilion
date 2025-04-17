@@ -72,7 +72,7 @@ export const EditWebhookModal = ({ webhook }: Props) => {
           defaultValues={{
             method: webhook.method,
             url: webhook.url,
-            secret: webhook.signing_key,
+            secret: webhook.secret,
           }}
           ctaText="Save"
         />

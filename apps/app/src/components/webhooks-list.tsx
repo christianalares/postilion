@@ -36,8 +36,8 @@ export const WebhooksList = () => {
 
             <div className="flex items-center gap-2">
               <Icon name="key" className="size-4" />
-              <p className="font-mono text-sm text-muted-foreground">{obfuscateSecret(webhook.signing_key)}</p>
-              <CopyToClipboardButton text={webhook.signing_key} />
+              <p className="font-mono text-sm text-muted-foreground">{obfuscateSecret(webhook.secret)}</p>
+              <CopyToClipboardButton text={webhook.secret} />
             </div>
           </div>
 

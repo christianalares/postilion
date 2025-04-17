@@ -30,7 +30,7 @@ export const executePostOrPut = async ({
 
   const stringifiedPayload = JSON.stringify(payload)
 
-  const signature = crypto.createHmac('sha256', webhook.signing_key).update(stringifiedPayload).digest('hex')
+  const signature = crypto.createHmac('sha256', webhook.secret).update(stringifiedPayload).digest('hex')
 
   const response = await fetch(webhook.url, {
     method: webhook.method,
@@ -57,7 +57,7 @@ export const executeGetOrDelete = async ({
   // message: ReturnOfMethod<'getAssociatedWebhooks'>['message']
   webhook: ReturnOfMethod<'getAssociatedWebhooks'>['webhooks'][number]
 }) => {
-  const signature = crypto.createHmac('sha256', webhook.signing_key).update(webhook.url).digest('hex')
+  const signature = crypto.createHmac('sha256', webhook.secret).update(webhook.url).digest('hex')
 
   const response = await fetch(webhook.url, {
     method: webhook.method,

@@ -14,7 +14,7 @@ export const getForProject = async (
       id: true,
       method: true,
       url: true,
-      signing_key: true,
+      secret: true,
     },
   })
 

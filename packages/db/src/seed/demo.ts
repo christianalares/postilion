@@ -305,7 +305,7 @@ export async function demoSeed() {
       id: ulid(),
       url: ENVS.TEST_WEBHOOK_URL,
       method: 'GET',
-      signing_key: faker.string.alphanumeric(32),
+      secret: faker.string.alphanumeric(32),
       project_id: project.id,
     },
   })

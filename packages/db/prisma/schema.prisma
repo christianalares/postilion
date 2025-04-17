@@ -218,14 +218,14 @@ model Domain {
 }
 
 model Webhook {
-  id          String                      @id @default(ulid())
-  created_at  DateTime                    @default(now())
-  updated_at  DateTime?                   @updatedAt
-  url         String
-  method      WEBHOOK_REQUEST_METHOD_ENUM
-  signing_key String
-  project_id  String
-  project     Project                     @relation(fields: [project_id], references: [id], onDelete: Cascade)
+  id         String                      @id @default(ulid())
+  created_at DateTime                    @default(now())
+  updated_at DateTime?                   @updatedAt
+  url        String
+  method     WEBHOOK_REQUEST_METHOD_ENUM
+  secret     String
+  project_id String
+  project    Project                     @relation(fields: [project_id], references: [id], onDelete: Cascade)
 
   @@map("webhooks")
 }

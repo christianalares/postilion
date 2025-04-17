@@ -14,13 +14,13 @@ export const createWebhook = async (
       project_id: input.projectId,
       url: input.url,
       method: input.method,
-      signing_key: input.secret,
+      secret: input.secret,
     },
     select: {
       id: true,
       url: true,
       method: true,
-      signing_key: true,
+      secret: true,
     },
   })
 
@@ -45,14 +45,14 @@ export const updateWebhook = async (
     data: {
       url: input.data.url,
       method: input.data.method,
-      signing_key: input.data.secret,
+      secret: input.data.secret,
     },
     select: {
       id: true,
       url: true,
       method: true,
       project_id: true,
-      signing_key: true,
+      secret: true,
     },
   })
 
