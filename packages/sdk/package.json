@@ -4,19 +4,20 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"build": "tsc --build",
+		"dev": "tsc --watch --preserveWatchOutput",
+		"build": "tsc",
 		"lint": "biome check .",
 		"format": "biome format .",
 		"check:types": "tsc --noEmit"
 	},
-	"dependencies": {},
 	"devDependencies": {
-		"@postilion/typescript-config": "workspace:*"
+		"@postilion/typescript-config": "workspace:*",
+		"@types/node": "^22.13.10"
 	},
 	"exports": {
-		".": "./src/index.ts"
+		".": "./dist/index.js"
 	},
-	"prisma": {
-		"seed": "tsx src/seed/index.ts"
+	"dependencies": {
+		"standardwebhooks": "^1.0.0"
 	}
 }

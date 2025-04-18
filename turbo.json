@@ -31,7 +31,7 @@
 				"POLAR_ACCESS_TOKEN",
 				"POLAR_WEBHOOK_SECRET"
 			],
-			"outputs": [".next/**", "!.next/cache/**"]
+			"outputs": [".next/**", "!.next/cache/**", "dist/**"]
 		},
 		"lint": {
 			"dependsOn": ["^lint"]
