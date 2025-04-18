@@ -3,6 +3,51 @@ import { MESSAGE_SELECT } from '@postilion/db/constants'
 import type { createPrismaClient } from '@postilion/db/edge'
 import type { ReturnOfMethod } from './steps/step-factory'
 
+const generateWebhookId = () => {
+  return `msg_${crypto.randomBytes(16).toString('base64url')}`
+}
+
+const preparePayload = ({
+  data,
+  secret,
+}: {
+  data?: Record<string, unknown>
+  secret: string
+}) => {
+  const stringifiedPayload = data
+    ? JSON.stringify({
+        type: 'webhook.created',
+        timestamp: new Date().toISOString(),
+        data,
+      })
+    : '{}'
+
+  const webhookId = generateWebhookId()
+  const webhookTimestamp = Math.floor(Date.now() / 1000).toString()
+
+  const base64Secret = Buffer.from(secret, 'utf-8').toString('base64')
+
+  const contentToSign = `${webhookId}.${webhookTimestamp}.${stringifiedPayload}`
+
+  const signature = crypto
+    .createHmac('sha256', Buffer.from(base64Secret, 'base64'))
+    .update(contentToSign)
+    .digest('base64')
+
+  const signatureHeader = `v1,${signature}`
+
+  const headers = {
+    'webhook-id': webhookId,
+    'webhook-timestamp': webhookTimestamp,
+    'webhook-signature': signatureHeader,
+  }
+
+  return {
+    payload: stringifiedPayload,
+    headers,
+  }
+}
+
 export const executePostOrPut = async ({
   message,
   attachments,
@@ -12,33 +57,32 @@ export const executePostOrPut = async ({
   attachments: Awaited<ReturnType<typeof getAttachments>>
   webhook: ReturnOfMethod<'getAssociatedWebhooks'>['webhooks'][number]
 }) => {
-  const payload = {
-    handle: message.handle,
-    from: message.from,
-    subject: message.subject,
-    body: {
-      raw: message.body_raw,
-      stripped: message.body_stripped,
-      summary: message.body_ai_summary,
+  const { payload, headers } = preparePayload({
+    data: {
+      handle: message.handle,
+      from: message.from,
+      subject: message.subject,
+      body: {
+        raw: message.body_raw,
+        stripped: message.body_stripped,
+        summary: message.body_ai_summary,
+      },
+      attachments: attachments.map((attachment) => ({
+        filename: attachment.filename,
+        mimeType: attachment.mimeType,
+        base64: attachment.base64,
+      })),
     },
-    attachments: attachments.map((attachment) => ({
-      filename: attachment.filename,
-      mimeType: attachment.mimeType,
-      base64: attachment.base64,
-    })),
-  }
-
-  const stringifiedPayload = JSON.stringify(payload)
-
-  const signature = crypto.createHmac('sha256', webhook.secret).update(stringifiedPayload).digest('hex')
+    secret: webhook.secret,
+  })
 
   const response = await fetch(webhook.url, {
     method: webhook.method,
     headers: {
       'Content-Type': 'application/json',
-      'X-Postilion-Signature': signature,
+      ...headers,
     },
-    body: stringifiedPayload,
+    body: payload,
   }).catch((error) => {
     throw new Error(`Webhook request failed: ${error.message}`)
   })
@@ -49,22 +93,16 @@ export const executePostOrPut = async ({
 }
 
 export const executeGetOrDelete = async ({
-  // prisma,
-  // message,
   webhook,
 }: {
-  // prisma: ReturnType<typeof createPrismaClient>
-  // message: ReturnOfMethod<'getAssociatedWebhooks'>['message']
   webhook: ReturnOfMethod<'getAssociatedWebhooks'>['webhooks'][number]
 }) => {
-  const signature = crypto.createHmac('sha256', webhook.secret).update(webhook.url).digest('hex')
-
+  const { headers } = preparePayload({
+    secret: webhook.secret,
+  })
   const response = await fetch(webhook.url, {
     method: webhook.method,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Postilion-Signature': signature,
-    },
+    headers,
   }).catch((error) => {
     throw new Error(`Webhook request failed: ${error.message}`)
   })
@@ -72,15 +110,6 @@ export const executeGetOrDelete = async ({
   if (!response.ok) {
     throw new Error(`Webhook failed with status ${response.status}`)
   }
-
-  // await prisma.webhookLog.create({
-  //   data: {
-  //     status: 'SUCCESS',
-  //     message_id: message.id,
-  //     url: webhook.url,
-  //     method: webhook.method,
-  //   },
-  // })
 }
 
 export const getAttachments = async ({

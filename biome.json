@@ -13,7 +13,8 @@
 			".open-next",
 			"generated",
 			"worker-configuration.d.ts",
-			"globals.css"
+			"globals.css",
+			"dist"
 		]
 	},
 	"formatter": {
