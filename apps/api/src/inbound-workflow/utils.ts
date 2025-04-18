@@ -20,12 +20,12 @@ const preparePayload = ({
         timestamp: new Date().toISOString(),
         data,
       })
-    : ''
+    : '{}'
 
   const webhookId = generateWebhookId()
   const webhookTimestamp = Math.floor(Date.now() / 1000).toString()
 
-  const base64Secret = Buffer.from(secret, 'hex').toString('base64')
+  const base64Secret = Buffer.from(secret, 'utf-8').toString('base64')
 
   const contentToSign = `${webhookId}.${webhookTimestamp}.${stringifiedPayload}`
 
@@ -42,14 +42,8 @@ const preparePayload = ({
     'webhook-signature': signatureHeader,
   }
 
-  if (data) {
-    return {
-      payload: stringifiedPayload,
-      headers,
-    }
-  }
-
   return {
+    payload: stringifiedPayload,
     headers,
   }
 }

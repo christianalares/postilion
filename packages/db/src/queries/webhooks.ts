@@ -16,6 +16,9 @@ export const getForProject = async (
       url: true,
       secret: true,
     },
+    orderBy: {
+      created_at: 'asc',
+    },
   })
 
   return webhooks
