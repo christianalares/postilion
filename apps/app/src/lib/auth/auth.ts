@@ -72,13 +72,13 @@ export const auth = betterAuth({
     },
   },
   advanced: {
-    ...(process.env.NODE_ENV === 'production' && {
-      defaultCookieAttributes: {
-        sameSite: 'Strict',
-        secure: true,
-        domain: '.postilion.ai',
-      },
-    }),
+    // ...(process.env.NODE_ENV === 'production' && {
+    //   defaultCookieAttributes: {
+    //     sameSite: 'Strict',
+    //     secure: true,
+    //     domain: '.postilion.ai',
+    //   },
+    // }),
     crossSubDomainCookies: {
       enabled: true,
     },
